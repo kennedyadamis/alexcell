@@ -19,9 +19,17 @@
     <link rel="stylesheet" href="pattern-lock-local.css">
 </head>
 <body>
+    <!-- Botão para toggle do menu mobile -->
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+        ☰
+    </button>
+    
+    <!-- Overlay para fechar menu mobile -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
     <div class="dashboard-container">
         <!-- Sidebar de Navegação -->
-        <aside class="dashboard-sidebar">
+        <aside class="dashboard-sidebar" id="dashboard-sidebar">
             <div class="sidebar-header">
                 <a href="index.html" class="logo">ALEXCELL</a>
             </div>
@@ -2608,5 +2616,49 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Main JS -->
     <script type="module" src="main.js"></script>
+    
+    <!-- Script para controle do menu mobile -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const dashboardSidebar = document.getElementById('dashboard-sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            
+            // Função para abrir o menu mobile
+            function openMobileMenu() {
+                dashboardSidebar.classList.add('mobile-open');
+                sidebarOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+            
+            // Função para fechar o menu mobile
+            function closeMobileMenu() {
+                dashboardSidebar.classList.remove('mobile-open');
+                sidebarOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            
+            // Event listeners
+            mobileMenuToggle.addEventListener('click', openMobileMenu);
+            sidebarOverlay.addEventListener('click', closeMobileMenu);
+            
+            // Fechar menu ao clicar em um item de navegação (mobile)
+            const navItems = document.querySelectorAll('.sidebar-nav .nav-item a');
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    if (window.innerWidth <= 768) {
+                        closeMobileMenu();
+                    }
+                });
+            });
+            
+            // Fechar menu ao redimensionar para desktop
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    closeMobileMenu();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
