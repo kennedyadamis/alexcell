@@ -149,9 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Atualiza a barra de navegação em qualquer mudança de estado de autenticação
         updateNavigationVisibility(session);
-    }
-
-// Função será chamada no listener principal
+    });
 
     // Inicializa funcionalidades de páginas não autenticadas
     if (!window.location.pathname.includes('dashboard.html')) {
@@ -169,7 +167,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-        setupModalCloseEvents();
+    setupModalCloseEvents();
 
     // Inicializar consulta de OS na página pública
     initializeOSConsultation();
