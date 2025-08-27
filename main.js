@@ -2289,7 +2289,7 @@ function setupCloseCashRegister() {
             await initializeCashRegisterModule();
         };
     }
-});
+}
 
 // ... existing code ...
 async function loadClosedCashHistory() {
@@ -2772,102 +2772,7 @@ async function calculateSalesProfit(sales) {
     return salesWithProfit;
 }
 
-// Modificar o HTML da caixa para incluir o botão de impressão ao fechar
-function setupCloseCashRegister() {
-    const closeCashBtn = document.getElementById('btn-close-cash');
-    const closeCashModal = document.getElementById('close-cash-modal');
-    const closeCashForm = document.getElementById('close-cash-form');
-    
-    if (closeCashBtn) {
-        closeCashBtn.onclick = () => {
-            // Buscar saldo atual para exibição
-            updateClosingBalance();
-            closeCashModal.style.display = 'flex';
-        };
-    }
-    
-    // Adicionar formatação automática ao campo de valor
-    const countedBalanceField = document.getElementById('counted-balance');
-    if (countedBalanceField) {
-        countedBalanceField.addEventListener('input', (e) => {
-            // Remove todos os caracteres não numéricos
-            let value = e.target.value.replace(/[^\d]/g, '');
-            
-            // Se não houver valor, não faz nada
-            if (!value) {
-                e.target.value = '';
-                return;
-            }
-            
-            // Converte para número (divide por 100 para considerar os centavos)
-            const numValue = parseFloat(value) / 100;
-            
-            // Formata o número com separador de milhares e vírgula decimal
-            if (!isNaN(numValue)) {
-                e.target.value = formatValueForDisplay(numValue);
-            }
-        });
-    }
-    
-    if (closeCashForm) {
-        closeCashForm.onsubmit = async (e) => {
-            e.preventDefault();
-            
-            // Converte o valor formatado para número
-            const valueStr = document.getElementById('counted-balance')?.value || '0';
-            const closing_balance = parseFloat(valueStr.replace(/\./g, '').replace(',', '.'));
-            const notes = document.getElementById('closing-notes')?.value || '';
-            
-            if (isNaN(closing_balance)) {
-                showToast('Informe um saldo final válido!', 'error');
-                return;
-            }
-            
-            // Buscar caixa aberto
-            const { data: openCash, error: cashError } = await supabase
-                .from('cash_registers')
-                .select('id')
-                .eq('status', 'open')
-                .eq('store_id', getSelectedStoreId())
-                .limit(1);
-                
-            if (cashError || !openCash || openCash.length === 0) {
-                showToast('Erro: Nenhum caixa aberto encontrado!', 'error');
-                return;
-            }
-            
-            const cashId = openCash[0].id;
-            
-            // Fechar o caixa
-            const { error: updateError } = await supabase
-                .from('cash_registers')
-                .update({ 
-                    status: 'closed', 
-                    closed_at: new Date().toISOString(),
-                    closing_balance,
-                    notes
-                })
-                .eq('id', cashId);
-                
-            if (updateError) {
-                showToast('Erro ao fechar o caixa!', 'error');
-                console.error('Erro ao fechar caixa:', updateError);
-                return;
-            }
-            
-            closeCashModal.style.display = 'none';
-            showToast('Caixa fechado com sucesso!', 'success');
-            
-            // Perguntar se deseja gerar o relatório para download
-            if (confirm('Deseja gerar o relatório do caixa para download em PDF?')) {
-                printCashRegister(cashId);
-            }
-            
-            // Atualizar a view de caixa aberto/fechado
-            initializeCashRegisterModule();
-        };
-    }
-}
+// Função duplicada removida - setupCloseCashRegister já existe na linha 2219
 
 // Função para atualizar o saldo de fechamento no modal
 async function updateClosingBalance() {
