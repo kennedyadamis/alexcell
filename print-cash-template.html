@@ -18,18 +18,41 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            padding: 10px 20px;
-            background-color: #4CAF50;
+            background: linear-gradient(135deg, #007bff, #0056b3);
             color: white;
             border: none;
-            border-radius: 4px;
+            padding: 15px 30px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
+            font-weight: 600;
             z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+            transition: all 0.3s ease;
+            min-width: 120px;
+            text-align: center;
         }
 
         .download-btn:hover {
-            background-color: #45a049;
+            background: linear-gradient(135deg, #0056b3, #004085);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,123,255,0.4);
+        }
+        
+        .download-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(0,123,255,0.2);
+        }
+        
+        /* Responsividade do botão */
+        @media (max-width: 768px) {
+            .download-btn {
+                top: 10px;
+                right: 10px;
+                padding: 12px 20px;
+                font-size: 14px;
+                min-width: 100px;
+            }
         }
 
         .page-container {
@@ -37,7 +60,7 @@
             width: 210mm;
             min-height: 297mm;
             margin: 20px auto;
-            padding: 20mm;
+            padding: 15mm;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             position: relative;
             box-sizing: border-box;
@@ -54,23 +77,31 @@
             padding-bottom: 15px;
             margin-bottom: 20px;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: space-between;
+            min-height: 120px;
         }
 
         .logo-container {
-            flex: 0 0 25%;
+            flex: 0 0 30%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .logo {
             max-width: 100%;
-            max-height: 100px;
+            max-height: 120px;
+            width: auto;
+            height: auto;
             display: block;
+            object-fit: contain;
         }
 
         .store-info {
-            flex: 0 0 70%;
+            flex: 0 0 65%;
             text-align: left;
+            padding-left: 15px;
         }
 
         .store-info h2 {
@@ -187,6 +218,8 @@
         @media print {
             body {
                 background: none;
+                margin: 0;
+                padding: 0;
             }
             
             .page-container {
@@ -195,10 +228,19 @@
                 margin: 0;
                 padding: 10mm;
                 box-shadow: none;
+                min-height: auto;
             }
             
             .download-btn {
                 display: none;
+            }
+            
+            .receipt-header {
+                page-break-inside: avoid;
+            }
+            
+            .logo {
+                max-height: 100px;
             }
         }
     </style>
@@ -265,23 +307,99 @@
                 document.getElementById('store-phones').textContent = cashData.storeInfo.phones || 'Telefone não disponível';
             }
 
-            // Atualiza o logo
+            // Atualiza o logo com fallbacks
             const logoImg = document.getElementById('print-logo');
-            if (logoImg) {
+            const logoContainer = document.querySelector('.logo-container');
+            
+            if (logoImg && logoContainer) {
                 if (cashData.logoUrl) {
                     console.log('Tentando carregar logo da URL:', cashData.logoUrl);
                     logoImg.src = cashData.logoUrl;
-                    logoImg.style.display = 'block'; 
+                    logoImg.style.display = 'block';
+                    logoContainer.style.display = 'flex';
+                    
                     logoImg.onload = () => {
                         console.log('Logo carregado com sucesso!');
+                        logoImg.style.display = 'block';
+                        logoContainer.style.display = 'flex';
                     };
+                    
                     logoImg.onerror = () => {
                         console.error('ERRO ao carregar o logo da URL fornecida:', cashData.logoUrl);
-                        logoImg.style.display = 'none';
+                        // Tentar fallbacks locais
+                        const fallbackLogos = [
+                            './logos/1.png',
+                            './logos/2.png', 
+                            './logos/3.png',
+                            './public/logos/1.png'
+                        ];
+                        
+                        let fallbackIndex = 0;
+                        const tryFallback = () => {
+                            if (fallbackIndex < fallbackLogos.length) {
+                                logoImg.src = fallbackLogos[fallbackIndex];
+                                logoImg.onload = () => {
+                                    console.log('Logo fallback carregado:', fallbackLogos[fallbackIndex]);
+                                    logoImg.style.display = 'block';
+                                    logoContainer.style.display = 'flex';
+                                };
+                                logoImg.onerror = () => {
+                                    fallbackIndex++;
+                                    tryFallback();
+                                };
+                                fallbackIndex++;
+                            } else {
+                                // Se nenhum fallback funcionar, ocultar logo
+                                logoImg.style.display = 'none';
+                                logoContainer.style.display = 'none';
+                                // Ajustar layout para ocupar espaço da logo
+                                const storeInfo = document.querySelector('.store-info');
+                                if (storeInfo) {
+                                    storeInfo.style.flex = '1';
+                                    storeInfo.style.textAlign = 'center';
+                                    storeInfo.style.paddingLeft = '0';
+                                }
+                            }
+                        };
+                        tryFallback();
                     };
                 } else {
                     console.warn('Nenhuma URL de logo foi fornecida nos dados do relatório.');
-                    logoImg.style.display = 'none';
+                    // Tentar carregar logos locais como fallback
+                    const fallbackLogos = [
+                        './logos/1.png',
+                        './logos/2.png', 
+                        './logos/3.png',
+                        './public/logos/1.png'
+                    ];
+                    
+                    let fallbackIndex = 0;
+                    const tryFallback = () => {
+                        if (fallbackIndex < fallbackLogos.length) {
+                            logoImg.src = fallbackLogos[fallbackIndex];
+                            logoImg.onload = () => {
+                                console.log('Logo local carregado:', fallbackLogos[fallbackIndex]);
+                                logoImg.style.display = 'block';
+                                logoContainer.style.display = 'flex';
+                            };
+                            logoImg.onerror = () => {
+                                fallbackIndex++;
+                                tryFallback();
+                            };
+                            fallbackIndex++;
+                        } else {
+                            // Se nenhum logo funcionar, ocultar e ajustar layout
+                            logoImg.style.display = 'none';
+                            logoContainer.style.display = 'none';
+                            const storeInfo = document.querySelector('.store-info');
+                            if (storeInfo) {
+                                storeInfo.style.flex = '1';
+                                storeInfo.style.textAlign = 'center';
+                                storeInfo.style.paddingLeft = '0';
+                            }
+                        }
+                    };
+                    tryFallback();
                 }
             }
 
