@@ -149,7 +149,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Atualiza a barra de navegação em qualquer mudança de estado de autenticação
         updateNavigationVisibility(session);
-    });
+    }
+
+// Função será chamada no listener principal
 
     // Inicializa funcionalidades de páginas não autenticadas
     if (!window.location.pathname.includes('dashboard.html')) {
@@ -255,6 +257,13 @@ async function initializeDashboard(session) {
     initializeDashboardEventListeners();
     setupSwitchStoreButton(); // NOVO
     loadAllStores(); // Carrega as lojas para o módulo de usuários
+    
+    // Inicializar funcionalidades consolidadas (evita listeners duplicados)
+    setupPDVSplitPayment();
+    setupCashMoneyOperations();
+    setupCloseCashRegister();
+    setupOSModalEvents();
+    setupPatternLock();
     loadOSTable(1, getSelectedStoreId(), printWithToast);
     loadCustomersTable();
     // Chamar setupOpenCashRegister aqui!
@@ -2033,10 +2042,7 @@ async function finalizarVendaComPagamentos(pagamentos) {
     alert('Venda finalizada com sucesso!');
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    // setupOpenCashRegister(); // Já chamada no initializeDashboard
-    setupPDVSplitPayment(); // Garante que o modal de pagamento dividido está ativo
-});
+// Removido listener duplicado - setupPDVSplitPayment será chamado no listener principal
 
 // Função global para renderizar o carrinho do PDV
 function renderCart() {
@@ -2134,7 +2140,7 @@ function setupCashMovementsFilter() {
 }
 
 // === ADICIONAR/RETIRAR DINHEIRO NO CAIXA ===
-document.addEventListener('DOMContentLoaded', () => {
+function setupCashMoneyOperations() {
     const btnAddMoney = document.getElementById('btn-add-money');
     const btnWithdrawMoney = document.getElementById('btn-withdraw-money');
     const moneyEntryModal = document.getElementById('money-entry-modal');
@@ -2207,10 +2213,12 @@ document.addEventListener('DOMContentLoaded', () => {
             updateCashSummaryPanel();
         };
     }
-});
+}
+
+// Função será chamada no listener principal
 
 // === FECHAR CAIXA ===
-document.addEventListener('DOMContentLoaded', () => {
+function setupCloseCashRegister() {
     const btnCloseCash = document.getElementById('btn-close-cash-register');
     const closeCashModal = document.getElementById('close-cash-modal');
     const closeCashForm = document.getElementById('close-cash-form');
@@ -2920,8 +2928,8 @@ async function updateClosingBalance() {
 // ... existing code ...
 
 // Inicializa o componente de Senha Padrão (PatternLock) na modal de OS
-if (window.PatternLock) {
-    document.addEventListener('DOMContentLoaded', () => {
+function setupPatternLock() {
+    if (window.PatternLock) {
         const pattern = new PatternLock('#pattern-lock-canvas');
         const hiddenInput = document.getElementById('os-pattern-lock-value');
         // Atualiza o input hidden sempre que o padrão mudar
@@ -2933,8 +2941,10 @@ if (window.PatternLock) {
         if (btnReset) btnReset.addEventListener('click', () => {
             pattern.reset();
         });
-    });
+    }
 }
+
+// Função será chamada no listener principal
 
 // Função para fechar modal de pagamento da OS
 window.closeOSPaymentModal = function() {
