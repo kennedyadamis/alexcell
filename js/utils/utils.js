@@ -138,22 +138,42 @@ export function updatePaginationUI(module, currentPage, totalRecords) {
     // Adiciona event listeners se ainda não tiverem sido adicionados
     // (Evita adicionar múltiplos listeners em recargas da tabela)
     if (!prevBtn.dataset.listenerAdded) {
-        prevBtn.addEventListener('click', () => {
+        prevBtn.addEventListener('click', async () => {
             if (currentPage > 1) {
-                if (module === 'os') loadOSTable(currentPage - 1); // loadOSTable ainda não é importada aqui, mas será no main.js
-                if (module === 'customers') loadCustomersTable(currentPage - 1); // loadCustomersTable ainda não é importada aqui, mas será no main.js
-                if (module === 'warranty') loadWarrantyTable(currentPage - 1); // loadWarrantyTable ainda não é importada aqui, mas será no main.js
+                if (module === 'os') {
+                    const { loadOSTable } = await import('../modules/serviceOrders.js');
+                    const { getSelectedStoreId } = await import('../auth/auth.js');
+                    loadOSTable(currentPage - 1, getSelectedStoreId());
+                }
+                if (module === 'customers') {
+                    const { loadCustomersTable } = await import('../modules/customers.js');
+                    loadCustomersTable(currentPage - 1);
+                }
+                if (module === 'warranty') {
+                    const { loadWarrantyTable } = await import('../modules/warranty.js');
+                    loadWarrantyTable(currentPage - 1);
+                }
             }
         });
         prevBtn.dataset.listenerAdded = true;
     }
 
     if (!nextBtn.dataset.listenerAdded) {
-        nextBtn.addEventListener('click', () => {
+        nextBtn.addEventListener('click', async () => {
             if (currentPage < totalPages) {
-                if (module === 'os') loadOSTable(currentPage + 1); // loadOSTable ainda não é importada aqui, mas será no main.js
-                if (module === 'customers') loadCustomersTable(currentPage + 1); // loadCustomersTable ainda não é importada aqui, mas será no main.js
-                if (module === 'warranty') loadWarrantyTable(currentPage + 1); // loadWarrantyTable ainda não é importada aqui, mas será no main.js
+                if (module === 'os') {
+                    const { loadOSTable } = await import('../modules/serviceOrders.js');
+                    const { getSelectedStoreId } = await import('../auth/auth.js');
+                    loadOSTable(currentPage + 1, getSelectedStoreId());
+                }
+                if (module === 'customers') {
+                    const { loadCustomersTable } = await import('../modules/customers.js');
+                    loadCustomersTable(currentPage + 1);
+                }
+                if (module === 'warranty') {
+                    const { loadWarrantyTable } = await import('../modules/warranty.js');
+                    loadWarrantyTable(currentPage + 1);
+                }
             }
         });
         nextBtn.dataset.listenerAdded = true;
