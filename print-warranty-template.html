@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Garantia de Serviços</title>
+    <link rel="stylesheet" href="print.css">
+</head>
+<body>
+    <div class="receipt">
+        <header class="receipt-header">
+            <img src="" alt="Logo da Loja" class="logo" id="print-logo" style="display: none;">
+            <div class="store-info" id="store-info">
+                <p>Assistência Técnica Especializada</p>
+                <p id="store-address">R. 38, N 518 - Sala 02 - Lot. Paraíso do Sul, Santa Maria, Aracaju - SE, 49044-451</p>
+                <p id="store-phones">(79) 9.8160-6441 / (79) 3011-2293</p>
+            </div>
+        </header>
+
+        <section id="warranty-details">
+            <!-- Os detalhes da garantia serão preenchidos aqui -->
+        </section>
+
+        <section class="disclaimer">
+            <p><strong>TELA TOUCH OU FRONTAIS QUE APRESENTEM MAU USO, TRINCADOS, QUEBRADOS, RISCADOS, MANCHADOS, MOLHADO, DESCOLADOS E COM O CABO FLEX ROMPIDO. A GARANTIA É CANCELADA IMEDIATAMENTE NESSAS CONDIÇÕES E NAS CONDIÇÕES A SEGUIR:</strong></p>
+            <ol style="padding-left: 20px; font-size: 9pt;">
+                <li>Funcionamento, instalação e atualização de aplicativos, bem como o sistema operacional do celular ou tablet NÃO FAZEM parte desta garantia;</li>
+                <li>É necessário a apresentação deste termo para a garantia, caso contrário será inválida a garantia;</li>
+                <li>A garantia cobre defeitos que não forem ocasionados pelo cliente, como citado acima, caso contrário apresentar este comprovante para garantia;</li>
+                <li>Caso o aparelho seja aberto por terceiros ou o lacre de garantia seja violado a garantia é cancelada automaticamente.</li>
+            </ol>
+        </section>
+
+        <footer class="receipt-footer">
+            <div class="signature-block">
+                <div class="signature-line">
+                    <p>Assinatura e carimbo do vendedor</p>
+                </div>
+                <p class="signature-date">Data: <span id="print-repair-date"></span></p>
+            </div>
+            <div class="timestamp">
+                Impresso em: <span id="print-timestamp"></span>
+            </div>
+        </footer>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const warrantyData = JSON.parse(localStorage.getItem('currentWarranty_for_print'));
+            if (!warrantyData) return;
+
+            // Atualiza o logo do Supabase (mantém informações da empresa sempre visíveis)
+            const logoImg = document.getElementById('print-logo');
+            
+            if (logoImg && warrantyData.logoUrl) {
+                console.log('URL do logo recebida:', warrantyData.logoUrl);
+                
+                // Tenta carregar o logo do Supabase
+                logoImg.src = warrantyData.logoUrl;
+                logoImg.onload = () => {
+                    console.log('Logo do Supabase carregado com sucesso');
+                    logoImg.style.display = 'block';
+                };
+                logoImg.onerror = () => {
+                    console.log('Erro ao carregar logo do Supabase');
+                    logoImg.style.display = 'none';
+                };
+            } else {
+                console.log('Nenhum logo fornecido');
+                if (logoImg) logoImg.style.display = 'none';
+            }
+
+            // Preenche a data do reparo
+            document.getElementById('print-repair-date').textContent = formatDateForPrint(warrantyData.repair_date);
+            
+            const detailsContainer = document.getElementById('warranty-details');
+            
+            // Calcula data de validade da garantia
+            const repairDate = new Date(warrantyData.repair_date);
+            const validUntil = new Date(repairDate);
+            validUntil.setDate(repairDate.getDate() + (warrantyData.warranty_period_days || 90));
+
+            detailsContainer.innerHTML = `
+                <h2>Garantia de Serviços #${warrantyData.id}</h2>
+                
+                <div class="section">
+                    <h4>Cliente</h4>
+                    <p><strong>Nome:</strong> ${warrantyData.customer_name || 'Não informado'}</p>
+                    <p><strong>Telefone:</strong> ${warrantyData.customer_phone || 'Não informado'}</p>
+                </div>
+                
+                <div class="section">
+                    <h4>Equipamento</h4>
+                    <p><strong>Aparelho:</strong> ${warrantyData.equipment_brand || ''} ${warrantyData.equipment_model || ''}</p>
+                </div>
+                
+                <div class="section">
+                    <h4>Informações da Garantia</h4>
+                    <p style="background: #f8f9fa; padding: 10px; border-left: 4px solid #007bff; margin: 10px 0;">
+                        A Alexcell dá a garantia de <strong>${warrantyData.warranty_period_days || 90} dias</strong>, referente ao reparo feito no telefone descrito acima.
+                    </p>
+                    <p><strong>Peça Substituída:</strong> ${warrantyData.part_replaced || 'Não informada'}</p>
+                    <p><strong>Valor Total:</strong> R$ ${formatValueForPrint(warrantyData.total_value)}</p>
+                    <p><strong>Data do Reparo:</strong> ${formatDateForPrint(warrantyData.repair_date)}</p>
+                    <p><strong>Válida até:</strong> ${formatDateForPrint(validUntil.toISOString().split('T')[0])}</p>
+                </div>
+
+                ${warrantyData.observations ? `
+                <div class="section">
+                    <h4>Observações</h4>
+                    <p>${warrantyData.observations}</p>
+                </div>
+                ` : ''}
+            `;
+
+            document.getElementById('print-timestamp').textContent = new Date().toLocaleString('pt-BR');
+            
+            localStorage.removeItem('currentWarranty_for_print');
+            setTimeout(() => window.print(), 500);
+        });
+
+        // Função para formatar datas para impressão
+        function formatDateForPrint(dateString) {
+            if (!dateString) return 'Não definida';
+            
+            try {
+                // Se a data está no formato YYYY-MM-DD (padrão do input date)
+                if (dateString.includes('-')) {
+                    const [year, month, day] = dateString.split('-');
+                    return `${day}/${month}/${year}`;
+                }
+                
+                // Se a data já está em outro formato, tenta converter
+                const date = new Date(dateString + 'T00:00:00'); // Adiciona horário para evitar problemas de timezone
+                if (isNaN(date.getTime())) {
+                    return dateString; // Retorna a string original se não conseguir converter
+                }
+                
+                return date.toLocaleDateString('pt-BR');
+            } catch (error) {
+                console.error('Erro ao formatar data:', error);
+                return dateString; // Retorna a string original em caso de erro
+            }
+        }
+
+        // Função para formatar valores para impressão
+        function formatValueForPrint(value) {
+            if (!value) return '0,00';
+            
+            // Se já é uma string formatada
+            if (typeof value === 'string' && value.includes(',')) {
+                return value;
+            }
+            
+            // Se é um número
+            const numValue = parseFloat(value);
+            if (isNaN(numValue)) return '0,00';
+            
+            return numValue.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+    </script>
+</body>
+</html> 

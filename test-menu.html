@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Menu Mobile</title>
+    <style>
+        /* Reset básico */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+        }
+
+        /* Header */
+        .header {
+            background: #1c1c1c;
+            color: white;
+            padding: 15px 20px;
+            position: relative;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2E8B57;
+        }
+
+        /* Menu desktop */
+        .nav {
+            display: flex;
+            list-style: none;
+            gap: 20px;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .nav a:hover {
+            background: #2E8B57;
+        }
+
+        /* Botão do menu mobile */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: white;
+            padding: 5px;
+        }
+
+        /* Estilos mobile */
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block !important;
+                z-index: 1001;
+            }
+
+            .nav {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: #1c1c1c !important;
+                flex-direction: column;
+                padding: 20px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+                gap: 10px;
+                z-index: 1000;
+                border-top: 1px solid #2E8B57;
+                list-style: none;
+                margin: 0;
+            }
+
+            .nav.active {
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                animation: slideDown 0.3s ease-out;
+            }
+
+            .nav a {
+                padding: 15px 12px;
+                border-radius: 8px;
+                text-align: center;
+                color: #ffffff !important;
+                border: 1px solid transparent;
+                transition: all 0.3s ease;
+            }
+
+            .nav a:hover {
+                background: #2E8B57 !important;
+                border-color: #3CB371;
+                transform: translateX(5px);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Conteúdo da página */
+        .content {
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .test-info {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">ALEXCELL & CIA</div>
+            
+            <nav>
+                <ul class="nav">
+                    <li><a href="#inicio">Início</a></li>
+                    <li><a href="#servicos">Serviços</a></li>
+                    <li><a href="#sobre">Sobre</a></li>
+                    <li><a href="#contato">Contato</a></li>
+                    <li><a href="#consultar">Consultar OS</a></li>
+                    <li><a href="#login">Login</a></li>
+                </ul>
+            </nav>
+            
+            <button class="menu-toggle" aria-label="Abrir menu">☰</button>
+        </div>
+    </header>
+
+    <main class="content">
+        <div class="test-info">
+            <h1>Teste do Menu Mobile</h1>
+            <p>Este é um teste isolado do menu mobile para verificar se está funcionando corretamente.</p>
+            
+            <h2>Como testar:</h2>
+            <ol>
+                <li>Redimensione a janela para menos de 768px de largura (ou use F12 → modo responsivo)</li>
+                <li>O botão ☰ deve aparecer no canto superior direito</li>
+                <li>Clique no botão ☰</li>
+                <li>O menu deve expandir com fundo escuro e links brancos</li>
+                <li>Clique em qualquer link para fechar o menu</li>
+            </ol>
+
+            <div id="status" class="status"></div>
+        </div>
+    </main>
+
+    <script>
+        function initializeTestNavigation() {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const nav = document.querySelector('.nav');
+            const status = document.getElementById('status');
+
+            console.log('Teste - Elementos encontrados:', {
+                menuToggle: !!menuToggle,
+                nav: !!nav
+            });
+
+            if (menuToggle && nav) {
+                status.className = 'status success';
+                status.textContent = '✅ Elementos encontrados! Botão e menu localizados.';
+
+                menuToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const isExpanded = nav.classList.contains('active');
+                    console.log('Teste - Menu clicado:', {
+                        isExpanded,
+                        classList: nav.classList.toString()
+                    });
+                    
+                    nav.classList.toggle('active');
+                    menuToggle.setAttribute('aria-expanded', !isExpanded);
+                    
+                    console.log('Teste - Após toggle:', {
+                        hasActive: nav.classList.contains('active'),
+                        classList: nav.classList.toString(),
+                        display: window.getComputedStyle(nav).display
+                    });
+
+                    // Atualizar status
+                    if (nav.classList.contains('active')) {
+                        status.textContent = '✅ Menu ABERTO! Funcionando corretamente.';
+                    } else {
+                        status.textContent = '✅ Menu FECHADO! Funcionando corretamente.';
+                    }
+                });
+
+                // Fechar menu ao clicar nos links
+                const navLinks = nav.querySelectorAll('a');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault(); // Evitar navegação no teste
+                        nav.classList.remove('active');
+                        menuToggle.setAttribute('aria-expanded', 'false');
+                        status.textContent = '✅ Menu fechado ao clicar no link!';
+                    });
+                });
+
+            } else {
+                status.className = 'status error';
+                status.textContent = '❌ Erro: Elementos não encontrados!';
+            }
+        }
+
+        // Inicializar quando o DOM estiver pronto
+        document.addEventListener('DOMContentLoaded', initializeTestNavigation);
+    </script>
+</body>
+</html> 

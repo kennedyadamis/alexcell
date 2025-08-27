@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selecionar Loja - ALEXCELL & CIA</title>
+    <link rel="icon" href="logos/1.png?v=2" type="image/png">
+    <!-- Import Map para resolver dependências do Supabase -->
+    <script type="importmap">
+    {
+        "imports": {
+            "@supabase/supabase-js": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.2/+esm"
+        }
+    }
+    </script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="auth-page">
+        <div class="store-selector-container">
+            <h2>Selecione a Loja</h2>
+            <p>Escolha em qual loja você deseja entrar.</p>
+            <div id="store-list" class="store-list">
+                <!-- A lista de lojas será carregada aqui -->
+                <p>Carregando lojas...</p>
+            </div>
+            <div class="back-to-site">
+                <a href="#" id="logout-link">&larr; Sair e fazer login com outra conta</a>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase } from './js/api/supabase.js';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+            if (sessionError || !session) {
+                window.location.href = 'auth.html';
+                return;
+            }
+
+            const user = session.user;
+            const storeListDiv = document.getElementById('store-list');
+
+            try {
+                const { data: permissions, error } = await supabase
+                    .from('user_store_permissions')
+                    .select('*, stores(*)')
+                    .eq('user_id', user.id);
+
+                if (error) throw error;
+
+                if (permissions.length === 0) {
+                    storeListDiv.innerHTML = '<p>Você não tem permissão para acessar nenhuma loja. Contate o administrador.</p>';
+                    return;
+                }
+                
+                if (permissions.length === 1) {
+                    // Se só tem uma loja, vai direto
+                    selectStore(permissions[0]);
+                } else {
+                    // Se tem múltiplas lojas, mostra as opções
+                    storeListDiv.innerHTML = '';
+                    permissions.forEach(p => {
+                        const button = document.createElement('button');
+                        button.className = 'btn btn-store-select';
+                        button.textContent = p.stores.name;
+                        button.onclick = () => selectStore(p);
+                        storeListDiv.appendChild(button);
+                    });
+                }
+            } catch (err) {
+                console.error("Erro ao carregar permissões de loja:", err);
+                storeListDiv.innerHTML = '<p>Ocorreu um erro ao carregar suas permissões.</p>';
+            }
+        });
+
+        function selectStore(permission) {
+            // Salva a loja e a permissão do usuário na sessão do navegador
+            sessionStorage.setItem('selected_store_id', permission.store_id);
+            sessionStorage.setItem('user_store_permissions', JSON.stringify(permission));
+            
+            // Pequeno delay para garantir que o sessionStorage foi escrito antes do redirecionamento
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 100);
+        }
+
+        document.getElementById('logout-link').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await supabase.auth.signOut();
+            window.location.href = 'auth.html';
+        });
+    </script>
+</body>
+</html>

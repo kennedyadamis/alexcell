@@ -1,0 +1,22 @@
+/* Estilos para o novo componente de senha por desenho local */
+#pattern-lock-container {
+    position: relative;
+    width: 180px !important;
+    height: 180px !important;
+    margin: 15px auto;
+    display: block !important;
+    background-color: #f8f9fa;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+#pattern-lock-canvas {
+    width: 180px !important;
+    height: 180px !important;
+    cursor: pointer;
+    background-color: #fff !important;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    touch-action: none;
+    display: block !important;
+} 

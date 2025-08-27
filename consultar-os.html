@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultar Ordem de Serviço - ALEXCELL & CIA</title>
+    <link rel="icon" href="logos/1.png?v=2" type="image/png">
+    <!-- Import Map para resolver dependências do Supabase -->
+    <script type="importmap">
+    {
+        "imports": {
+            "@supabase/supabase-js": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.2/+esm"
+        }
+    }
+    </script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <a href="index.html" class="logo">ALEXCELL <span>&amp; CIA</span></a>
+            <nav>
+                <ul class="nav">
+                    <li><a href="index.html">Início</a></li>
+                    <li><a href="servicos.html">Serviços</a></li>
+                    <li><a href="sobre.html">Sobre Nós</a></li>
+                    <li><a href="contato.html">Contato</a></li>
+                    <li><a href="consultar-os.html">Consultar OS</a></li>
+                    <li><a href="auth.html">Login</a></li>
+                </ul>
+            </nav>
+            <button class="menu-toggle">☰</button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-container">
+                <h1>Consultar Ordem de Serviço</h1>
+                <p>Digite seu telefone para consultar o status do seu equipamento</p>
+            </div>
+        </section>
+
+        <!-- Seção de Consulta -->
+        <section class="section">
+            <div class="container">
+                <div class="os-consultation-container">
+                    <div class="consultation-form-panel">
+                        <h2 class="section-title">🔍 Consulte sua OS</h2>
+                        <p style="text-align: center; margin-bottom: 30px; color: var(--medium-gray);">
+                            Informe o telefone cadastrado para visualizar suas ordens de serviço
+                        </p>
+                        
+                        <form id="consultation-form" class="consultation-form">
+                            <div class="form-group">
+                                <label for="phone-input">📱 Telefone ou WhatsApp</label>
+                                <input 
+                                    type="tel" 
+                                    id="phone-input" 
+                                    placeholder="(79) 99999-9999" 
+                                    required
+                                    maxlength="15"
+                                >
+                                <small>Digite o telefone exatamente como foi cadastrado</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-consultation">
+                                🔎 Consultar Ordens de Serviço
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Área de Resultados -->
+                    <div id="consultation-results" class="consultation-results" style="display: none;">
+                        <h3>📋 Suas Ordens de Serviço</h3>
+                        <div id="results-content">
+                            <!-- Os resultados serão inseridos aqui -->
+                        </div>
+                    </div>
+
+                    <!-- Mensagem de Erro/Loading -->
+                    <div id="consultation-message" class="consultation-message" style="display: none;">
+                        <!-- Mensagens serão inseridas aqui -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Informações Adicionais -->
+        <section class="section" style="background: var(--light-gray);">
+            <div class="container">
+                <h2 class="section-title">ℹ️ Informações Importantes</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">📱</div>
+                        <h3>Telefone Cadastrado</h3>
+                        <p>Use o mesmo telefone informado no momento da abertura da OS. Verifique se incluiu o DDD.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔄</div>
+                        <h3>Status Atualizado</h3>
+                        <p>O status é atualizado em tempo real. Consulte sempre que quiser saber o andamento.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🛡️</div>
+                        <h3>Dados Protegidos</h3>
+                        <p>Suas informações são protegidas. Apenas você com seu telefone pode consultar suas OS.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Call to Action -->
+        <section class="section">
+            <div class="container" style="text-align: center;">
+                <h2 class="section-title">Precisa de Ajuda?</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 40px; color: var(--medium-gray);">
+                    Se não conseguir encontrar sua OS ou tiver dúvidas, entre em contato conosco
+                </p>
+                <div class="cta-buttons">
+                    <a href="https://wa.me/5579981606441" class="btn btn-primary" target="_blank">
+                        📱 WhatsApp Loja 1
+                    </a>
+                    <a href="https://wa.me/5579981102746" class="btn btn-secondary" target="_blank">
+                        📱 WhatsApp Loja 2
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>ALEXCELL & CIA</h3>
+                    <p>Assistência técnica especializada em celulares e notebooks. Reparos, formatação, peças, capas, películas e acessórios.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Contato</h3>
+                    <p>📞 (79) 9.8110-2746 / 9.8160-6441</p>
+                    <p>☎️ (79) 3011-2293</p>
+                    <p><strong>Loja 1:</strong> Lot. Paraíso do Sul - R. 38, N 518 - Sala 02 - Marivan, Aracaju - SE, 49044-451</p>
+                    <p><strong>Loja 2:</strong> Av. Alexandre Alcino, n° 2810 - Sala C - Santa Maria, Aracaju - SE, 49044-090</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Especialidades</h3>
+                    <p>📱 Celulares: Apple, Samsung, Xiaomi...</p>
+                    <p>💻 Notebooks: Asus, Dell, HP...</p>
+                    <p>🔧 Reparos e Formatação</p>
+                    <p>📱 Capas, Películas e Acessórios</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Links Úteis</h3>
+                    <p><a href="servicos.html">Nossos Serviços</a></p>
+                    <p><a href="sobre.html">Sobre Nós</a></p>
+                    <p><a href="contato.html">Fale Conosco</a></p>
+                    <p><a href="auth.html">Área do Cliente</a></p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 ALEXCELL & CIA. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="js/api/supabase.js"></script>
+    <script type="module" src="main.js"></script>
+</body>
+</html>

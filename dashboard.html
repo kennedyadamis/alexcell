@@ -1,0 +1,2612 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ALEXCELL & CIA</title>
+    <link rel="icon" href="logos/1.png?v=2" type="image/png">
+    <!-- Import Map para resolver dependências do Supabase -->
+    <script type="importmap">
+    {
+        "imports": {
+            "@supabase/supabase-js": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.2/+esm"
+        }
+    }
+    </script>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="pattern-lock-local.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar de Navegação -->
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <a href="index.html" class="logo">ALEXCELL</a>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="nav-item active" data-module="os">
+                        <a href="#">
+                            <span class="nav-icon">📋</span>
+                            <span class="nav-text">Ordens de Serviço</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-module="pdv">
+                        <a href="#">
+                            <span class="nav-icon">🛒</span>
+                            <span class="nav-text">Venda Rápida</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-module="caixa">
+                        <a href="#">
+                            <span class="nav-icon">💰</span>
+                            <span class="nav-text">Caixa</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-module="estoque">
+                        <a href="#">
+                            <span class="nav-icon">📦</span>
+                            <span class="nav-text">Estoque</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-module="clientes">
+                        <a href="#">
+                            <span class="nav-icon">👥</span>
+                            <span class="nav-text">Clientes</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-module="relatorios">
+                        <a href="#">
+                            <span class="nav-icon">📊</span>
+                            <span class="nav-text">Relatórios</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-module="configuracoes">
+                        <a href="#">
+                            <span class="nav-icon">⚙️</span>
+                            <span class="nav-text">Configurações</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-module="usuarios-permissoes">
+                        <a href="#">
+                            <span class="nav-icon">👥</span>
+                            <span class="nav-text">Usuários e Permissões</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-module="trocar-senha">
+                        <a href="#">
+                            <span class="nav-icon">🔒</span>
+                            <span class="nav-text">Trocar Senha</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-module="garantia">
+                        <a href="#">
+                            <span class="nav-icon">🛡️</span>
+                            <span class="nav-text">Garantia</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="btn-switch-store" class="switch-store-button" style="display: none;">
+                    <span class="nav-icon">🔄</span>
+                    <span class="nav-text">Trocar de Loja</span>
+                </button>
+                <button id="logout-btn" class="logout-button">
+                    <span class="nav-icon">🚪</span>
+                    <span class="nav-text">Sair</span>
+                </button>
+        </div>
+        </aside>
+
+        <!-- Conteúdo Principal do Dashboard -->
+        <main class="dashboard-main-content">
+            <!-- Barra de Usuário Superior -->
+            <header class="main-header">
+                <div class="user-welcome">
+                    <h2 id="module-title">Ordens de Serviço</h2>
+                </div>
+                <div class="user-info-bar">
+                    <div class="user-welcome">
+                        <p><span id="user-name">Usuário</span> (<span id="user-role" class="user-role-badge">...</span>)</p>
+                    </div>
+                </div>
+            </header>
+            
+            <div class="module-container">
+                <!-- Módulo: Ordens de Serviço -->
+                <div id="module-os" class="module-page active">
+                            <div class="module-actions">
+                        <button class="btn btn-primary" id="btn-new-os">➕ Nova OS</button>
+                    </div>
+                    
+                    <!-- Barra de Pesquisa para Ordens de Serviço -->
+                    <div class="os-search-section form-panel">
+                        <div class="search-container">
+                            <div class="search-input-group">
+                                <input type="text" id="os-search-input" placeholder="🔍 Buscar por cliente ou telefone..." class="search-input">
+                                <button type="button" id="btn-search-os" class="btn btn-secondary search-btn">Buscar</button>
+                                <button type="button" id="btn-clear-os-search" class="btn btn-outline clear-search-btn">Limpar</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="os-table-container">
+                            <div class="os-table-container">
+                                <table class="os-table">
+                                    <thead>
+                                        <tr>
+                                            <th>OS #</th>
+                                            <th>Cliente</th>
+                                            <th>Equipamento</th>
+                                            <th>Problema</th>
+                                            <th>Status</th>
+                                            <th>Data</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="os-table-body">
+                                        <!-- Dados serão inseridos dinamicamente -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        <div class="pagination-controls" id="os-pagination">
+                            <button class="btn btn-secondary" id="os-prev-page">Anterior</button>
+                            <span id="os-page-info"></span>
+                            <button class="btn btn-secondary" id="os-next-page">Próximo</button>
+                        </div>
+                                        </div>
+                                    </div>
+                                    
+                <!-- Módulo: Ponto de Venda (PDV) -->
+                <div id="module-pdv" class="module-page" style="display: none;">
+                    <div class="module-header">
+                        <h1>Ponto de Venda (Venda Rápida)</h1>
+                    </div>
+                    <div class="pdv-container">
+                        <!-- Coluna da Esquerda: Busca e Carrinho -->
+                        <div class="pdv-main">
+                            <div class="pdv-search-section form-panel">
+                                <h3>Buscar Produto</h3>
+                                <div class="form-group autocomplete-container">
+                                    <input type="text" id="pdv-product-search" placeholder="Digite o nome ou código do produto...">
+                                    <div id="pdv-product-results" class="autocomplete-results"></div>
+                                </div>
+                            </div>
+                            <div class="pdv-cart-section">
+                                <h3>Carrinho</h3>
+                                <div class="pdv-cart-items">
+                                    <div class="pdv-cart-item header">
+                                        <span>Produto</span>
+                                        <span>Qtd.</span>
+                                        <span>Preço Unit.</span>
+                                        <span>Subtotal</span>
+                                        <span>Ação</span>
+                                    </div>
+                                    <div id="pdv-cart-body">
+                                        <!-- Itens do carrinho serão inseridos aqui -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Seção de Histórico de Vendas -->
+                            <div class="pdv-history-section form-panel">
+                                <h3>Histórico de Vendas do Dia</h3>
+                                <div id="pdv-history-content">
+                                    <!-- O histórico será carregado aqui -->
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Coluna da Direita: Resumo e Pagamento -->
+                        <div class="pdv-sidebar form-panel">
+                            <h3>Resumo da Venda</h3>
+                            <div class="pdv-summary">
+                                <div class="summary-row">
+                                    <span>Subtotal</span>
+                                    <span id="pdv-summary-subtotal">R$ 0,00</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span>Desconto (R$)</span>
+                                    <input type="number" id="pdv-summary-discount" value="0.00" step="0.01">
+                                </div>
+                                <div class="summary-row total">
+                                    <span>Total a Pagar</span>
+                                    <span id="pdv-summary-total">R$ 0,00</span>
+                                </div>
+                            </div>
+                            <div class="pdv-payment">
+                                <h3>Pagamento</h3>
+                                <div class="form-group">
+                                    <!-- Remover o seletor de forma de pagamento único -->
+                                    <!-- <label>Forma de Pagamento</label>
+                                    <select id="pdv-payment-method">
+                                        <option value="dinheiro">Dinheiro</option>
+                                        <option value="credito">Cartão de Crédito</option>
+                                        <option value="debito">Cartão de Débito</option>
+                                        <option value="pix">PIX</option>
+                                    </select> -->
+                                </div>
+                                <button id="pdv-finish-btn" class="btn btn-primary btn-block">Finalizar Venda</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                                    
+                <!-- Módulo: Caixa -->
+                <div id="module-caixa" class="module-page" style="display: none;">
+                    <div id="cash-register-module">
+                        <!-- Tela de Caixa Fechado -->
+                        <div id="cash-closed-view" class="form-panel text-center" style="display: none;">
+                            <h2>Caixa Fechado</h2>
+                            <p>Não há um caixa aberto no momento.</p>
+                            <button id="btn-open-cash-register" class="btn btn-primary btn-large">Abrir Novo Caixa</button>
+                        </div>
+
+                        <!-- Tela de Caixa Aberto -->
+                        <div id="cash-open-view" style="display: none;">
+                            <div class="module-header">
+                                <h1>Gerenciamento de Caixa</h1>
+                                <div class="module-actions">
+                                    <button id="btn-add-money" class="btn btn-success">➕ Adicionar Dinheiro</button>
+                                    <button id="btn-withdraw-money" class="btn btn-warning">➖ Retirar Dinheiro</button>
+                                    <button id="btn-close-cash-register" class="btn btn-danger">Fechar Caixa</button>
+                                </div>
+                            </div>
+                            <div class="cash-summary-panel">
+                                <!-- Resumos serão inseridos aqui -->
+                            </div>
+                            <div class="cash-entries-panel form-panel">
+                                <div class="cash-entries-header">
+                                <h3>Movimentações do Caixa</h3>
+                                    <div class="cash-filter">
+                                        <label for="cash-filter-date">Filtrar por data:</label>
+                                        <input type="date" id="cash-filter-date">
+                                        <button id="btn-filter-cash" class="btn btn-sm btn-primary">Filtrar</button>
+                                        <button id="btn-reset-filter" class="btn btn-sm">Todos</button>
+                                    </div>
+                                </div>
+                                <div id="cash-entries-table">
+                                    <!-- Tabela de movimentações será inserida aqui -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cash-history-panel form-panel">
+                        <h3>Histórico de Caixas Anteriores</h3>
+                        <div id="cash-history-list">
+                            <!-- Lista de caixas fechados será inserida aqui -->
+                        </div>
+                                        </div>
+                                    </div>
+                                    
+                <!-- Módulos Placeholder -->
+                <div id="module-estoque" class="module-page" style="display: none;">
+                    <div class="module-header">
+                        <h1>Controle de Estoque</h1>
+                        <div class="module-actions">
+                            <button class="btn btn-primary" id="btn-new-product">➕ Adicionar Produto</button>
+                        </div>
+                    </div>
+
+                    <!-- Formulário de Novo Produto (Oculto) -->
+                    <div id="new-product-form-container" class="form-panel" style="display: none;">
+                        <h3 id="product-form-title">Adicionar Novo Produto</h3>
+                        <form id="new-product-form" class="os-form compact-form">
+                            <input type="hidden" id="product-edit-id">
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 3;">
+                                    <label>Nome do Produto *</label>
+                                    <input type="text" id="product-name" required>
+                                </div>
+                                <div class="form-group" style="flex: 2;">
+                                    <label>Categoria</label>
+                                    <div class="category-input-group">
+                                        <select id="product-category"></select>
+                                        <button type="button" id="btn-new-category" class="btn btn-secondary btn-sm" title="Nova Categoria">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Valor de Custo (R$)</label>
+                                    <input type="text" id="product-cost-price" placeholder="Ex: 1.500,00">
+                                </div>
+                                <div class="form-group">
+                                    <label>Valor de Venda (R$) *</label>
+                                    <input type="text" id="product-sell-price" placeholder="Ex: 2.500,00" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Qtd. em Estoque</label>
+                                    <input type="number" id="product-stock" placeholder="0">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="product-track-stock" checked>
+                                    Controlar Estoque deste item
+                                </label>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">💾 Salvar Produto</button>
+                                <button type="button" class="btn btn-secondary" id="btn-cancel-new-product">Cancelar</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Filtros da Tabela -->
+                    <div class="table-filters form-panel">
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 2;">
+                                <label>Buscar por Nome</label>
+                                <input type="text" id="stock-search-name" placeholder="Digite o nome do produto...">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Filtrar por Categoria</label>
+                                <select id="stock-filter-category"></select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabela de Produtos -->
+                    <div class="stock-table-container">
+                        <table class="os-table">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Categoria</th>
+                                    <th>Custo</th>
+                                    <th>Venda</th>
+                                    <th>Estoque</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="products-table-body">
+                                <!-- Dados dos produtos serão inseridos aqui -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Módulo: Clientes -->
+                <div id="module-clientes" class="module-page" style="display: none;">
+                    <div class="module-header">
+                        <h1>Gerenciamento de Clientes</h1>
+                        <div class="module-actions">
+                            <button class="btn btn-primary" id="btn-new-customer">➕ Novo Cliente</button>
+                                        </div>
+                                    </div>
+                                    
+                    <!-- Filtro da Tabela de Clientes -->
+                    <div class="table-filters form-panel">
+                                        <div class="form-group">
+                            <label>Buscar Cliente por Nome ou Telefone</label>
+                            <input type="text" id="customer-search-input" placeholder="Digite para buscar...">
+                                        </div>
+                                    </div>
+                                    
+                    <!-- Formulário de Novo Cliente (Oculto) -->
+                    <div id="new-customer-form-container" class="form-panel" style="display: none;">
+                        <h3>Cadastrar Novo Cliente</h3>
+                        <form id="new-customer-form" class="os-form compact-form">
+                            <div class="form-columns">
+                                <!-- Coluna Esquerda -->
+                                <div class="form-column">
+                                    <h4>Informações Pessoais</h4>
+                                    <div class="form-group">
+                                        <label>Nome Completo *</label>
+                                        <input type="text" id="new-customer-name" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Telefone</label>
+                                        <input type="tel" id="new-customer-phone" placeholder="(XX) XXXXX-XXXX">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Data de Nascimento</label>
+                                        <input type="date" id="new-customer-birth-date">
+                                    </div>
+                                    </div>
+                                <!-- Coluna Direita -->
+                                <div class="form-column">
+                                    <h4>Endereço</h4>
+                                    <div class="form-row">
+                                        <div class="form-group" style="flex: 3;">
+                                            <label>Logradouro (Rua, Av.)</label>
+                                            <input type="text" id="new-customer-street">
+                                        </div>
+                                        <div class="form-group" style="flex: 1;">
+                                            <label>Nº</label>
+                                            <input type="text" id="new-customer-number">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label>Bairro</label>
+                                            <input type="text" id="new-customer-neighborhood">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Cidade</label>
+                                            <input type="text" id="new-customer-city">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group" style="flex: 1;">
+                                            <label>Estado</label>
+                                            <input type="text" id="new-customer-state" placeholder="UF" maxlength="2">
+                                        </div>
+                                        <div class="form-group" style="flex: 1;">
+                                            <label>CEP</label>
+                                            <input type="text" id="new-customer-zip" placeholder="00000-000">
+                                        </div>
+                                    </div>
+                                </div>
+                                </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">💾 Salvar Cliente</button>
+                                <button type="button" class="btn btn-secondary" id="btn-cancel-new-customer">Cancelar</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Tabela de Clientes -->
+                    <div class="customer-table-container">
+                        <table class="os-table">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Telefone</th>
+                                    <th>Data de Cadastro</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customers-table-body">
+                                <!-- Dados dos clientes serão inseridos aqui -->
+                            </tbody>
+                        </table>
+                        <div class="pagination-controls" id="customers-pagination">
+                            <button class="btn btn-secondary" id="customers-prev-page">Anterior</button>
+                            <span id="customers-page-info"></span>
+                            <button class="btn btn-secondary" id="customers-next-page">Próximo</button>
+                        </div>
+                    </div>
+                        </div>
+
+    <!-- MODAL DE EDIÇÃO DE CLIENTE -->
+    <div id="edit-customer-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Cliente</h2>
+                <button id="btn-close-edit-customer-modal" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-customer-form" class="os-form" novalidate>
+                    <input type="hidden" id="edit-customer-id">
+                    
+                    <div class="form-columns">
+                        <!-- Coluna Esquerda -->
+                        <div class="form-column">
+                            <h4>Informações Pessoais</h4>
+                            <div class="form-group">
+                                <label>Nome Completo *</label>
+                                <input type="text" id="edit-customer-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Telefone</label>
+                                <input type="tel" id="edit-customer-phone" placeholder="(XX) XXXXX-XXXX">
+                            </div>
+                            <div class="form-group">
+                                <label>Data de Nascimento</label>
+                                <input type="date" id="edit-customer-birth-date">
+                            </div>
+                        </div>
+                        <!-- Coluna Direita -->
+                        <div class="form-column">
+                            <h4>Endereço</h4>
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 1;">
+                                    <label>CEP</label>
+                                    <input type="text" id="edit-customer-zip" placeholder="00000-000">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 3;">
+                                    <label>Logradouro (Rua, Av.)</label>
+                                    <input type="text" id="edit-customer-street">
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label>Nº</label>
+                                    <input type="text" id="edit-customer-number">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Bairro</label>
+                                    <input type="text" id="edit-customer-neighborhood">
+                                </div>
+                                <div class="form-group">
+                                    <label>Cidade</label>
+                                    <input type="text" id="edit-customer-city">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 1;">
+                                    <label>Estado</label>
+                                    <input type="text" id="edit-customer-state" placeholder="UF" maxlength="2">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions modal-actions">
+                        <button type="button" id="btn-cancel-edit-customer" class="btn btn-secondary">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">💾 Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE VISUALIZAÇÃO DE CLIENTE -->
+    <div id="view-customer-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📋 Detalhes do Cliente</h2>
+                <button id="btn-close-view-customer-modal" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="customer-details-container">
+                    <div class="form-columns">
+                        <!-- Coluna Esquerda -->
+                        <div class="form-column">
+                            <div class="detail-section">
+                                <h4>👤 Informações Pessoais</h4>
+                                <div class="detail-item">
+                                    <label>Nome Completo:</label>
+                                    <span id="view-customer-name">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Telefone:</label>
+                                    <span id="view-customer-phone">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Data de Nascimento:</label>
+                                    <span id="view-customer-birth-date">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Data de Cadastro:</label>
+                                    <span id="view-customer-created-at">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Coluna Direita -->
+                        <div class="form-column">
+                            <div class="detail-section">
+                                <h4>📍 Endereço</h4>
+                                <div class="detail-item">
+                                    <label>CEP:</label>
+                                    <span id="view-customer-zip">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Logradouro:</label>
+                                    <span id="view-customer-street">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Número:</label>
+                                    <span id="view-customer-number">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Bairro:</label>
+                                    <span id="view-customer-neighborhood">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Cidade:</label>
+                                    <span id="view-customer-city">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Estado:</label>
+                                    <span id="view-customer-state">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" id="btn-edit-from-view" class="btn btn-primary">✏️ Editar Cliente</button>
+                <button type="button" id="btn-close-view-modal" class="btn btn-secondary">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO -->
+    <div id="delete-customer-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2>⚠️ Confirmar Exclusão</h2>
+                <button id="btn-close-delete-customer-modal" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="delete-confirmation-content">
+                    <div class="warning-icon">🗑️</div>
+                    <p class="confirmation-message">
+                        Tem certeza que deseja excluir o cliente <strong id="delete-customer-name">-</strong>?
+                    </p>
+                    <p class="warning-text">
+                        Esta ação não pode ser desfeita e todos os dados do cliente serão permanentemente removidos.
+                    </p>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" id="btn-confirm-delete-customer" class="btn btn-danger">🗑️ Sim, Excluir</button>
+                <button type="button" id="btn-cancel-delete-customer" class="btn btn-secondary">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+                <!-- Módulo: Garantia -->
+                <div id="module-garantia" class="module-page" style="display: none;">
+                    <div class="module-header">
+                        <h1>Gerenciamento de Garantias</h1>
+                        <div class="module-actions">
+                            <button class="btn btn-primary" id="btn-new-warranty">➕ Nova Garantia</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Barra de Pesquisa para Garantias -->
+                    <div class="warranty-search-section form-panel">
+                        <div class="search-container">
+                            <div class="search-input-group">
+                                <input type="text" id="warranty-search-input" placeholder="🔍 Buscar por cliente ou equipamento..." class="search-input">
+                                <button type="button" id="btn-search-warranty" class="btn btn-secondary search-btn">Buscar</button>
+                                <button type="button" id="btn-clear-warranty-search" class="btn btn-outline clear-search-btn">Limpar</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tabela de Garantias -->
+                    <div class="warranty-table-container">
+                        <table class="os-table">
+                            <thead>
+                                <tr>
+                                    <th>Garantia #</th>
+                                    <th>Cliente</th>
+                                    <th>Equipamento</th>
+                                    <th>Peça Substituída</th>
+                                    <th>Valor</th>
+                                    <th>Data</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="warranty-table-body">
+                                <!-- Dados serão inseridos dinamicamente -->
+                            </tbody>
+                        </table>
+                        <div class="pagination-controls" id="warranty-pagination">
+                            <button class="btn btn-secondary" id="warranty-prev-page">Anterior</button>
+                            <span id="warranty-page-info"></span>
+                            <button class="btn btn-secondary" id="warranty-next-page">Próximo</button>
+                        </div>
+                    </div>
+                        </div>
+
+                <div id="module-relatorios" class="module-page" style="display: none;">
+                    <div class="module-header">
+                        <h1>Relatórios Gerenciais</h1>
+                    </div>
+                    <div class="reports-container">
+                        <!-- Seção: Relatório de Produtos Mais Vendidos -->
+                        <div class="report-section form-panel">
+                            <h3>Produtos Mais Vendidos</h3>
+                            <div class="report-controls">
+                                <p>Veja um ranking dos produtos mais vendidos em todo o período.</p>
+                                <button id="btn-generate-top-products-report" class="btn btn-primary">Gerar Relatório</button>
+                            </div>
+                            <div id="top-products-report-content" class="report-content">
+                                <!-- O relatório será exibido aqui -->
+                            </div>
+                        </div>
+
+                        <!-- Seção: Relatório de Fluxo de Caixa -->
+                        <div class="report-section form-panel">
+                            <h3>Relatório de Fluxo de Caixa por Período</h3>
+                            <div class="report-controls">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Data de Início</label>
+                                        <input type="date" id="report-start-date">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Data de Fim</label>
+                                        <input type="date" id="report-end-date">
+                                    </div>
+                                </div>
+                                <button id="btn-generate-cash-flow-report" class="btn btn-primary">Gerar Relatório</button>
+                            </div>
+                            <div id="cash-flow-report-content" class="report-content">
+                                <!-- O relatório será exibido aqui -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="module-configuracoes" class="module-page" style="display: none;">
+                    <div class="module-header">
+                        <h1>Configurações</h1>
+                    </div>
+                    <div class="settings-container">
+                        <!-- Seção: Logo para Impressão -->
+                        <div class="settings-section form-panel">
+                            <h3>Logo para Impressão</h3>
+                            <p>Este logo será usado no cabeçalho das Ordens de Serviço impressas.</p>
+                            
+                            <div class="logo-upload-area">
+                                <div class="logo-preview-container">
+                                    <img id="print-logo-preview" src="logos/1.png" alt="Preview do Logo" class="logo-preview">
+                                </div>
+                                <div class="logo-upload-action">
+                                    <input type="file" id="logo-uploader" accept="image/png, image/jpeg" style="display: none;">
+                                    <button class="btn btn-secondary" onclick="document.getElementById('logo-uploader').click();">Escolher Imagem</button>
+                                    <button class="btn btn-primary" id="save-logo-btn">💾 Salvar Logo</button>
+                                    <button class="btn btn-danger" id="delete-logo-btn">🗑️ Excluir Logo</button>
+                                </div>
+                            </div>
+                            <div id="logo-feedback" class="feedback-message" style="display: none;"></div>
+                        </div>
+
+                        <!-- Seção: Gerenciar Banner Principal -->
+                        <div id="banner-management-section" class="settings-section form-panel" style="display: none;">
+                            <h3>🎨 Gerenciar Banner Principal</h3>
+                            <p>Configure o banner que aparece na página inicial do site.</p>
+                            
+                            <div class="banner-management-container">
+                                <!-- Header com Controles -->
+                                <div class="banner-header">
+                                    <div class="banner-title-section">
+                                        <h3>🎨 Gerenciar Banner Principal</h3>
+                                        <p>Configure os slides do carousel da página inicial</p>
+                                    </div>
+                                    <div class="banner-controls">
+                                        <button id="add-banner-slide" class="btn btn-success">
+                                            <span class="btn-icon">➕</span>
+                                            Adicionar Slide
+                                        </button>
+                                        <span class="slide-counter">
+                                            <span id="current-slides-count">3</span> slides
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Abas dos Slides -->
+                                <div class="banner-tabs" id="banner-tabs-container">
+                                    <button class="banner-tab active" data-slide="0">📱 Slide 1 - Tela Quebrada</button>
+                                    <button class="banner-tab" data-slide="1">🔧 Slide 2 - Reparo de Placa</button>
+                                    <button class="banner-tab" data-slide="2">🔋 Slide 3 - Bateria</button>
+                                </div>
+
+                                <!-- Conteúdo dos Slides -->
+                                <div class="banner-slide-content" id="banner-slides-container">
+                                    <div class="banner-slide-editor active" data-slide="0">
+                                        <!-- Título Principal -->
+                                        <div class="modern-form-section">
+                                            <div class="form-section-header">
+                                                <span class="section-icon">🎯</span>
+                                                <h4>Título Principal</h4>
+                                                <small>O título chamativo que aparece no banner</small>
+                                            </div>
+                                            <div class="enhanced-input-group">
+                                                <input type="text" id="slide-0-title" placeholder="Ex: Tela Quebrada? Resolvemos na Hora." class="enhanced-input">
+                                                <div class="input-helper">
+                                                    <span class="char-counter" data-target="slide-0-title">0/80</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Descrição -->
+                                        <div class="modern-form-section">
+                                            <div class="form-section-header">
+                                                <span class="section-icon">📝</span>
+                                                <h4>Descrição do Serviço</h4>
+                                                <small>Texto explicativo que convence o cliente</small>
+                                            </div>
+                                            <div class="enhanced-input-group">
+                                                <textarea id="slide-0-description" rows="4" placeholder="Ex: Reparo de telas de todas as marcas com peças de alta qualidade e garantia. Seu celular novo de novo!" class="enhanced-textarea"></textarea>
+                                                <div class="input-helper">
+                                                    <span class="char-counter" data-target="slide-0-description">0/200</span>
+                                                    <div class="writing-tips">
+                                                        <span class="tip">💡 Dica: Mencione qualidade, rapidez e garantia</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Botão de Ação -->
+                                        <div class="modern-form-section">
+                                            <div class="form-section-header">
+                                                <span class="section-icon">🔗</span>
+                                                <h4>Botão de Ação</h4>
+                                                <small>Como o cliente pode entrar em contato</small>
+                                            </div>
+                                            <div class="button-config-grid">
+                                                <div class="enhanced-input-group">
+                                                    <label class="input-label">Texto do Botão</label>
+                                                    <input type="text" id="slide-0-button" placeholder="Ex: Ver Serviços de Tela" class="enhanced-input">
+                                                    <div class="input-suggestions">
+                                                        <button type="button" class="suggestion-btn" data-value="Ver Serviços">Ver Serviços</button>
+                                                        <button type="button" class="suggestion-btn" data-value="Solicitar Orçamento">Solicitar Orçamento</button>
+                                                        <button type="button" class="suggestion-btn" data-value="Entre em Contato">Entre em Contato</button>
+                                                    </div>
+                                                </div>
+                                                <div class="enhanced-input-group">
+                                                    <label class="input-label">Link de Destino</label>
+                                                    <select id="slide-0-link" class="enhanced-select">
+                                                        <option value="servicos.html">📋 Página de Serviços</option>
+                                                        <option value="contato.html">📞 Página de Contato</option>
+                                                        <option value="auth.html">👤 Área do Cliente</option>
+                                                        <option value="#whatsapp">💬 WhatsApp Direto</option>
+                                                        <option value="custom">🔗 Link Personalizado</option>
+                                                    </select>
+                                                    <input type="text" id="slide-0-link-custom" placeholder="Digite o link personalizado" class="enhanced-input custom-link-input" style="display: none;">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Imagem de Fundo -->
+                                        <div class="modern-form-section">
+                                            <div class="form-section-header">
+                                                <span class="section-icon">🖼️</span>
+                                                <h4>Imagem de Fundo</h4>
+                                                <small>Imagem que aparece atrás do texto (recomendado: 1200x600px)</small>
+                                            </div>
+                                            <div class="enhanced-image-upload">
+                                                <div class="image-preview-container">
+                                                    <img id="slide-0-preview" src="logos/1.png" alt="Preview Slide 1" class="image-preview">
+                                                    <div class="image-overlay">
+                                                        <div class="image-info">
+                                                            <span class="image-size" id="slide-0-size">Imagem Atual</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="image-upload-actions">
+                                                    <input type="file" id="slide-0-uploader" accept="image/*" style="display: none;">
+                                                    <button type="button" class="btn btn-upload" onclick="document.getElementById('slide-0-uploader').click();">
+                                                        <span class="btn-icon">📁</span>
+                                                        Escolher Nova Imagem
+                                                    </button>
+                                                    <div class="upload-guidelines">
+                                                        <span>✓ JPG, PNG ou WebP</span>
+                                                        <span>✓ Máximo 5MB</span>
+                                                        <span>✓ Ideal: 1200x600px</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="banner-slide-editor" data-slide="1">
+                                        <!-- Título Principal -->
+                                        <div class="modern-form-section">
+                                            <div class="form-section-header">
+                                                <span class="section-icon">🎯</span>
+                                                <h4>Título Principal</h4>
+                                                <small>O título chamativo que aparece no banner</small>
+                                            </div>
+                                            <div class="enhanced-input-group">
+                                                <input type="text" id="slide-1-title" placeholder="Ex: Especialistas em Reparo de Placa" class="enhanced-input">
+                                                <div class="input-helper">
+                                                    <span class="char-counter" data-target="slide-1-title">0/80</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Descrição -->
+                                        <div class="modern-form-section">
+                                            <div class="form-section-header">
+                                                <span class="section-icon">📝</span>
+                                                <h4>Descrição do Serviço</h4>
+                                                <small>Texto explicativo que convence o cliente</small>
+                                            </div>
+                                            <div class="enhanced-input-group">
+                                                <textarea id="slide-1-description" rows="4" placeholder="Ex: Análise e reparo de placas com tecnologia de ponta. Não desista do seu aparelho!" class="enhanced-textarea"></textarea>
+                                                <div class="input-helper">
+                                                    <span class="char-counter" data-target="slide-1-description">0/200</span>
+                                                    <div class="writing-tips">
+                                                        <span class="tip">💡 Dica: Foque na especialização técnica</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Botão de Ação -->
+                                        <div class="modern-form-section">
+                                            <div class="form-section-header">
+                                                <span class="section-icon">🔗</span>
+                                                <h4>Botão de Ação</h4>
+                                                <small>Como o cliente pode entrar em contato</small>
+                                            </div>
+                                            <div class="button-config-grid">
+                                                <div class="enhanced-input-group">
+                                                    <label class="input-label">Texto do Botão</label>
+                                                    <input type="text" id="slide-1-button" placeholder="Ex: Saiba Mais sobre Reparos" class="enhanced-input">
+                                                    <div class="input-suggestions">
+                                                        <button type="button" class="suggestion-btn" data-value="Saiba Mais sobre Reparos">Saiba Mais sobre Reparos</button>
+                                                        <button type="button" class="suggestion-btn" data-value="Reparo de Placa">Reparo de Placa</button>
+                                                        <button type="button" class="suggestion-btn" data-value="Diagnóstico Gratuito">Diagnóstico Gratuito</button>
+                                                    </div>
+                                                </div>
+                                                <div class="enhanced-input-group">
+                                                    <label class="input-label">Link de Destino</label>
+                                                    <select id="slide-1-link" class="enhanced-select">
+                                                        <option value="servicos.html">📋 Página de Serviços</option>
+                                                        <option value="contato.html">📞 Página de Contato</option>
+                                                        <option value="auth.html">👤 Área do Cliente</option>
+                                                        <option value="#whatsapp">💬 WhatsApp Direto</option>
+                                                        <option value="custom">🔗 Link Personalizado</option>
+                                                    </select>
+                                                    <input type="text" id="slide-1-link-custom" placeholder="Digite o link personalizado" class="enhanced-input custom-link-input" style="display: none;">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Imagem de Fundo -->
+                                        <div class="modern-form-section">
+                                            <div class="form-section-header">
+                                                <span class="section-icon">🖼️</span>
+                                                <h4>Imagem de Fundo</h4>
+                                                <small>Imagem que aparece atrás do texto (recomendado: 1200x600px)</small>
+                                            </div>
+                                            <div class="enhanced-image-upload">
+                                                <div class="image-preview-container">
+                                                    <img id="slide-1-preview" src="logos/2.png" alt="Preview Slide 2" class="image-preview">
+                                                    <div class="image-overlay">
+                                                        <div class="image-info">
+                                                            <span class="image-size" id="slide-1-size">Imagem Atual</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="image-upload-actions">
+                                                    <input type="file" id="slide-1-uploader" accept="image/*" style="display: none;">
+                                                    <button type="button" class="btn btn-upload" onclick="document.getElementById('slide-1-uploader').click();">
+                                                        <span class="btn-icon">📁</span>
+                                                        Escolher Nova Imagem
+                                                    </button>
+                                                    <div class="upload-guidelines">
+                                                        <span>✓ JPG, PNG ou WebP</span>
+                                                        <span>✓ Máximo 5MB</span>
+                                                        <span>✓ Ideal: 1200x600px</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="banner-slide-editor" data-slide="2">
+                                        <!-- Título Principal -->
+                                        <div class="modern-form-section">
+                                            <div class="form-section-header">
+                                                <span class="section-icon">🎯</span>
+                                                <h4>Título Principal</h4>
+                                                <small>O título chamativo que aparece no banner</small>
+                                            </div>
+                                            <div class="enhanced-input-group">
+                                                <input type="text" id="slide-2-title" placeholder="Ex: Bateria Nova, Vida Nova" class="enhanced-input">
+                                                <div class="input-helper">
+                                                    <span class="char-counter" data-target="slide-2-title">0/80</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Descrição -->
+                                        <div class="modern-form-section">
+                                            <div class="form-section-header">
+                                                <span class="section-icon">📝</span>
+                                                <h4>Descrição do Serviço</h4>
+                                                <small>Texto explicativo que convence o cliente</small>
+                                            </div>
+                                            <div class="enhanced-input-group">
+                                                <textarea id="slide-2-description" rows="4" placeholder="Ex: Troca de baterias com agilidade para seu celular durar o dia todo." class="enhanced-textarea"></textarea>
+                                                <div class="input-helper">
+                                                    <span class="char-counter" data-target="slide-2-description">0/200</span>
+                                                    <div class="writing-tips">
+                                                        <span class="tip">💡 Dica: Enfatize rapidez e durabilidade</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Botão de Ação -->
+                                        <div class="modern-form-section">
+                                            <div class="form-section-header">
+                                                <span class="section-icon">🔗</span>
+                                                <h4>Botão de Ação</h4>
+                                                <small>Como o cliente pode entrar em contato</small>
+                                            </div>
+                                            <div class="button-config-grid">
+                                                <div class="enhanced-input-group">
+                                                    <label class="input-label">Texto do Botão</label>
+                                                    <input type="text" id="slide-2-button" placeholder="Ex: Orçamento para Bateria" class="enhanced-input">
+                                                    <div class="input-suggestions">
+                                                        <button type="button" class="suggestion-btn" data-value="Orçamento para Bateria">Orçamento para Bateria</button>
+                                                        <button type="button" class="suggestion-btn" data-value="Trocar Bateria">Trocar Bateria</button>
+                                                        <button type="button" class="suggestion-btn" data-value="Teste de Bateria">Teste de Bateria</button>
+                                                    </div>
+                                                </div>
+                                                <div class="enhanced-input-group">
+                                                    <label class="input-label">Link de Destino</label>
+                                                    <select id="slide-2-link" class="enhanced-select">
+                                                        <option value="servicos.html">📋 Página de Serviços</option>
+                                                        <option value="contato.html">📞 Página de Contato</option>
+                                                        <option value="auth.html">👤 Área do Cliente</option>
+                                                        <option value="#whatsapp">💬 WhatsApp Direto</option>
+                                                        <option value="custom">🔗 Link Personalizado</option>
+                                                    </select>
+                                                    <input type="text" id="slide-2-link-custom" placeholder="Digite o link personalizado" class="enhanced-input custom-link-input" style="display: none;">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Imagem de Fundo -->
+                                        <div class="modern-form-section">
+                                            <div class="form-section-header">
+                                                <span class="section-icon">🖼️</span>
+                                                <h4>Imagem de Fundo</h4>
+                                                <small>Imagem que aparece atrás do texto (recomendado: 1200x600px)</small>
+                                            </div>
+                                            <div class="enhanced-image-upload">
+                                                <div class="image-preview-container">
+                                                    <img id="slide-2-preview" src="logos/3.png" alt="Preview Slide 3" class="image-preview">
+                                                    <div class="image-overlay">
+                                                        <div class="image-info">
+                                                            <span class="image-size" id="slide-2-size">Imagem Atual</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="image-upload-actions">
+                                                    <input type="file" id="slide-2-uploader" accept="image/*" style="display: none;">
+                                                    <button type="button" class="btn btn-upload" onclick="document.getElementById('slide-2-uploader').click();">
+                                                        <span class="btn-icon">📁</span>
+                                                        Escolher Nova Imagem
+                                                    </button>
+                                                    <div class="upload-guidelines">
+                                                        <span>✓ JPG, PNG ou WebP</span>
+                                                        <span>✓ Máximo 5MB</span>
+                                                        <span>✓ Ideal: 1200x600px</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Ações -->
+                                <div class="banner-actions">
+                                    <button type="button" class="btn btn-primary" id="save-banner-btn">💾 Salvar Alterações</button>
+                                    <button type="button" class="btn btn-secondary" id="preview-banner-btn">👁️ Visualizar no Site</button>
+                                    <button type="button" class="btn btn-danger" id="reset-banner-btn">🔄 Restaurar Padrão</button>
+                                </div>
+
+                                <div id="banner-feedback" class="feedback-message" style="display: none;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Seção: Gerenciamento de Lojas -->
+                        <div id="stores-management-section" class="settings-section form-panel" style="display: none;">
+                            <h3>Gerenciar Lojas</h3>
+                            <!-- ... (CRUD de Lojas) ... -->
+                        </div>
+
+
+
+                    </div>
+                </div>
+
+                <!-- Módulo: Trocar Senha -->
+                <div id="module-trocar-senha" class="module-page" style="display: none;">
+                    <div class="module-header">
+                        <h1>🔒 Trocar Senha</h1>
+                        <p class="module-description">Mantenha sua conta segura alterando sua senha regularmente.</p>
+                    </div>
+                    
+                    <div class="password-change-section">
+                        <div class="password-form-container">
+                            <form id="change-password-form" class="modern-form">
+                                <div class="form-group password-input-group">
+                                    <label for="current-password">
+                                        <span class="label-icon">🔒</span>
+                                        Senha Atual
+                                    </label>
+                                    <div class="input-with-icon">
+                                        <input type="password" id="current-password" required placeholder="Digite sua senha atual">
+                                        <button type="button" class="password-toggle-btn" data-target="current-password">
+                                            <span class="toggle-icon">👁️</span>
+                                        </button>
+                                    </div>
+                                    <small class="input-hint">Para confirmar sua identidade</small>
+                                </div>
+                                
+                                <div class="form-group password-input-group">
+                                    <label for="new-password">
+                                        <span class="label-icon">🔑</span>
+                                        Nova Senha
+                                    </label>
+                                    <div class="input-with-icon">
+                                        <input type="password" id="new-password" required minlength="6" placeholder="Digite sua nova senha">
+                                        <button type="button" class="password-toggle-btn" data-target="new-password">
+                                            <span class="toggle-icon">👁️</span>
+                                        </button>
+                                    </div>
+                                    <small class="input-hint">Mínimo de 6 caracteres</small>
+                                </div>
+                                
+                                <div class="form-group password-input-group">
+                                    <label for="confirm-password">
+                                        <span class="label-icon">🔐</span>
+                                        Confirmar Nova Senha
+                                    </label>
+                                    <div class="input-with-icon">
+                                        <input type="password" id="confirm-password" required minlength="6" placeholder="Digite novamente sua nova senha">
+                                        <button type="button" class="password-toggle-btn" data-target="confirm-password">
+                                            <span class="toggle-icon">👁️</span>
+                                        </button>
+                                    </div>
+                                    <small class="input-hint">Deve ser igual à senha anterior</small>
+                                </div>
+                                
+                                <div class="password-requirements">
+                                    <h4>Requisitos da Senha:</h4>
+                                    <ul class="requirements-list">
+                                        <li id="req-length">✓ Pelo menos 6 caracteres</li>
+                                        <li id="req-match">✓ Senhas devem coincidir</li>
+                                        <li id="req-different">✓ Deve ser diferente da senha atual</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary btn-large">
+                                        🔒 Alterar Senha
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Módulo: Usuários e Permissões -->
+                <div id="module-usuarios-permissoes" class="module-page" style="display: none;">
+                    <div class="module-header">
+                        <h1>👥 Usuários e Permissões</h1>
+                        <p class="module-description">Gerencie usuários do sistema e suas permissões de acesso.</p>
+                    </div>
+                    
+                    <div class="users-management-container">
+                        <div class="module-actions">
+                            <button id="btn-create-user" class="btn btn-primary">
+                                <span class="btn-icon">➕</span>
+                                Criar Novo Usuário
+                            </button>
+                        </div>
+                        
+                        <div class="users-content form-panel">
+                            <h3>Lista de Usuários</h3>
+                            <div id="users-list-container">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Nome</th>
+                                            <th>Email</th>
+                                            <th>Função</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="user-permissions-list-body">
+                                        <!-- Usuarios serão carregados aqui -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                            </div>
+        </main>
+                        </div>
+
+    <!-- MODAL DA NOVA ORDEM DE SERVIÇO -->
+    <div id="os-modal-container" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="os-modal-title">Nova Ordem de Serviço</h2>
+                <button id="btn-close-os-modal" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="new-os-form" class="os-form" novalidate>
+                    <input type="hidden" id="os-edit-id">
+                    <!-- Seção do Cliente com busca -->
+                    <fieldset>
+                        <legend>1. Cliente</legend>
+                        <div class="form-group autocomplete-container">
+                            <label>Buscar Cliente Existente</label>
+                            <input type="text" id="os-customer-search" placeholder="Digite o nome para buscar...">
+                            <div id="os-customer-results" class="autocomplete-results"></div>
+                        </div>
+                        <input type="hidden" id="os-selected-customer-id">
+                        
+                        <div id="new-customer-os-form" style="display: none; margin-top: 15px;">
+                            <h4 style="color: var(--primary-color); margin-bottom: 15px;">📝 Dados do Novo Cliente</h4>
+                            
+                            <!-- Informações Básicas -->
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nome Completo *</label>
+                                    <input type="text" id="os-new-customer-name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Telefone</label>
+                                    <input type="tel" id="os-new-customer-phone" placeholder="(XX) XXXXX-XXXX">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Data de Nascimento</label>
+                                    <input type="date" id="os-new-customer-birth-date">
+                                </div>
+                                <div class="form-group">
+                                    <label>CEP</label>
+                                    <input type="text" id="os-new-customer-zip" placeholder="00000-000">
+                                </div>
+                            </div>
+                            
+                            <!-- Endereço -->
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 3;">
+                                    <label>Logradouro (Rua, Av.)</label>
+                                    <input type="text" id="os-new-customer-street">
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label>Número</label>
+                                    <input type="text" id="os-new-customer-number">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Bairro</label>
+                                    <input type="text" id="os-new-customer-neighborhood">
+                                </div>
+                                <div class="form-group">
+                                    <label>Cidade</label>
+                                    <input type="text" id="os-new-customer-city">
+                                </div>
+                                <div class="form-group" style="flex: 0.5;">
+                                    <label>Estado</label>
+                                    <input type="text" id="os-new-customer-state" placeholder="UF" maxlength="2">
+                                </div>
+                            </div>
+                            
+                            <small style="color: var(--medium-gray); font-style: italic;">
+                                * Os dados do cliente serão salvos automaticamente ao criar a OS
+                            </small>
+                        </div>
+                        <button type="button" id="btn-open-new-customer-modal" class="btn btn-secondary btn-sm">👤 Não encontrou? Cadastrar novo cliente</button>
+                    </fieldset>
+                    <!-- Seção do Equipamento -->
+                    <fieldset><legend>2. Equipamento e Defeito</legend>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Marca *</label>
+                                <input type="text" id="os-brand" placeholder="Digite a marca do equipamento" required>
+                            </div>
+                                                    <div class="form-group"><label>Modelo *</label><input type="text" id="os-model" required></div>
+                        <div class="form-group"><label>Cor *</label><input type="text" id="os-color" required></div>
+                        </div>
+                        <div class="form-group"><label>Defeito Apresentado *</label><textarea id="os-problem" rows="3" required></textarea></div>
+                        <div class="form-row">
+                             <div class="form-group">
+                                <label>Senha (Numérica/Texto)</label>
+                                <input type="text" id="os-password">
+                            </div>
+                            <div class="form-group">
+                                <label>Senha Padrão (Desenho)</label>
+                                <div id="pattern-lock-container">
+                                    <canvas id="pattern-lock-canvas" width="180" height="180"></canvas>
+                                    <input type="hidden" id="os-pattern-lock-value">
+                                </div>
+                                <button type="button" id="btn-reset-pattern" class="btn btn-secondary btn-sm">Limpar Padrão</button>
+                            </div>
+                        </div>
+                    </fieldset>
+                    <!-- Seção de Checklist -->
+                    <fieldset>
+                         <legend>3. 📋 Checklist de Itens e Acessórios</legend>
+                         <p class="checklist-description">Marque os itens que <strong>acompanham</strong> o equipamento:</p>
+                         
+                         <div class="modern-checklist-grid">
+                            <div class="modern-checklist-item">
+                                <div class="checklist-icon">🔋</div>
+                                <div class="checklist-content">
+                                    <h4>Bateria</h4>
+                                    <p>Bateria original ou compatível</p>
+                                    <div class="toggle-switch-group">
+                                        <label class="toggle-switch">
+                                            <input type="radio" name="check-bateria" value="sim">
+                                            <span class="toggle-slider yes">✓ Sim</span>
+                                        </label>
+                                        <label class="toggle-switch">
+                                            <input type="radio" name="check-bateria" value="nao" checked>
+                                            <span class="toggle-slider no">✗ Não</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modern-checklist-item">
+                                <div class="checklist-icon">📱</div>
+                                <div class="checklist-content">
+                                    <h4>Chip/SIM Card</h4>
+                                    <p>Cartão SIM do cliente</p>
+                                    <div class="toggle-switch-group">
+                                        <label class="toggle-switch">
+                                            <input type="radio" name="check-chip" value="sim">
+                                            <span class="toggle-slider yes">✓ Sim</span>
+                                        </label>
+                                        <label class="toggle-switch">
+                                            <input type="radio" name="check-chip" value="nao" checked>
+                                            <span class="toggle-slider no">✗ Não</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modern-checklist-item">
+                                <div class="checklist-icon">🔌</div>
+                                <div class="checklist-content">
+                                    <h4>Carregador</h4>
+                                    <p>Cabo USB e/ou fonte</p>
+                                    <div class="toggle-switch-group">
+                                        <label class="toggle-switch">
+                                            <input type="radio" name="check-carregador" value="sim">
+                                            <span class="toggle-slider yes">✓ Sim</span>
+                                        </label>
+                                        <label class="toggle-switch">
+                                            <input type="radio" name="check-carregador" value="nao" checked>
+                                            <span class="toggle-slider no">✗ Não</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modern-checklist-item">
+                                <div class="checklist-icon">📦</div>
+                                <div class="checklist-content">
+                                    <h4>Carcaça/Aparência</h4>
+                                    <p>Arranhões ou danos visíveis</p>
+                                    <div class="toggle-switch-group">
+                                        <label class="toggle-switch">
+                                            <input type="radio" name="check-aranhado" value="sim">
+                                            <span class="toggle-slider damage">⚠️ Com Danos</span>
+                                        </label>
+                                        <label class="toggle-switch">
+                                            <input type="radio" name="check-aranhado" value="nao" checked>
+                                            <span class="toggle-slider good">✓ Perfeita</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modern-checklist-item">
+                                <div class="checklist-icon">🎧</div>
+                                <div class="checklist-content">
+                                    <h4>Fone de Ouvido</h4>
+                                    <p>Fones ou earbuds</p>
+                                    <div class="toggle-switch-group">
+                                        <label class="toggle-switch">
+                                            <input type="radio" name="check-fone" value="sim">
+                                            <span class="toggle-slider yes">✓ Sim</span>
+                                        </label>
+                                        <label class="toggle-switch">
+                                            <input type="radio" name="check-fone" value="nao" checked>
+                                            <span class="toggle-slider no">✗ Não</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modern-checklist-item">
+                                <div class="checklist-icon">🛡️</div>
+                                <div class="checklist-content">
+                                    <h4>Capinha/Case</h4>
+                                    <p>Proteção externa</p>
+                                    <div class="toggle-switch-group">
+                                        <label class="toggle-switch">
+                                            <input type="radio" name="check-capinha" value="sim">
+                                            <span class="toggle-slider yes">✓ Sim</span>
+                                        </label>
+                                        <label class="toggle-switch">
+                                            <input type="radio" name="check-capinha" value="nao" checked>
+                                            <span class="toggle-slider no">✗ Não</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="checklist-footer">
+                            <p><strong>📝 Importante:</strong> Itens marcados como "Sim" serão devolvidos junto com o equipamento.</p>
+                        </div>
+                    </fieldset>
+                     <!-- Seção de Orçamento -->
+                    <fieldset><legend>4. Orçamento</legend>
+                    <!-- Seção de Produtos do Estoque -->
+                    <fieldset>
+                        <legend>Produtos Utilizados na OS</legend>
+                        <div class="form-group autocomplete-container">
+                            <label>Buscar Produto no Estoque</label>
+                            <input type="text" id="os-product-search" placeholder="Digite para buscar...">
+                            <div id="os-product-results" class="autocomplete-results"></div>
+                        </div>
+                        <div id="os-products-list">
+                            <!-- Produtos adicionados serão listados aqui -->
+                            </div>
+                        </fieldset>
+
+                        <div class="form-row">
+                             <div class="form-group"><label>Valor (R$) *</label><input type="text" id="os-quote-value" placeholder="Ex: 1.500,00" required></div>
+                             <div class="form-group"><label>Status Pagamento</label><select id="os-payment-status"><option value="Pendente">Pendente</option><option value="Parcial">Parcial</option><option value="Pago">Pago</option></select></div>
+                            <div class="form-group" id="os-amount-paid-group" style="display:none;"><label>Valor Pago (R$)</label><input type="text" id="os-amount-paid" placeholder="Ex: 750,00"></div>
+                        </div>
+                    </fieldset>
+
+                     <!-- Seção Final -->
+                     <fieldset><legend>5. Detalhes Finais</legend>
+                         <div class="form-row">
+                            <div class="form-group">
+                                <label>Status da OS</label>
+                                <select id="os-status">
+                                    <option value="">Selecione o status...</option>
+                                    <option value="pending">Pendente</option>
+                                    <option value="progress" selected>Em Concerto</option>
+                                    <option value="awaiting_pickup">Aguardando Retirada</option>
+                                    <option value="delivered">Entregue</option>
+                                    <option value="cancelled">Cancelada</option>
+                                </select>
+                            </div>
+                             <div class="form-group">
+                                <label>Previsão de Entrega *</label>
+                                <input type="datetime-local" id="os-delivery-date" required>
+                             </div>
+                         </div>
+                         <div class="form-group"><label>Observações</label><textarea id="os-notes" rows="2"></textarea></div>
+                        <div class="os-disclaimer"><p><strong>Aviso:</strong> Após aprovado o orçamento,o serviço só será realizado mediante o pagamento de 50% do serviço solicitado, caso o mesmo não venha retirar o aparelho após 90 dias será cobrado um valor diário de R$2,00 (dois reais), e passado 180 dias o mesmo será vendido ou sucateado para cobrir custos e despesas tais como, mão de obra ou peças substituidas.</p></div>
+                     </fieldset>
+                    <div class="form-actions modal-actions"><button type="submit" class="btn btn-primary">💾 Salvar OS</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE VISUALIZAÇÃO DA ORDEM DE SERVIÇO -->
+    <div id="view-os-modal-container" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="view-os-modal-title">Detalhes da Ordem de Serviço</h2>
+                <button id="btn-close-view-os-modal" class="close-modal-btn">&times;</button>
+            </div>
+            <div id="view-os-modal-body" class="modal-body">
+                <!-- Informações da OS -->
+                <div class="os-view-section">
+                    <h3>📋 Informações Gerais</h3>
+                    <div class="os-view-grid">
+                        <div class="os-view-item">
+                            <label>ID da OS:</label>
+                            <span id="view-os-id">-</span>
+                        </div>
+                        <div class="os-view-item">
+                            <label>Status:</label>
+                            <span id="view-os-status">-</span>
+                        </div>
+                        <div class="os-view-item">
+                            <label>Data de Criação:</label>
+                            <span id="view-os-created-at">-</span>
+                        </div>
+                        <div class="os-view-item">
+                            <label>Última Atualização:</label>
+                            <span id="view-os-updated-at">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informações do Cliente -->
+                <div class="os-view-section">
+                    <h3>👤 Cliente</h3>
+                    <div class="os-view-grid">
+                        <div class="os-view-item">
+                            <label>Nome:</label>
+                            <span id="view-os-customer-name">-</span>
+                        </div>
+                        <div class="os-view-item">
+                            <label>Telefone:</label>
+                            <span id="view-os-customer-phone">-</span>
+                        </div>
+                        <div class="os-view-item full-width">
+                            <label>Endereço:</label>
+                            <span id="view-os-customer-address">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informações do Equipamento -->
+                <div class="os-view-section">
+                    <h3>📱 Equipamento</h3>
+                    <div class="os-view-grid">
+                        <div class="os-view-item">
+                            <label>Marca:</label>
+                            <span id="view-os-brand">-</span>
+                        </div>
+                        <div class="os-view-item">
+                            <label>Modelo:</label>
+                            <span id="view-os-model">-</span>
+                        </div>
+                        <div class="os-view-item">
+                            <label>Cor:</label>
+                            <span id="view-os-color">-</span>
+                        </div>
+
+                        <div class="os-view-item full-width">
+                            <label>Problema Relatado:</label>
+                            <span id="view-os-problem">-</span>
+                        </div>
+                        <div class="os-view-item full-width">
+                            <label>Solução Aplicada:</label>
+                            <span id="view-os-solution">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Senhas do Equipamento -->
+                <div class="os-view-section" id="view-os-passwords-section">
+                    <h3>🔒 Senhas do Equipamento</h3>
+                    <div class="os-view-grid">
+                        <div class="os-view-item">
+                            <label>Senha Numérica/Texto:</label>
+                            <span id="view-os-numeric-password">Não informada</span>
+                        </div>
+                        <div class="os-view-item full-width" id="view-os-pattern-section" style="display: none;">
+                            <label>Padrão de Desbloqueio:</label>
+                            <div class="pattern-display-container">
+                                <canvas id="view-pattern-canvas" width="120" height="120" style="border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informações Financeiras -->
+                <div class="os-view-section">
+                    <h3>💰 Orçamento e Pagamento</h3>
+                    <div class="os-view-grid">
+                        <div class="os-view-item">
+                            <label>Valor do Orçamento:</label>
+                            <span id="view-os-quote-value">-</span>
+                        </div>
+                        <div class="os-view-item">
+                            <label>Valor Pago:</label>
+                            <span id="view-os-amount-paid">-</span>
+                        </div>
+                        <div class="os-view-item">
+                            <label>Método de Pagamento:</label>
+                            <span id="view-os-payment-method">-</span>
+                        </div>
+                        <div class="os-view-item">
+                            <label>Previsão de Entrega:</label>
+                            <span id="view-os-delivery-date">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Produtos Utilizados -->
+                <div class="os-view-section">
+                    <h3>📦 Produtos Utilizados</h3>
+                    <div id="view-os-products-list">
+                        <!-- Produtos serão listados aqui -->
+                    </div>
+                </div>
+
+                <!-- Observações -->
+                <div class="os-view-section">
+                    <h3>📝 Observações</h3>
+                    <div class="os-view-notes">
+                        <span id="view-os-notes">-</span>
+                    </div>
+                </div>
+
+                <!-- Botões de Ação -->
+                <div class="os-view-actions">
+                    <button id="btn-edit-os" class="btn btn-primary">✏️ Editar</button>
+                    <button id="btn-delete-os" class="btn btn-danger">🗑️ Excluir</button>
+                    <button id="btn-print-os" class="btn btn-secondary">🖨️ Imprimir</button>
+                    <button id="btn-mark-awaiting-pickup" class="btn btn-warning">📦 Aguardando Retirada</button>
+                    <button id="btn-mark-delivered" class="btn btn-success">✅ Marcar como Entregue</button>
+                    <button id="btn-launch-to-cash" class="btn btn-info">💰 Lançar no Caixa</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <!-- Footer removido para evitar duplicação do botão imprimir -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE NOVA CATEGORIA -->
+    <div id="category-modal-container" class="modal-overlay" style="display: none;">
+        <div class="modal-content small-modal">
+            <div class="modal-header">
+                <h2>Nova Categoria</h2>
+                <button id="btn-close-category-modal" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="new-category-form" class="os-form">
+                    <div class="form-group">
+                        <label>Nome da Categoria</label>
+                        <input type="text" id="new-category-name" placeholder="Ex: Capas, Películas..." required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">💾 Salvar Categoria</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAIS DO MÓDULO DE CAIXA -->
+    <!-- Modal para Abrir Caixa -->
+    <div id="open-cash-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content small-modal">
+            <div class="modal-header"><h2>Abrir Caixa</h2><button class="close-modal-btn" data-modal="open-cash-modal">&times;</button></div>
+            <div class="modal-body">
+                <form id="open-cash-form">
+                    <div class="form-group"><label>Valor Inicial</label><input type="number" id="opening-balance" placeholder="0.00" step="0.01" required></div>
+                    <div class="form-actions"><button type="submit" class="btn btn-primary">Confirmar Abertura</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Adicionar/Retirar Dinheiro -->
+    <div id="money-entry-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content small-modal">
+            <div class="modal-header"><h2 id="money-entry-title"></h2><button class="close-modal-btn" data-modal="money-entry-modal">&times;</button></div>
+            <div class="modal-body">
+                <form id="money-entry-form">
+                    <input type="hidden" id="money-entry-type">
+                    <div class="form-group"><label>Valor (R$)</label><input type="number" id="money-entry-amount" placeholder="0.00" step="0.01" required></div>
+                    <div class="form-group"><label>Descrição/Motivo</label><input type="text" id="money-entry-description" required></div>
+                    <div class="form-actions"><button type="submit" class="btn btn-primary">Confirmar</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Fechar Caixa -->
+    <div id="close-cash-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Fechar Caixa</h2><button class="close-modal-btn" data-modal="close-cash-modal">&times;</button></div>
+            <div class="modal-body">
+                <div id="close-cash-summary"></div>
+                <form id="close-cash-form">
+                    <div class="form-group"><label>Valor Contado em Caixa (Dinheiro)</label><input type="text" id="counted-balance" placeholder="0,00" required></div>
+                    <div class="form-group"><label>Observações de Fechamento</label><textarea id="closing-notes" rows="3"></textarea></div>
+                    <div id="cash-difference-alert" class="feedback-message" style="display: none;"></div>
+                    <div class="form-actions"><button type="submit" class="btn btn-danger">Confirmar Fechamento</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Ver Detalhes do Caixa Fechado -->
+    <div id="view-cash-details-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="view-cash-details-title">Detalhes do Caixa</h2>
+                <button class="close-modal-btn" data-modal="view-cash-details-modal">&times;</button>
+            </div>
+            <div id="view-cash-details-body" class="modal-body">
+                <!-- O conteúdo dos detalhes será inserido aqui -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="reopen-cash-btn" onclick="reopenCashRegister(this.getAttribute('data-cash-id'))">Reabrir Caixa para Correção</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Criar Novo Usuário -->
+    <div id="create-user-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Criar Novo Usuário</h2>
+                <button class="close-modal-btn" data-modal="create-user-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="create-user-form">
+                    <div class="form-group">
+                        <label>👤 Nome Completo *</label>
+                        <input type="text" id="new-user-full-name" placeholder="Digite o nome completo do usuário" required>
+                        <small class="input-hint">Nome que será exibido no sistema</small>
+                    </div>
+                    <div class="form-group">
+                        <label>📧 E-mail *</label>
+                        <input type="email" id="new-user-email" placeholder="usuario@exemplo.com" required>
+                        <small class="input-hint">E-mail será usado para login no sistema</small>
+                    </div>
+                    <div class="form-group">
+                        <label>🔒 Senha Provisória *</label>
+                        <input type="password" id="new-user-password" placeholder="Mínimo 6 caracteres" required minlength="6">
+                        <small class="input-hint">O usuário poderá alterar após o primeiro login</small>
+                    </div>
+                    <div class="form-group">
+                        <label>🎭 Função Principal no Sistema</label>
+                        <select id="new-user-system-role">
+                            <option value="employee">👷 Funcionário</option>
+                            <option value="technician">🔧 Técnico</option>
+                            <option value="admin">👨‍💼 Administrador</option>
+                            <option value="owner">👑 Dono</option>
+                        </select>
+                        <small class="input-hint">Define o nível de acesso geral no sistema</small>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">💾 Criar e Salvar Usuário</button>
+                        <button type="button" class="btn btn-secondary close-modal-btn" data-modal="create-user-modal">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Editar Permissões do Usuário -->
+    <div id="edit-permissions-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h2 id="edit-permissions-title">Editar Permissões</h2>
+                <button class="close-modal-btn" data-modal="edit-permissions-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-permissions-form">
+                    <input type="hidden" id="edit-permissions-user-id">
+                    
+                    <!-- Seção de Função do Sistema -->
+                    <div class="user-role-section">
+                        <h3>👤 Função no Sistema</h3>
+                        <div class="form-group">
+                            <label for="edit-user-role">Função Principal</label>
+                            <select id="edit-user-role" class="role-select">
+                                <option value="employee">👷 Funcionário</option>
+                                <option value="technician">🔧 Técnico</option>
+                                <option value="admin">👨‍💼 Administrador</option>
+                                <option value="owner">👑 Dono</option>
+                            </select>
+                            <small class="input-hint">A função determina o nível de acesso geral no sistema</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Seção de Permissões por Loja -->
+                    <div class="user-permissions-section">
+                        <h3>🏪 Permissões por Loja</h3>
+                        <p class="modal-subtitle">Marque as permissões específicas que o usuário terá em cada loja.</p>
+                        <div id="user-permissions-list" class="permissions-container">
+                            <!-- As permissões por loja serão carregadas aqui no formato de grupos -->
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">💾 Salvar Alterações</button>
+                        <button type="button" class="btn btn-secondary close-modal-btn" data-modal="edit-permissions-modal">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação para Exclusão de Usuário -->
+    <div id="delete-user-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2>⚠️ Confirmar Exclusão</h2>
+                <button class="close-modal-btn" data-modal="delete-user-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="warning-message">
+                    <p><strong>Tem certeza que deseja excluir o usuário?</strong></p>
+                    <p id="delete-user-name" class="user-name-display"></p>
+                    <div class="warning-details">
+                        <p>⚠️ <strong>Esta ação não pode ser desfeita!</strong></p>
+                        <p>Ao confirmar, será removido:</p>
+                        <ul>
+                            <li>✗ O perfil do usuário</li>
+                            <li>✗ Todas as permissões associadas</li>
+                            <li>✗ O acesso ao sistema</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="form-actions" style="margin-top: 20px;">
+                    <button id="confirm-delete-user" class="btn btn-danger">🗑️ Sim, Excluir Usuário</button>
+                    <button class="btn btn-secondary close-modal-btn" data-modal="delete-user-modal">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast de Notificação -->
+    <div id="toast-notification" class="toast">
+        <span id="toast-message"></span>
+    </div>
+
+    <!-- Modal de Pagamento Dividido PDV -->
+    <div id="pdv-split-modal" class="modal" style="display:none;">
+      <div class="modal-content" style="max-width:400px;margin:auto;">
+        <h3>Meio de Pagamento</h3>
+        <form id="pdv-split-form">
+          <div style="margin-bottom:8px; display: flex; align-items: center;">
+            <label style="flex:1.2; display: flex; align-items: center;"><i class="payment-icon money-icon"></i> Dinheiro:</label>
+            <input type="number" id="split-dinheiro" min="0" step="0.01" placeholder="0,00" style="flex:1;" />
+          </div>
+          <div style="margin-bottom:8px; display: flex; align-items: center;">
+            <label style="flex:1.2; display: flex; align-items: center;"><i class="payment-icon credit-icon"></i> Cartão Crédito:</label>
+            <input type="number" id="split-credito" min="0" step="0.01" placeholder="0,00" style="flex:1;" />
+          </div>
+          <div style="margin-bottom:8px; display: flex; align-items: center;">
+            <label style="flex:1.2; display: flex; align-items: center;"><i class="payment-icon debit-icon"></i> Cartão Débito:</label>
+            <input type="number" id="split-debito" min="0" step="0.01" placeholder="0,00" style="flex:1;" />
+          </div>
+          <div style="margin-bottom:8px; display: flex; align-items: center;">
+            <label style="flex:1.2; display: flex; align-items: center;"><i class="payment-icon pix-icon"></i> PIX:</label>
+            <input type="number" id="split-pix" min="0" step="0.01" placeholder="0,00" style="flex:1;" />
+          </div>
+          <div style="margin-bottom:12px;">
+            <strong>Total da Venda: <span id="pdv-split-total">R$ 0,00</span></strong>
+          </div>
+          <button type="submit" class="btn btn-primary">Finalizar Venda</button>
+          <button type="button" class="btn" onclick="document.getElementById('pdv-split-modal').style.display='none'">Cancelar</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Importa o componente de Senha por Desenho -->
+    <script src="pattern-lock-local.js"></script>
+    <script type="module" src="js/api/supabase.js"></script>
+    <script type="module" src="main.js"></script>
+
+    <script type="module">
+        import { checkOSAccess } from './js/auth/auth.js';
+        checkOSAccess();
+    </script>
+
+    <!-- ADICIONADO: Modal para Visualizar Detalhes da OS -->
+    <div id="os-view-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="os-view-title">Detalhes da Ordem de Serviço</h2>
+                <button id="btn-close-os-view-modal" class="close-modal-btn">&times;</button>
+            </div>
+            <div id="os-view-body" class="modal-body">
+                <!-- O conteúdo será preenchido dinamicamente -->
+                <p>Carregando...</p>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-print-os-from-view" class="btn btn-secondary">Imprimir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL COMPLETO PARA EDITAR OS -->
+    <div id="edit-os-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="os-edit-title">Editar Ordem de Serviço</h2>
+                <button id="btn-close-os-edit-modal" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-os-form" class="os-form" novalidate>
+                    <input type="hidden" id="edit-os-id">
+                    
+                    <!-- Seção do Cliente com busca -->
+                    <fieldset>
+                        <legend>1. Cliente</legend>
+                        <div class="form-group autocomplete-container">
+                            <label>Buscar Cliente Existente</label>
+                            <input type="text" id="edit-os-customer-search" placeholder="Digite o nome para buscar...">
+                            <div id="edit-os-customer-results" class="autocomplete-results"></div>
+                        </div>
+                        <input type="hidden" id="edit-os-selected-customer-id">
+                        <input type="hidden" id="edit-os-customer-id-input">
+                        
+                        <!-- Display do cliente selecionado -->
+                        <div id="edit-os-customer-display" class="customer-display" style="display: none; margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 5px;">
+                            <strong>Cliente Selecionado:</strong> <span id="edit-os-customer-name-display">-</span><br>
+                            <strong>Telefone:</strong> <span id="edit-os-customer-phone-display">-</span>
+                        </div>
+                        
+                        <div id="edit-new-customer-os-form" style="display: none; margin-top: 15px;">
+                            <h4 style="color: var(--primary-color); margin-bottom: 15px;">📝 Dados do Novo Cliente</h4>
+                            
+                            <!-- Informações Básicas -->
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nome Completo *</label>
+                                    <input type="text" id="edit-os-new-customer-name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Telefone</label>
+                                    <input type="tel" id="edit-os-new-customer-phone" placeholder="(XX) XXXXX-XXXX">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Data de Nascimento</label>
+                                    <input type="date" id="edit-os-new-customer-birth-date">
+                                </div>
+                                <div class="form-group">
+                                    <label>CEP</label>
+                                    <input type="text" id="edit-os-new-customer-zip" placeholder="00000-000">
+                                </div>
+                            </div>
+                            
+                            <!-- Endereço -->
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 3;">
+                                    <label>Logradouro (Rua, Av.)</label>
+                                    <input type="text" id="edit-os-new-customer-street">
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label>Número</label>
+                                    <input type="text" id="edit-os-new-customer-number">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Bairro</label>
+                                    <input type="text" id="edit-os-new-customer-neighborhood">
+                                </div>
+                                <div class="form-group">
+                                    <label>Cidade</label>
+                                    <input type="text" id="edit-os-new-customer-city">
+                                </div>
+                                <div class="form-group" style="flex: 0.5;">
+                                    <label>Estado</label>
+                                    <input type="text" id="edit-os-new-customer-state" placeholder="UF" maxlength="2">
+                                </div>
+                            </div>
+                            
+                            <small style="color: var(--medium-gray); font-style: italic;">
+                                * Os dados do cliente serão atualizados automaticamente ao salvar a OS
+                            </small>
+                        </div>
+                        <button type="button" id="edit-btn-toggle-new-customer-form" class="btn btn-secondary btn-sm">Alterar dados do cliente</button>
+                    </fieldset>
+
+                    <!-- Seção do Equipamento -->
+                    <fieldset><legend>2. Equipamento e Defeito</legend>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Marca</label>
+                                <input type="text" id="edit-os-brand" placeholder="Digite a marca do equipamento">
+                            </div>
+                            <div class="form-group"><label>Modelo</label><input type="text" id="edit-os-model" required></div>
+                             <div class="form-group"><label>Cor</label><input type="text" id="edit-os-color"></div>
+                        </div>
+
+                        <div class="form-group"><label>Defeito Apresentado</label><textarea id="edit-os-problem" rows="3" required></textarea></div>
+                        <div class="form-row">
+                             <div class="form-group">
+                                <label>Senha (Numérica/Texto)</label>
+                                <input type="text" id="edit-os-password">
+                            </div>
+                            <div class="form-group">
+                                <label>Senha Padrão (Desenho)</label>
+                                <div id="edit-pattern-lock-container">
+                                    <canvas id="edit-pattern-lock-canvas" width="180" height="180"></canvas>
+                                    <input type="hidden" id="edit-os-pattern-lock-value">
+                                </div>
+                                <button type="button" id="edit-btn-reset-pattern" class="btn btn-secondary btn-sm">Limpar Padrão</button>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Seção de Checklist -->
+                    <fieldset>
+                         <legend>3. 📋 Checklist de Itens e Acessórios</legend>
+                         <p class="checklist-description">Marque os itens que <strong>acompanham</strong> o equipamento:</p>
+                         
+                         <div class="modern-checklist-grid">
+                            <div class="modern-checklist-item">
+                                <div class="checklist-icon">🔋</div>
+                                <div class="checklist-content">
+                                    <h4>Bateria</h4>
+                                    <p>Bateria original ou compatível</p>
+                                    <div class="toggle-switch-group">
+                                        <label class="toggle-switch">
+                                            <input type="radio" name="edit-check-bateria" value="sim">
+                                            <span class="toggle-slider yes">✓ Sim</span>
+                                        </label>
+                                        <label class="toggle-switch">
+                                            <input type="radio" name="edit-check-bateria" value="nao" checked>
+                                            <span class="toggle-slider no">✗ Não</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modern-checklist-item">
+                                <div class="checklist-icon">📱</div>
+                                <div class="checklist-content">
+                                    <h4>Chip/SIM Card</h4>
+                                    <p>Cartão SIM do cliente</p>
+                                    <div class="toggle-switch-group">
+                                        <label class="toggle-switch">
+                                            <input type="radio" name="edit-check-chip" value="sim">
+                                            <span class="toggle-slider yes">✓ Sim</span>
+                                        </label>
+                                        <label class="toggle-switch">
+                                            <input type="radio" name="edit-check-chip" value="nao" checked>
+                                            <span class="toggle-slider no">✗ Não</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modern-checklist-item">
+                                <div class="checklist-icon">🔌</div>
+                                <div class="checklist-content">
+                                    <h4>Carregador</h4>
+                                    <p>Cabo USB e/ou fonte</p>
+                                    <div class="toggle-switch-group">
+                                        <label class="toggle-switch">
+                                            <input type="radio" name="edit-check-carregador" value="sim">
+                                            <span class="toggle-slider yes">✓ Sim</span>
+                                        </label>
+                                        <label class="toggle-switch">
+                                            <input type="radio" name="edit-check-carregador" value="nao" checked>
+                                            <span class="toggle-slider no">✗ Não</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modern-checklist-item">
+                                <div class="checklist-icon">📦</div>
+                                <div class="checklist-content">
+                                    <h4>Carcaça/Aparência</h4>
+                                    <p>Arranhões ou danos visíveis</p>
+                                    <div class="toggle-switch-group">
+                                        <label class="toggle-switch">
+                                            <input type="radio" name="edit-check-aranhado" value="sim">
+                                            <span class="toggle-slider damage">⚠️ Com Danos</span>
+                                        </label>
+                                        <label class="toggle-switch">
+                                            <input type="radio" name="edit-check-aranhado" value="nao" checked>
+                                            <span class="toggle-slider good">✓ Perfeita</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modern-checklist-item">
+                                <div class="checklist-icon">🎧</div>
+                                <div class="checklist-content">
+                                    <h4>Fone de Ouvido</h4>
+                                    <p>Fones ou earbuds</p>
+                                    <div class="toggle-switch-group">
+                                        <label class="toggle-switch">
+                                            <input type="radio" name="edit-check-fone" value="sim">
+                                            <span class="toggle-slider yes">✓ Sim</span>
+                                        </label>
+                                        <label class="toggle-switch">
+                                            <input type="radio" name="edit-check-fone" value="nao" checked>
+                                            <span class="toggle-slider no">✗ Não</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modern-checklist-item">
+                                <div class="checklist-icon">🛡️</div>
+                                <div class="checklist-content">
+                                    <h4>Capinha/Case</h4>
+                                    <p>Proteção externa</p>
+                                    <div class="toggle-switch-group">
+                                        <label class="toggle-switch">
+                                            <input type="radio" name="edit-check-capinha" value="sim">
+                                            <span class="toggle-slider yes">✓ Sim</span>
+                                        </label>
+                                        <label class="toggle-switch">
+                                            <input type="radio" name="edit-check-capinha" value="nao" checked>
+                                            <span class="toggle-slider no">✗ Não</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="checklist-footer">
+                            <p><strong>📝 Importante:</strong> Itens marcados como "Sim" serão devolvidos junto com o equipamento.</p>
+                        </div>
+                    </fieldset>
+
+                     <!-- Seção de Orçamento -->
+                    <fieldset><legend>4. Orçamento</legend>
+                        <div class="form-row">
+                             <div class="form-group"><label>Valor (R$)</label><input type="text" id="edit-os-quote-value" placeholder="Ex: 1.500,00"></div>
+                             <div class="form-group"><label>Status Pagamento</label><select id="edit-os-payment-status"><option value="Pendente">Pendente</option><option value="Parcial">Parcial</option><option value="Pago">Pago</option></select></div>
+                            <div class="form-group" id="edit-os-amount-paid-group" style="display:none;"><label>Valor Pago (R$)</label><input type="text" id="edit-os-amount-paid" placeholder="Ex: 750,00"></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Método de Pagamento</label>
+                                <select id="edit-os-payment-method">
+                                    <option value="">Selecione...</option>
+                                    <option value="dinheiro">Dinheiro</option>
+                                    <option value="cartao_credito">Cartão de Crédito</option>
+                                    <option value="cartao_debito">Cartão de Débito</option>
+                                    <option value="pix">PIX</option>
+                                    <option value="transferencia">Transferência</option>
+                                    <option value="cheque">Cheque</option>
+                                </select>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Seção de Produtos do Estoque -->
+                    <fieldset>
+                        <legend>Produtos Utilizados na OS</legend>
+                        <div class="form-group autocomplete-container">
+                            <label>Buscar Produto no Estoque</label>
+                            <input type="text" id="edit-os-product-search" placeholder="Digite para buscar...">
+                            <div id="edit-os-product-results" class="autocomplete-results"></div>
+                        </div>
+                        <div id="edit-os-products-list">
+                            <!-- Produtos adicionados serão listados aqui -->
+                        </div>
+                    </fieldset>
+
+                     <!-- Seção Final -->
+                     <fieldset><legend>5. Detalhes Finais</legend>
+                         <div class="form-group">
+                             <label>Solução Aplicada</label>
+                             <textarea id="edit-os-solution" rows="3" placeholder="Descreva a solução aplicada ao problema..."></textarea>
+                         </div>
+                         <div class="form-row">
+                            <div class="form-group">
+                                <label>Status da OS</label>
+                                <select id="edit-os-status-select">
+                                    <option value="">Selecione o status...</option>
+                                    <option value="pending">Pendente</option>
+                                    <option value="progress">Em Concerto</option>
+                                    <option value="awaiting_pickup">Aguardando Retirada</option>
+                                    <option value="delivered">Entregue</option>
+                                    <option value="cancelled">Cancelada</option>
+                                </select>
+                            </div>
+                             <div class="form-group">
+                                <label>Previsão de Entrega</label>
+                                <input type="datetime-local" id="edit-os-delivery-date">
+                             </div>
+                         </div>
+                         <div class="form-group"><label>Observações</label><textarea id="edit-os-notes" rows="2"></textarea></div>
+                        <div class="os-disclaimer"><p><strong>Aviso:</strong> Após aprovado o orçamento,o serviço só será realizado mediante o pagamento de 50% do serviço solicitado, caso o mesmo não venha retirar o aparelho após 90 dias será cobrado um valor diário de R$2,00 (dois reais), e passado 180 dias o mesmo será vendido ou sucateado para cobrir custos e despesas tais como, mão de obra ou peças substituidas.</p></div>
+                     </fieldset>
+
+                    <div class="form-actions modal-actions">
+                        <button type="button" id="btn-cancel-edit-os" class="btn btn-secondary">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">💾 Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="pdv-split-modal-backdrop" class="modal-backdrop" style="display: none;"></div>
+
+    <!-- Modal para Adicionar Produto à OS -->
+    <div id="add-product-modal" class="modal-overlay">
+        <div class="modal-content add-product-modal">
+            <div class="modal-header">
+                <h2>🛒 Adicionar Produto à OS</h2>
+                <button class="close-modal-btn" onclick="closeAddProductModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="product-selection-info">
+                    <div class="selected-product-card">
+                        <div class="product-icon">📦</div>
+                        <div class="product-details">
+                            <h3 id="selected-product-name">Nome do Produto</h3>
+                            <p class="product-stock">Estoque: <span id="selected-product-stock">0</span> unidades</p>
+                            <p class="product-price-original">Preço original: <span id="selected-product-price">R$ 0,00</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-config-section">
+                    <div class="config-row">
+                        <div class="config-group">
+                            <label for="product-quantity">📊 Quantidade</label>
+                            <div class="quantity-input-group">
+                                <button type="button" class="qty-btn minus" onclick="adjustQuantity(-1)">−</button>
+                                <input type="number" id="product-quantity" min="1" max="999" value="1" onchange="updateProductTotal()">
+                                <button type="button" class="qty-btn plus" onclick="adjustQuantity(1)">+</button>
+                            </div>
+                        </div>
+                        
+                        <div class="config-group">
+                            <label for="product-custom-price">💰 Preço Unitário</label>
+                            <div class="price-input-group">
+                                <span class="currency-symbol">R$</span>
+                                <input type="text" id="product-custom-price" placeholder="0,00" onchange="updateProductTotal()" oninput="formatCurrencyInput(this)">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="total-preview">
+                        <div class="total-calculation">
+                            <span class="calculation-label">Subtotal:</span>
+                            <span class="calculation-value" id="product-subtotal">R$ 0,00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeAddProductModal()">❌ Cancelar</button>
+                <button type="button" id="btn-confirm-add-product" class="btn btn-primary" onclick="confirmAddProduct()">✅ Adicionar à OS</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE NOVA GARANTIA -->
+    <div id="warranty-modal-container" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="warranty-modal-title">Nova Garantia</h2>
+                <button id="btn-close-warranty-modal" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="new-warranty-form" class="os-form" novalidate>
+                    <input type="hidden" id="warranty-edit-id">
+                    
+                    <!-- Seção do Cliente -->
+                    <fieldset>
+                        <legend>1. Cliente</legend>
+                        <div class="form-group autocomplete-container">
+                            <label>Buscar Cliente Existente</label>
+                            <input type="text" id="warranty-customer-search" placeholder="Digite o nome para buscar...">
+                            <div id="warranty-customer-results" class="autocomplete-results"></div>
+                        </div>
+                        <input type="hidden" id="warranty-selected-customer-id">
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nome do Cliente *</label>
+                                <input type="text" id="warranty-customer-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Telefone</label>
+                                <input type="tel" id="warranty-customer-phone" placeholder="(XX) XXXXX-XXXX">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Seção do Equipamento -->
+                    <fieldset>
+                        <legend>2. Equipamento</legend>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Marca do Equipamento *</label>
+                                <input type="text" id="warranty-equipment-brand" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Modelo do Equipamento *</label>
+                                <input type="text" id="warranty-equipment-model" required>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Seção do Reparo -->
+                    <fieldset>
+                        <legend>3. Detalhes do Reparo</legend>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Peça que foi Substituída *</label>
+                                <input type="text" id="warranty-part-replaced" required placeholder="Ex: FRONTAL, BATERIA, TELA">
+                            </div>
+                            <div class="form-group">
+                                <label>Valor Total (R$) *</label>
+                                <input type="text" id="warranty-total-value" required placeholder="Ex: 130,00">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Data do Reparo *</label>
+                                <input type="date" id="warranty-repair-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Período de Garantia (dias) *</label>
+                                <input type="number" id="warranty-period-days" required value="90" min="1" max="365" placeholder="Ex: 90">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Observações Adicionais</label>
+                            <textarea id="warranty-observations" rows="3" placeholder="Informações extras sobre o reparo..."></textarea>
+                        </div>
+                    </fieldset>
+
+                    <div class="form-actions modal-actions">
+                        <button type="submit" class="btn btn-primary">💾 Salvar Garantia</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE VISUALIZAÇÃO DA GARANTIA -->
+    <div id="warranty-view-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="warranty-view-title">Detalhes da Garantia</h2>
+                <button id="btn-close-warranty-view-modal" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body" id="warranty-view-body">
+                <!-- Conteúdo será preenchido dinamicamente -->
+            </div>
+            <div class="modal-footer">
+                <button id="warranty-print-btn" class="btn btn-primary">🖨️ Imprimir Garantia</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE EDIÇÃO DA GARANTIA -->
+    <div id="warranty-edit-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="warranty-edit-title">Editar Garantia</h2>
+                <button id="btn-close-warranty-edit-modal" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-warranty-form" class="os-form" novalidate>
+                    <input type="hidden" id="edit-warranty-id">
+                    
+                    <!-- Seção do Cliente -->
+                    <fieldset>
+                        <legend>1. Cliente</legend>
+                        <div class="form-group autocomplete-container">
+                            <label>Buscar Cliente Existente</label>
+                            <input type="text" id="edit-warranty-customer-search" placeholder="Digite o nome para buscar...">
+                            <div id="edit-warranty-customer-results" class="autocomplete-results"></div>
+                        </div>
+                        <input type="hidden" id="edit-warranty-selected-customer-id">
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nome do Cliente *</label>
+                                <input type="text" id="edit-warranty-customer-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Telefone</label>
+                                <input type="tel" id="edit-warranty-customer-phone" placeholder="(XX) XXXXX-XXXX">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Seção do Equipamento -->
+                    <fieldset>
+                        <legend>2. Equipamento</legend>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Marca do Equipamento *</label>
+                                <input type="text" id="edit-warranty-equipment-brand" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Modelo do Equipamento *</label>
+                                <input type="text" id="edit-warranty-equipment-model" required>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Seção do Reparo -->
+                    <fieldset>
+                        <legend>3. Detalhes do Reparo</legend>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Peça que foi Substituída *</label>
+                                <input type="text" id="edit-warranty-part-replaced" required placeholder="Ex: FRONTAL, BATERIA, TELA">
+                            </div>
+                            <div class="form-group">
+                                <label>Valor Total (R$) *</label>
+                                <input type="text" id="edit-warranty-total-value" required placeholder="Ex: 130,00">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Data do Reparo *</label>
+                                <input type="date" id="edit-warranty-repair-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Período de Garantia (dias) *</label>
+                                <input type="number" id="edit-warranty-period-days" required value="90" min="1" max="365" placeholder="Ex: 90">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Observações Adicionais</label>
+                            <textarea id="edit-warranty-observations" rows="3" placeholder="Informações extras sobre o reparo..."></textarea>
+                        </div>
+                    </fieldset>
+
+                    <div class="form-actions modal-actions">
+                        <button type="button" id="btn-cancel-edit-warranty" class="btn btn-secondary">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">💾 Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Entrega -->
+    <div id="delivery-confirmation-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✅ Confirmar Entrega</h2>
+                <button id="btn-close-delivery-confirmation" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; padding: 20px;">
+                    <div style="font-size: 48px; margin-bottom: 20px;">📦</div>
+                    <h3>Confirmar entrega da OS?</h3>
+                    <p style="color: var(--medium-gray); margin: 20px 0;">Esta ação marcará a ordem de serviço como entregue e abrirá o modal de pagamento.</p>
+                    <p style="font-weight: bold; color: var(--primary-color);">OS #<span id="delivery-confirmation-os-id"></span></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btn-cancel-delivery" class="btn btn-secondary">❌ Cancelar</button>
+                <button type="button" id="btn-confirm-delivery" class="btn btn-primary">✅ Confirmar Entrega</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Pagamento da OS -->
+    <div id="os-payment-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>💰 Pagamento da OS</h2>
+                <button id="btn-close-os-payment" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="os-payment-os-id">
+                <input type="hidden" id="os-payment-cash-register-id">
+                <input type="hidden" id="os-payment-products">
+                
+                <div class="payment-summary">
+                    <h3>Resumo do Pagamento</h3>
+                    <div class="total-display">
+                        <span>Total a Pagar: </span>
+                        <strong id="os-payment-total">R$ 0,00</strong>
+                    </div>
+                </div>
+
+                <div class="payment-methods-section">
+                    <h3>Forma de Pagamento</h3>
+                    <div id="os-payment-methods" class="payment-methods-grid">
+                        <div class="payment-method-item">
+                            <label>💵 Dinheiro:</label>
+                            <input type="text" id="os-payment-dinheiro" placeholder="0,00" class="payment-input">
+                        </div>
+                        <div class="payment-method-item">
+                            <label>💳 Cartão de Crédito:</label>
+                            <input type="text" id="os-payment-credito" placeholder="0,00" class="payment-input">
+                        </div>
+                        <div class="payment-method-item">
+                            <label>💳 Cartão de Débito:</label>
+                            <input type="text" id="os-payment-debito" placeholder="0,00" class="payment-input">
+                        </div>
+                        <div class="payment-method-item">
+                            <label>📱 PIX:</label>
+                            <input type="text" id="os-payment-pix" placeholder="0,00" class="payment-input">
+                        </div>
+                    </div>
+                    
+                    <div class="payment-summary-info">
+                        <div class="payment-total-paid">
+                            <span>Valor Pago: </span>
+                            <strong id="os-payment-amount-paid">R$ 0,00</strong>
+                        </div>
+                        <div class="payment-remaining">
+                            <span>Restante: </span>
+                            <strong id="os-payment-remaining">R$ 0,00</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btn-cancel-os-payment" class="btn btn-secondary">❌ Cancelar</button>
+                <button type="button" id="btn-finish-payment-os" class="btn btn-primary">✅ Finalizar Pagamento</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CADASTRO DE NOVO CLIENTE (PARA OS) -->
+    <div id="new-customer-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>👤 Cadastrar Novo Cliente</h2>
+                <button id="btn-close-new-customer-modal" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="new-customer-modal-form" class="os-form" novalidate>
+                    <!-- Informações Básicas -->
+                    <fieldset>
+                        <legend>Informações Pessoais</legend>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nome Completo *</label>
+                                <input type="text" id="modal-new-customer-name" required placeholder="Digite o nome completo">
+                            </div>
+                            <div class="form-group">
+                                <label>Telefone</label>
+                                <input type="tel" id="modal-new-customer-phone" placeholder="(XX) XXXXX-XXXX">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Data de Nascimento</label>
+                                <input type="date" id="modal-new-customer-birth-date">
+                            </div>
+                            <div class="form-group">
+                                <label>CEP</label>
+                                <input type="text" id="modal-new-customer-zip" placeholder="00000-000">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Endereço -->
+                    <fieldset>
+                        <legend>Endereço</legend>
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 3;">
+                                <label>Logradouro (Rua, Av.)</label>
+                                <input type="text" id="modal-new-customer-street" placeholder="Nome da rua">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Número</label>
+                                <input type="text" id="modal-new-customer-number" placeholder="123">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Bairro</label>
+                                <input type="text" id="modal-new-customer-neighborhood" placeholder="Nome do bairro">
+                            </div>
+                            <div class="form-group">
+                                <label>Cidade</label>
+                                <input type="text" id="modal-new-customer-city" placeholder="Nome da cidade">
+                            </div>
+                            <div class="form-group" style="flex: 0.5;">
+                                <label>Estado</label>
+                                <input type="text" id="modal-new-customer-state" placeholder="UF" maxlength="2">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <div class="form-actions modal-actions">
+                        <button type="button" id="btn-cancel-new-customer-modal" class="btn btn-secondary">❌ Cancelar</button>
+                        <button type="submit" class="btn btn-primary">💾 Salvar Cliente</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Main JS -->
+    <script type="module" src="main.js"></script>
+</body>
+</html>

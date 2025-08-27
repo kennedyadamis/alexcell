@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Caixa</title>
+    <link rel="stylesheet" href="print.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* Estilos específicos para relatório de caixa em formato A4 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        .download-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            z-index: 1000;
+        }
+
+        .download-btn:hover {
+            background-color: #45a049;
+        }
+
+        .page-container {
+            background-color: white;
+            width: 210mm;
+            min-height: 297mm;
+            margin: 20px auto;
+            padding: 20mm;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .cash-report {
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .receipt-header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-container {
+            flex: 0 0 25%;
+        }
+
+        .logo {
+            max-width: 100%;
+            max-height: 100px;
+            display: block;
+        }
+
+        .store-info {
+            flex: 0 0 70%;
+            text-align: left;
+        }
+
+        .store-info h2 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .store-info p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        h1, h2, h3, h4 {
+            color: #333;
+        }
+
+        .report-title {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 24px;
+            text-transform: uppercase;
+        }
+
+        .cash-summary {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 15px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+
+        .cash-summary p {
+            margin: 8px 0;
+            font-size: 14px;
+        }
+
+        .profit-info {
+            font-weight: bold;
+            color: #2e7d32;
+        }
+
+        .sales-details {
+            margin: 20px 0;
+        }
+
+        .sales-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .sales-table th, 
+        .sales-table td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        .sales-table th {
+            background-color: #f2f2f2;
+        }
+
+        .sales-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .payment-summary {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+
+        .payment-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+
+        .payment-table th, 
+        .payment-table td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        .total-line {
+            font-weight: bold;
+            background-color: #f2f2f2;
+        }
+
+        .signature {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .signature-line {
+            margin: 0 auto;
+            width: 200px;
+            border-top: 1px solid #333;
+            margin-bottom: 5px;
+        }
+        
+        .receipt-footer {
+            margin-top: 30px;
+            font-size: 12px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 15px;
+        }
+
+        @media print {
+            body {
+                background: none;
+            }
+            
+            .page-container {
+                width: 100%;
+                height: auto;
+                margin: 0;
+                padding: 10mm;
+                box-shadow: none;
+            }
+            
+            .download-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="download-btn" id="download-pdf">Baixar PDF</button>
+    
+    <div class="page-container" id="report-container">
+        <div class="cash-report">
+            <header class="receipt-header">
+                <div class="logo-container">
+                    <img src="" alt="Logo da Loja" class="logo" id="print-logo" style="display: none;">
+                </div>
+                <div class="store-info" id="store-info">
+                    <h2 id="store-name">Assistência Técnica Especializada</h2>
+                    <p id="store-address">R. 38, N 518 - Sala 02 - Lot. Paraíso do Sul, Santa Maria, Aracaju - SE, 49044-451</p>
+                    <p id="store-phones">(79) 9.8160-6441 / (79) 3011-2293</p>
+                </div>
+            </header>
+
+            <h1 class="report-title">Relatório de Caixa</h1>
+            
+            <div class="cash-summary" id="cash-summary">
+                <!-- Resumo do caixa será preenchido aqui -->
+            </div>
+
+            <div class="sales-details" id="sales-details">
+                <!-- Detalhes das vendas serão preenchidos aqui -->
+            </div>
+
+            <div class="payment-summary" id="payment-summary">
+                <!-- Resumo por forma de pagamento será preenchido aqui -->
+            </div>
+
+            <div class="signature">
+                <div class="signature-line"></div>
+                <p>Responsável pelo Caixa</p>
+            </div>
+
+            <footer class="receipt-footer">
+                <div class="timestamp">
+                    Relatório gerado em: <span id="print-timestamp"></span>
+                </div>
+            </footer>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cashData = JSON.parse(localStorage.getItem('cash_report_data'));
+            console.log("Dados do relatório de caixa recebidos:", cashData);
+
+            if (!cashData) {
+                document.body.innerHTML = '<h1>Erro: Não foi possível carregar os dados do relatório.</h1>';
+                return;
+            }
+
+            // Atualiza as informações da loja
+            if (cashData.storeInfo) {
+                if (cashData.storeInfo.name) {
+                    document.getElementById('store-name').textContent = cashData.storeInfo.name;
+                }
+                document.getElementById('store-address').textContent = cashData.storeInfo.address || 'Endereço não disponível';
+                document.getElementById('store-phones').textContent = cashData.storeInfo.phones || 'Telefone não disponível';
+            }
+
+            // Atualiza o logo
+            const logoImg = document.getElementById('print-logo');
+            if (logoImg) {
+                if (cashData.logoUrl) {
+                    console.log('Tentando carregar logo da URL:', cashData.logoUrl);
+                    logoImg.src = cashData.logoUrl;
+                    logoImg.style.display = 'block'; 
+                    logoImg.onload = () => {
+                        console.log('Logo carregado com sucesso!');
+                    };
+                    logoImg.onerror = () => {
+                        console.error('ERRO ao carregar o logo da URL fornecida:', cashData.logoUrl);
+                        logoImg.style.display = 'none';
+                    };
+                } else {
+                    console.warn('Nenhuma URL de logo foi fornecida nos dados do relatório.');
+                    logoImg.style.display = 'none';
+                }
+            }
+
+            // Preenche o resumo do caixa
+            const summaryContainer = document.getElementById('cash-summary');
+            if (summaryContainer) {
+                const openDate = new Date(cashData.opened_at).toLocaleString('pt-BR');
+                const closeDate = new Date(cashData.closed_at).toLocaleString('pt-BR');
+                
+                let summaryHTML = `
+                    <h3>Informações do Caixa</h3>
+                    <p><strong>Período:</strong> ${openDate} até ${closeDate}</p>
+                    <p><strong>Saldo Inicial:</strong> R$ ${formatValueForPrint(cashData.opening_balance)}</p>
+                    <p><strong>Total de Vendas:</strong> R$ ${formatValueForPrint(cashData.total_sales)}</p>
+                    <p><strong>Total de Entradas:</strong> R$ ${formatValueForPrint(cashData.total_entries)}</p>
+                    <p><strong>Total de Saídas:</strong> R$ ${formatValueForPrint(cashData.total_withdrawals)}</p>
+                    <p><strong>Saldo Final:</strong> R$ ${formatValueForPrint(cashData.closing_balance)}</p>
+                `;
+                
+                // Adicionar informações de custo e lucro apenas se o usuário tiver permissão
+                if (cashData.canViewCosts) {
+                    summaryHTML += `
+                        <p class="profit-info"><strong>Total de Custos:</strong> R$ ${formatValueForPrint(cashData.total_costs)}</p>
+                        <p class="profit-info"><strong>Total de Lucro:</strong> R$ ${formatValueForPrint(cashData.total_profit)}</p>
+                    `;
+                }
+                
+                summaryContainer.innerHTML = summaryHTML;
+            }
+
+            // Preenche os detalhes das vendas
+            const salesContainer = document.getElementById('sales-details');
+            if (salesContainer && cashData.sales && cashData.sales.length > 0) {
+                let html = '<h3>Detalhes das Vendas</h3>';
+                
+                // Cabeçalho da tabela - incluir colunas de custo e lucro apenas se tiver permissão
+                html += `
+                <table class="sales-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Horário</th>
+                            <th>Descrição</th>
+                            <th>Forma de Pagamento</th>
+                            <th>Total</th>`;
+                            
+                if (cashData.canViewCosts) {
+                    html += `
+                            <th>Custo</th>
+                            <th>Lucro</th>`;
+                }
+                
+                html += `
+                        </tr>
+                    </thead>
+                    <tbody>
+                `;
+                
+                // Linhas da tabela
+                cashData.sales.forEach((sale, index) => {
+                    const saleTime = new Date(sale.created_at).toLocaleTimeString('pt-BR');
+                    html += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${saleTime}</td>
+                            <td>${sale.description || 'Venda PDV'}</td>
+                            <td>${sale.payment_method}</td>
+                            <td>R$ ${formatValueForPrint(sale.total)}</td>`;
+                            
+                    if (cashData.canViewCosts) {
+                        html += `
+                            <td>R$ ${formatValueForPrint(sale.cost_total)}</td>
+                            <td>R$ ${formatValueForPrint(sale.profit)}</td>`;
+                    }
+                    
+                    html += `
+                        </tr>
+                    `;
+                });
+                
+                // Rodapé da tabela
+                html += `
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-line">
+                            <td colspan="${cashData.canViewCosts ? '4' : '4'}">Totais</td>
+                            <td>R$ ${formatValueForPrint(cashData.total_sales)}</td>`;
+                            
+                if (cashData.canViewCosts) {
+                    html += `
+                            <td>R$ ${formatValueForPrint(cashData.total_costs)}</td>
+                            <td>R$ ${formatValueForPrint(cashData.total_profit)}</td>`;
+                }
+                
+                html += `
+                        </tr>
+                    </tfoot>
+                </table>
+                `;
+                
+                salesContainer.innerHTML = html;
+            } else if (salesContainer) {
+                salesContainer.innerHTML = '<p>Nenhuma venda registrada neste período.</p>';
+            }
+
+            // Preenche o resumo por forma de pagamento
+            const paymentContainer = document.getElementById('payment-summary');
+            if (paymentContainer && cashData.payment_summary) {
+                let html = '<h3>Resumo por Forma de Pagamento</h3>';
+                
+                html += `
+                <table class="payment-table">
+                    <thead>
+                        <tr>
+                            <th>Forma de Pagamento</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                `;
+                
+                Object.entries(cashData.payment_summary).forEach(([method, amount]) => {
+                    html += `
+                        <tr>
+                            <td>${method}</td>
+                            <td>R$ ${formatValueForPrint(amount)}</td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-line">
+                            <td>Total</td>
+                            <td>R$ ${formatValueForPrint(cashData.total_sales)}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+                `;
+                
+                paymentContainer.innerHTML = html;
+            }
+
+            // Atualiza o timestamp de impressão
+            document.getElementById('print-timestamp').textContent = new Date().toLocaleString('pt-BR');
+            
+            // Configurar botão para download do PDF
+            document.getElementById('download-pdf').addEventListener('click', function() {
+                downloadAsPDF();
+            });
+        });
+
+        // Função para formatar valores para impressão
+        function formatValueForPrint(value) {
+            if (!value || value === 0) return '0,00';
+            
+            const numValue = parseFloat(value);
+            if (isNaN(numValue)) return '0,00';
+            
+            // Formata com 2 casas decimais
+            const formatted = numValue.toFixed(2);
+            
+            // Separa parte inteira e decimal
+            const [integerPart, decimalPart] = formatted.split('.');
+            
+            // Adiciona pontos para milhares
+            const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            
+            // Retorna no formato brasileiro
+            return `${formattedInteger},${decimalPart}`;
+        }
+
+        // Função para baixar o relatório como PDF
+        function downloadAsPDF() {
+            // Ocultamos o botão temporariamente para o PDF
+            const downloadBtn = document.getElementById('download-pdf');
+            downloadBtn.style.display = 'none';
+            
+            const reportTitle = document.querySelector('.report-title').textContent;
+            const date = document.getElementById('print-timestamp').textContent.split(': ')[1] || new Date().toLocaleString('pt-BR');
+            const filename = `${reportTitle.replace(/\s+/g, '_')}_${date.replace(/[\/\s:]/g, '-')}.pdf`;
+            
+            const element = document.getElementById('report-container');
+            const options = {
+                margin: 10,
+                filename: filename,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            html2pdf()
+                .set(options)
+                .from(element)
+                .save()
+                .then(() => {
+                    // Após o download, exibimos o botão novamente e removemos os dados
+                    downloadBtn.style.display = 'block';
+                    setTimeout(() => {
+                        localStorage.removeItem('cash_report_data');
+                    }, 1000);
+                });
+        }
+    </script>
+</body>
+</html>

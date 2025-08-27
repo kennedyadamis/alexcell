@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Ordem de Serviço</title>
+    <link rel="stylesheet" href="print.css">
+</head>
+<body>
+    <div class="receipt">
+        <header class="receipt-header">
+            <img src="" alt="Logo da Loja" class="logo" id="print-logo" style="display: none;">
+            <div class="store-info" id="store-info">
+            <p>Assistência Técnica Especializada</p>
+            <p id="store-address">R. 38, N 518 - Sala 02 - Lot. Paraíso do Sul, Santa Maria, Aracaju - SE, 49044-451</p>
+            <p id="store-phones">(79) 9.8160-6441 / (79) 3011-2293</p>
+            </div>
+        </header>
+
+        <section id="os-details">
+            <!-- Os detalhes da OS serão preenchidos aqui -->
+        </section>
+
+        <section class="disclaimer">
+            <p><strong>Aviso:</strong><strong> Após aprovado o orçamento, o serviço só será realizado mediante o pagamento de 50% do valor. Após 90 dias da conclusão do serviço, será cobrada uma taxa diária de R$2,00. Após 180 dias, o aparelho será vendido ou descartado para cobrir custos.</strong></p>
+        </section>
+
+        <footer class="receipt-footer">
+            <div class="signature-block">
+                <div class="signature-line">
+                    <p>Assinatura do Cliente (Entrada)</p>
+                </div>
+                 <p class="signature-date">Data: <span id="print-entry-date"></span></p>
+            </div>
+            <div class="signature-block">
+                <div class="signature-line">
+                    <p>Assinatura do Cliente (Retirada)</p>
+                </div>
+                <p class="signature-date">Data: ____/____/______</p>
+            </div>
+            <div class="timestamp">
+                Impresso em: <span id="print-timestamp"></span>
+            </div>
+        </footer>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const osData = JSON.parse(localStorage.getItem('currentOS_for_print'));
+            if (!osData) return;
+
+            // Atualiza as informações da loja
+            if (osData.storeInfo) {
+                document.getElementById('store-name').textContent = osData.storeInfo.name;
+                document.getElementById('store-address').textContent = osData.storeInfo.address;
+                document.getElementById('store-phones').textContent = osData.storeInfo.phones;
+            }
+
+            // Atualiza o logo do Supabase (mantém informações da empresa sempre visíveis)
+            const logoImg = document.getElementById('print-logo');
+            
+            if (logoImg && osData.logoUrl) {
+                console.log('URL do logo recebida:', osData.logoUrl);
+                
+                // Tenta carregar o logo do Supabase
+                logoImg.src = osData.logoUrl;
+                logoImg.onload = () => {
+                    console.log('Logo do Supabase carregado com sucesso');
+                    logoImg.style.display = 'block';
+                };
+                logoImg.onerror = () => {
+                    console.log('Erro ao carregar logo do Supabase');
+                    logoImg.style.display = 'none';
+                };
+            } else {
+                console.log('Nenhum logo fornecido');
+                if (logoImg) logoImg.style.display = 'none';
+            }
+
+            // Preenche a data de entrada
+            document.getElementById('print-entry-date').textContent = formatDateForPrint(osData.created_at);
+            
+            const detailsContainer = document.getElementById('os-details');
+            
+            let checklistItems = '<li>Nenhum item verificado.</li>';
+            if (osData.accessories_checklist) {
+                try {
+                    const checklist = typeof osData.accessories_checklist === 'string' 
+                        ? JSON.parse(osData.accessories_checklist) 
+                        : osData.accessories_checklist;
+                    
+                    checklistItems = Object.entries(checklist)
+                        .map(([key, value]) => `<li>${key.charAt(0).toUpperCase() + key.slice(1)}: <strong>${value === 'sim' ? 'Sim' : 'Não'}</strong></li>`)
+                        .join('');
+                } catch (e) {
+                    console.error('Erro ao processar checklist:', e);
+                    checklistItems = '<li>Erro ao carregar checklist.</li>';
+                }
+            }
+
+            detailsContainer.innerHTML = `
+                <h2>Ordem de Serviço #${osData.id}</h2>
+                
+                <div class="section">
+                    <h4>1. Cliente</h4>
+                    <p><strong>Nome:</strong> ${osData.client_name || 'Não informado'}</p>
+                    <p><strong>Telefone:</strong> ${formatPhoneForPrint(osData.client_phone) || 'Não informado'}</p>
+                    <p><strong>Endereço:</strong> ${formatAddressForPrint(osData) || 'Não informado'}</p>
+                </div>
+                
+                <div class="section">
+                    <h4>2. Criado por</h4>
+                    <p><strong>Usuário:</strong> ${osData.created_by_user || 'Não identificado'}</p>
+                </div>
+                
+                <div class="section">
+                    <h4>3. Equipamento</h4>
+                    <p><strong>Aparelho:</strong> ${osData.equipment_brand || ''} ${osData.equipment_model || ''}</p>
+                    <p><strong>Cor:</strong> ${osData.color || 'Não informada'}</p>
+                    <p><strong>Senha:</strong> ${osData.equipment_password || (osData.pattern_lock_value ? 'Ver desenho abaixo' : 'Não informada')}</p>
+                ${osData.pattern_lock_value ? `
+                    <div class="pattern-section">
+                        <strong>Senha (Desenho):</strong>
+                        <canvas id="print-pattern-canvas" class="pattern-draw-area" width="80" height="80"></canvas>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <div class="section">
+                    <h4>4. Descrição do Defeito/Serviço</h4>
+                    <p>${osData.problem_description || 'Nenhuma descrição fornecida.'}</p>
+                </div>
+
+                <div class="section">
+                    <h4>5. Checklist de Acessórios</h4>
+                    <ul class="checklist-print">${checklistItems}</ul>
+                </div>
+
+                <div class="section">
+                    <h4>6. Observações Adicionais</h4>
+                    <p>${osData.notes || 'Nenhuma.'}</p>
+                </div>
+
+                 <div class="section">
+                    <h4>7. Prazo de Entrega</h4>
+                    <p><strong>Previsão de Entrega:</strong> ${osData.estimated_delivery_date ? formatDateTimeForPrint(osData.estimated_delivery_date) : 'Não definida'}</p>
+                    <p><strong>Valor do Orçamento:</strong> R$ ${formatValueForPrint(osData.quote_value)}</p>
+                    <p><strong>Status do Pagamento:</strong> ${osData.payment_status || 'Pendente'}</p>
+                </div>
+            `;
+
+            // Debug dos dados da OS
+            console.log('pattern_lock_value:', osData.pattern_lock_value);
+            
+            if (osData.pattern_lock_value) {
+                console.log('Chamando drawPattern com:', osData.pattern_lock_value);
+                drawPattern(osData.pattern_lock_value);
+            } else {
+                console.log('Nenhum padrão de senha encontrado');
+            }
+
+            document.getElementById('print-timestamp').textContent = new Date().toLocaleString('pt-BR');
+            
+            localStorage.removeItem('currentOS_for_print');
+            setTimeout(() => window.print(), 500);
+        });
+
+        // Função para formatar datas para impressão
+        function formatDateForPrint(dateString) {
+            if (!dateString) return 'Não definida';
+            
+            try {
+                // Se a data está no formato YYYY-MM-DD (padrão do input date)
+                if (dateString.includes('-')) {
+                    const [year, month, day] = dateString.split('-');
+                    return `${day}/${month}/${year}`;
+                }
+                
+                // Se a data já está em outro formato, tenta converter
+                const date = new Date(dateString + 'T00:00:00'); // Adiciona horário para evitar problemas de timezone
+                if (isNaN(date.getTime())) {
+                    return dateString; // Retorna a string original se não conseguir converter
+                }
+                
+                return date.toLocaleDateString('pt-BR');
+            } catch (error) {
+                console.error('Erro ao formatar data:', error);
+                return dateString; // Retorna a string original em caso de erro
+            }
+        }
+
+        // Função para formatar data e hora para impressão
+        function formatDateTimeForPrint(dateString) {
+            if (!dateString) return 'Não definida';
+            
+            try {
+                // Se a data está no formato YYYY-MM-DD (padrão do input date)
+                if (dateString.includes('-') && !dateString.includes('T')) {
+                    const [year, month, day] = dateString.split('-');
+                    return `${day}/${month}/${year}`;
+                }
+                
+                // Se a data está no formato ISO (com T e timezone)
+                if (dateString.includes('T')) {
+                    // Extrair a parte da data e hora sem considerar o timezone
+                    const isoString = dateString.replace('Z', '').split('+')[0].split('-').slice(0, 3).join('-') + 'T' + dateString.split('T')[1].split('+')[0].split('Z')[0];
+                    
+                    // Criar data local sem conversão de timezone
+                    const dateParts = isoString.split('T');
+                    const [year, month, day] = dateParts[0].split('-');
+                    const [hour, minute] = dateParts[1].split(':');
+                    
+                    // Criar data local
+                    const date = new Date(year, month - 1, day, hour, minute);
+                    
+                    if (isNaN(date.getTime())) {
+                        return dateString;
+                    }
+                    
+                    // Formatar data e hora no formato brasileiro
+                    return date.toLocaleString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
+                
+                // Se a data já está em outro formato, tenta converter
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) {
+                    return dateString; // Retorna a string original se não conseguir converter
+                }
+                
+                return date.toLocaleString('pt-BR');
+            } catch (error) {
+                console.error('Erro ao formatar data/hora:', error);
+                return dateString; // Retorna a string original em caso de erro
+            }
+        }
+
+        // Função para formatar valores para impressão
+        function formatValueForPrint(value) {
+            // Verifica se o valor é null, undefined ou string vazia
+            if (value === null || value === undefined || value === '') {
+                return '0,00';
+            }
+            
+            // Converte para número
+            const numValue = parseFloat(String(value).replace(/\./g, '').replace(',', '.'));
+            
+            if (isNaN(numValue)) {
+                return '0,00';
+            }
+            
+            // Formata com 2 casas decimais
+            const formatted = numValue.toFixed(2);
+            
+            // Separa parte inteira e decimal
+            const [integerPart, decimalPart] = formatted.split('.');
+            
+            // Adiciona pontos para milhares
+            const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            
+            // Retorna no formato brasileiro
+            return `${formattedInteger},${decimalPart}`;
+        }
+
+        // Função para formatar telefone para impressão
+        function formatPhoneForPrint(phone) {
+            if (!phone) return 'Não informado';
+            
+            // Remove todos os caracteres não numéricos
+            const cleanPhone = phone.replace(/\D/g, '');
+            
+            // Se tem 11 dígitos (celular)
+            if (cleanPhone.length === 11) {
+                return `(${cleanPhone.substring(0, 2)}) ${cleanPhone.substring(2, 3)}.${cleanPhone.substring(3, 7)}-${cleanPhone.substring(7)}`;
+            }
+            
+            // Se tem 10 dígitos (fixo)
+            if (cleanPhone.length === 10) {
+                return `(${cleanPhone.substring(0, 2)}) ${cleanPhone.substring(2, 6)}-${cleanPhone.substring(6)}`;
+            }
+            
+            // Se não está no formato esperado, retorna como está
+            return phone;
+        }
+
+        // Função para formatar endereço para impressão
+        function formatAddressForPrint(osData) {
+            // Verifica se tem endereço estruturado (objeto)
+            if (osData.client_address && typeof osData.client_address === 'object') {
+                const addr = osData.client_address;
+                let address = '';
+                
+                if (addr.street) address += addr.street;
+                if (addr.number) address += `, ${addr.number}`;
+                if (addr.complement) address += `, ${addr.complement}`;
+                if (addr.neighborhood) address += ` - ${addr.neighborhood}`;
+                if (addr.city) address += `, ${addr.city}`;
+                if (addr.state) address += ` - ${addr.state}`;
+                if (addr.cep) address += `, ${addr.cep}`;
+                
+                return address || 'Não informado';
+            }
+            
+            // Verifica se tem endereço como string
+            if (osData.client_address && typeof osData.client_address === 'string') {
+                return osData.client_address;
+            }
+            
+            // Verifica campos separados de endereço
+            let addressParts = [];
+            if (osData.client_street) addressParts.push(osData.client_street);
+            if (osData.client_number) addressParts.push(osData.client_number);
+            if (osData.client_complement) addressParts.push(osData.client_complement);
+            if (osData.client_neighborhood) addressParts.push(`- ${osData.client_neighborhood}`);
+            if (osData.client_city) addressParts.push(osData.client_city);
+            if (osData.client_state) addressParts.push(`- ${osData.client_state}`);
+            if (osData.client_cep) addressParts.push(osData.client_cep);
+            
+            return addressParts.length > 0 ? addressParts.join(', ') : 'Não informado';
+        }
+
+        function drawPattern(pattern) {
+            console.log('drawPattern chamada com padrão:', pattern);
+            const canvas = document.getElementById('print-pattern-canvas');
+            console.log('Canvas encontrado:', canvas);
+            if (!canvas) {
+                console.error('Canvas print-pattern-canvas não encontrado!');
+                return;
+            }
+            const ctx = canvas.getContext('2d');
+            console.log('Contexto do canvas:', ctx);
+            
+            const dots = [];
+            const margin = 15;
+            const radius = 5;
+            
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    dots.push({ 
+                        x: margin + j * ((canvas.width - 2 * margin) / 2), 
+                        y: margin + i * ((canvas.height - 2 * margin) / 2),
+                        id: i * 3 + j + 1
+                    });
+                }
+            }
+            
+            // Desenha os pontos
+            dots.forEach(dot => {
+                ctx.beginPath();
+                ctx.arc(dot.x, dot.y, radius, 0, 2 * Math.PI);
+                ctx.fillStyle = '#ccc';
+                ctx.fill();
+            });
+
+            // Conecta os pontos do padrão
+            const patternDots = pattern.split('').map(id => dots.find(d => d.id == id));
+            if (patternDots.length > 1) {
+                ctx.beginPath();
+                ctx.moveTo(patternDots[0].x, patternDots[0].y);
+                for (let i = 1; i < patternDots.length; i++) {
+                    if(patternDots[i]) {
+                        ctx.lineTo(patternDots[i].x, patternDots[i].y);
+                    }
+                }
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Desenha setas
+                for (let i = 0; i < patternDots.length - 1; i++) {
+                    if(patternDots[i+1]) {
+                        drawArrow(ctx, patternDots[i].x, patternDots[i].y, patternDots[i+1].x, patternDots[i+1].y);
+                    }
+                }
+            }
+            console.log('drawPattern executada com sucesso!');
+        }
+
+        function drawArrow(ctx, fromx, fromy, tox, toy){
+            const headlen = 6;
+            const angle = Math.atan2(toy-fromy,tox-fromx);
+            ctx.beginPath();
+            ctx.moveTo(tox, toy);
+            ctx.lineTo(tox-headlen*Math.cos(angle-Math.PI/6),toy-headlen*Math.sin(angle-Math.PI/6));
+            ctx.moveTo(tox, toy);
+            ctx.lineTo(tox-headlen*Math.cos(angle+Math.PI/6),toy-headlen*Math.sin(angle+Math.PI/6));
+            ctx.stroke();
+        }
+    </script>
+</body>
+</html>

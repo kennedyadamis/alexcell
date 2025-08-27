@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Serviços especializados em reparo de celulares e notebooks. iPhone, Samsung, Xiaomi, Dell, HP, Asus. Garantia de 3 meses em Aracaju-SE.">
+    <meta name="keywords" content="reparo celular, conserto notebook, troca tela, bateria, formatação, Aracaju, assistência técnica">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Serviços - ALEXCELL & CIA">
+    <meta property="og:description" content="Especialistas em reparo de celulares e notebooks. Todas as marcas, peças originais, garantia de 3 meses.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://alexcell.com.br/servicos.html">
+    
+    <title>Serviços - ALEXCELL & CIA</title>
+    <link rel="icon" href="logos/1.png?v=2" type="image/png">
+    <!-- Import Map para resolver dependências do Supabase -->
+    <script type="importmap">
+    {
+        "imports": {
+            "@supabase/supabase-js": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.2/+esm"
+        }
+    }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="style.css">
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "name": "Assistência Técnica ALEXCELL & CIA",
+      "description": "Serviços especializados em reparo de celulares e notebooks",
+      "provider": {
+        "@type": "LocalBusiness",
+        "name": "ALEXCELL & CIA"
+      },
+      "serviceType": ["Reparo de Celulares", "Reparo de Notebooks", "Formatação", "Troca de Peças"],
+      "areaServed": "Aracaju, SE"
+    }
+    </script>
+</head>
+<body>
+    <a href="#main-content" class="skip-to-main">Pular para o conteúdo</a>
+    
+    <!-- Header -->
+    <header class="header" role="banner">
+        <div class="header-container">
+            <a href="index.html" class="logo" aria-label="ALEXCELL & CIA - Voltar ao início">
+                ALEXCELL <span>&amp; CIA</span>
+            </a>
+            <nav role="navigation" aria-label="Navegação principal">
+                <ul class="nav">
+                    <li><a href="index.html">Início</a></li>
+                    <li><a href="servicos.html" aria-current="page">Serviços</a></li>
+                    <li><a href="sobre.html">Sobre Nós</a></li>
+                    <li><a href="contato.html">Contato</a></li>
+                    <li><a href="consultar-os.html">Consultar OS</a></li>
+                    <li><a href="auth.html">Login</a></li>
+                </ul>
+            </nav>
+            <button class="menu-toggle" aria-label="Abrir menu de navegação" aria-expanded="false">
+                <span aria-hidden="true">☰</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content" id="main-content" role="main">
+        <!-- Hero Section -->
+        <section class="hero" aria-labelledby="hero-title">
+            <div class="hero-container">
+                <h1 id="hero-title">Especialistas em Celulares e Notebooks</h1>
+                <p>Reparos profissionais para smartphones e notebooks de todas as marcas</p>
+            </div>
+        </section>
+
+        <!-- Serviços -->
+        <section class="section" aria-labelledby="services-title">
+            <div class="container">
+                <h2 id="services-title" class="section-title">Nossos Serviços Especializados</h2>
+                <div class="modern-services-grid">
+                    <!-- Smartphones -->
+                    <article class="modern-service-category">
+                        <header class="service-header">
+                            <div class="service-icon" aria-hidden="true">📱</div>
+                            <div class="service-title">
+                                <h3>Celulares e Smartphones</h3>
+                                <p>Reparo especializado para todas as marcas</p>
+                            </div>
+                        </header>
+                        
+                        <div class="brands-section">
+                            <h4><span style="color: var(--primary-color); margin-right: 8px;" aria-hidden="true">🔧</span>Marcas Atendidas</h4>
+                            <div class="brands-grid" role="list">
+                                <span class="brand-tag" role="listitem">iPhone</span>
+                                <span class="brand-tag" role="listitem">Samsung</span>
+                                <span class="brand-tag" role="listitem">Xiaomi</span>
+                                <span class="brand-tag" role="listitem">Motorola</span>
+                                <span class="brand-tag" role="listitem">LG</span>
+                                <span class="brand-tag" role="listitem">Huawei</span>
+                                <span class="brand-tag" role="listitem">Sony</span>
+                                <span class="brand-tag" role="listitem">Nokia</span>
+                                <span class="brand-tag plus" role="listitem">+ Outras</span>
+                            </div>
+                        </div>
+                        
+                        <div class="services-section">
+                            <h4><span style="color: var(--primary-color); margin-right: 8px;" aria-hidden="true">🛠️</span>Serviços Oferecidos</h4>
+                            <div class="services-grid-modern" role="list">
+                                <div class="service-item" role="listitem">
+                                    <span class="service-icon-small" aria-hidden="true">📱</span>
+                                    <span>Troca de tela (LCD/OLED/AMOLED)</span>
+                                </div>
+                                <div class="service-item" role="listitem">
+                                    <span class="service-icon-small" aria-hidden="true">🔋</span>
+                                    <span>Substituição de bateria</span>
+                                </div>
+                                <div class="service-item" role="listitem">
+                                    <span class="service-icon-small" aria-hidden="true">📷</span>
+                                    <span>Reparo e troca de câmeras</span>
+                                </div>
+                                <div class="service-item" role="listitem">
+                                    <span class="service-icon-small" aria-hidden="true">🔌</span>
+                                    <span>Reparo de conectores de carga</span>
+                                </div>
+                                <div class="service-item" role="listitem">
+                                    <span class="service-icon-small" aria-hidden="true">🔊</span>
+                                    <span>Troca de alto-falante e microfone</span>
+                                </div>
+                                <div class="service-item" role="listitem">
+                                    <span class="service-icon-small" aria-hidden="true">⚡</span>
+                                    <span>Reparo de botões (home, volume, power)</span>
+                                </div>
+                                <div class="service-item" role="listitem">
+                                    <span class="service-icon-small" aria-hidden="true">🛠️</span>
+                                    <span>Reparo de placa-mãe (reballing, micro soldas)</span>
+                                </div>
+                                <div class="service-item" role="listitem">
+                                    <span class="service-icon-small" aria-hidden="true">📲</span>
+                                    <span>Atualização de software e desbloqueio</span>
+                                </div>
+                                <div class="service-item" role="listitem">
+                                    <span class="service-icon-small" aria-hidden="true">💾</span>
+                                    <span>Recuperação de dados e contatos</span>
+                                </div>
+                                <div class="service-item" role="listitem">
+                                    <span class="service-icon-small" aria-hidden="true">🌊</span>
+                                    <span>Reparo de danos por água</span>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Notebooks -->
+                    <article class="modern-service-category">
+                        <header class="service-header">
+                            <div class="service-icon" aria-hidden="true">💻</div>
+                            <div class="service-title">
+                                <h3>Notebooks e Laptops</h3>
+                                <p>Manutenção completa para todos os modelos</p>
+                            </div>
+                        </header>
+                        
+                        <div class="brands-section">
+                            <h4><span style="color: var(--primary-color); margin-right: 8px;" aria-hidden="true">🔧</span>Marcas Atendidas</h4>
+                            <div class="brands-grid" role="list">
+                                <span class="brand-tag" role="listitem">Dell</span>
+                                <span class="brand-tag" role="listitem">HP</span>
+                                <span class="brand-tag" role="listitem">Lenovo</span>
+                                <span class="brand-tag" role="listitem">Acer</span>
+                                <span class="brand-tag" role="listitem">Asus</span>
+                                <span class="brand-tag" role="listitem">Samsung</span>
+                                <span class="brand-tag" role="listitem">MacBook</span>
+                                <span class="brand-tag" role="listitem">MSI</span>
+                                <span class="brand-tag plus" role="listitem">+ Outras</span>
+                            </div>
+                        </div>
+                        
+                        <div class="services-section">
+                            <h4><span style="color: var(--primary-color); margin-right: 8px;" aria-hidden="true">🛠️</span>Serviços Oferecidos</h4>
+                            <div class="services-grid-modern" role="list">
+                                <div class="service-item" role="listitem">
+                                    <span class="service-icon-small" aria-hidden="true">🖥️</span>
+                                    <span>Substituição de tela (LED/LCD)</span>
+                                </div>
+                                <div class="service-item" role="listitem">
+                                    <span class="service-icon-small" aria-hidden="true">⌨️</span>
+                                    <span>Reparo e troca de teclado</span>
+                                </div>
+                                <div class="service-item" role="listitem">
+                                    <span class="service-icon-small" aria-hidden="true">🔋</span>
+                                    <span>Substituição de bateria</span>
+                                </div>
+                                <div class="service-item" role="listitem">
+                                    <span class="service-icon-small" aria-hidden="true">💾</span>
+                                    <span>Upgrade de memória RAM</span>
+                                </div>
+                                <div class="service-item" role="listitem">
+                                    <span class="service-icon-small" aria-hidden="true">💿</span>
+                                    <span>Instalação de SSD e HD</span>
+                                </div>
+                                <div class="service-item" role="listitem">
+                                    <span class="service-icon-small" aria-hidden="true">🌡️</span>
+                                    <span>Limpeza e troca de pasta térmica</span>
+                                </div>
+                                <div class="service-item" role="listitem">
+                                    <span class="service-icon-small" aria-hidden="true">🔌</span>
+                                    <span>Reparo de fonte e conectores</span>
+                                </div>
+                                <div class="service-item" role="listitem">
+                                    <span class="service-icon-small" aria-hidden="true">🖱️</span>
+                                    <span>Reparo de touchpad</span>
+                                </div>
+                                <div class="service-item" role="listitem">
+                                    <span class="service-icon-small" aria-hidden="true">💻</span>
+                                    <span>Formatação e instalação de SO</span>
+                                </div>
+                                <div class="service-item" role="listitem">
+                                    <span class="service-icon-small" aria-hidden="true">🦠</span>
+                                    <span>Remoção de vírus e malware</span>
+                                </div>
+                                <div class="service-item" role="listitem">
+                                    <span class="service-icon-small" aria-hidden="true">📊</span>
+                                    <span>Recuperação de arquivos</span>
+                                </div>
+                                <div class="service-item" role="listitem">
+                                    <span class="service-icon-small" aria-hidden="true">🔧</span>
+                                    <span>Reparo de dobradiças</span>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+                
+                <!-- Seção de Garantia e Qualidade -->
+                <section class="quality-section" aria-labelledby="quality-title">
+                    <h3 id="quality-title"><span aria-hidden="true">🛡️</span> Garantia e Qualidade</h3>
+                    <div>
+                        <article>
+                            <h4><span aria-hidden="true">🔧</span> Peças Originais</h4>
+                            <p>Utilizamos apenas peças originais ou de primeira linha para garantir durabilidade</p>
+                        </article>
+                        <article>
+                            <h4><span aria-hidden="true">⏱️</span> Reparo Rápido</h4>
+                            <p>Maioria dos reparos em até 24h. Troca de tela expressa para alguns modelos</p>
+                        </article>
+                        <article>
+                            <h4><span aria-hidden="true">🛡️</span> Garantia 3 meses</h4>
+                            <p>Garantia estendida em todos os serviços realizados</p>
+                        </article>
+                        <article>
+                            <h4><span aria-hidden="true">🔍</span> Diagnóstico Gratuito</h4>
+                            <p>Avaliação completa sem custo antes do orçamento</p>
+                        </article>
+                    </div>
+                </section>
+            </div>
+        </section>
+
+        <!-- Processo de Atendimento -->
+        <section class="section" style="background: var(--light-gray);" aria-labelledby="process-title">
+            <div class="container">
+                <h2 id="process-title" class="section-title">Como Funciona</h2>
+                <div class="process-grid">
+                    <!-- Primeira linha - 3 cards -->
+                    <div class="process-row">
+                        <article class="feature-card">
+                            <div class="feature-icon" aria-hidden="true">1️⃣</div>
+                            <h3>Diagnóstico</h3>
+                            <p>Avaliamos seu equipamento gratuitamente e identificamos o problema com precisão.</p>
+                        </article>
+                        <article class="feature-card">
+                            <div class="feature-icon" aria-hidden="true">2️⃣</div>
+                            <h3>Orçamento</h3>
+                            <p>Apresentamos um orçamento detalhado sem compromisso, com prazo de execução.</p>
+                        </article>
+                        <article class="feature-card">
+                            <div class="feature-icon" aria-hidden="true">3️⃣</div>
+                            <h3>Reparo</h3>
+                            <p>Após sua aprovação, iniciamos o reparo usando peças de qualidade.</p>
+                        </article>
+                    </div>
+                    
+                    <!-- Segunda linha - 3 cards -->
+                    <div class="process-row">
+                        <article class="feature-card">
+                            <div class="feature-icon" aria-hidden="true">4️⃣</div>
+                            <h3>Teste</h3>
+                            <p>Realizamos testes rigorosos para garantir que tudo funcione perfeitamente.</p>
+                        </article>
+                        <article class="feature-card">
+                            <div class="feature-icon" aria-hidden="true">5️⃣</div>
+                            <h3>Entrega</h3>
+                            <p>Seu equipamento é entregue funcionando com garantia estendida.</p>
+                        </article>
+                        <article class="feature-card">
+                            <div class="feature-icon" aria-hidden="true">6️⃣</div>
+                            <h3>Suporte</h3>
+                            <p>Oferecemos suporte pós-venda e orientações para uso adequado.</p>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Call to Action -->
+        <section class="section" aria-labelledby="cta-title">
+            <div class="container" style="text-align: center;">
+                <h2 id="cta-title" class="section-title">Precisa de reparo? Fale conosco!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 40px; color: var(--medium-gray);">
+                    Diagnóstico gratuito e orçamento sem compromisso. Especialistas em celulares e notebooks.
+                </p>
+                <div class="cta-buttons">
+                    <a href="contato.html" class="btn btn-primary" aria-label="Solicitar orçamento gratuito">Solicitar Orçamento</a>
+                    <a href="sobre.html" class="btn btn-secondary" aria-label="Conhecer nossa equipe">Conheça Nossa Equipe</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" role="contentinfo">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>ALEXCELL & CIA</h3>
+                    <p>Assistência técnica especializada em celulares e notebooks. Reparos, formatação, peças, capas, películas e acessórios.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Contato</h3>
+                    <p><a href="tel:+5579981102746">📞 (79) 9.8110-2746</a> / <a href="tel:+5579981606441">(79) 9.8160-6441</a></p>
+                    <p><a href="tel:+557930112293">☎️ (79) 3011-2293</a></p>
+                    <address>
+                        <p><strong>Loja 1:</strong> Lot. Paraíso do Sul - R. 38, N 518 - Sala 02 - Marivan, Aracaju - SE, 49044-451</p>
+                        <p><strong>Loja 2:</strong> Av. Alexandre Alcino, n° 2810 - Sala C - Santa Maria, Aracaju - SE, 49044-090</p>
+                    </address>
+                </div>
+                <div class="footer-section">
+                    <h3>Especialidades</h3>
+                    <p>📱 Celulares: Apple, Samsung, Xiaomi...</p>
+                    <p>💻 Notebooks: Asus, Dell, HP...</p>
+                    <p>🔧 Reparos e Formatação</p>
+                    <p>📱 Capas, Películas e Acessórios</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Links Úteis</h3>
+                    <nav aria-label="Links do rodapé">
+                        <p><a href="servicos.html">Nossos Serviços</a></p>
+                        <p><a href="sobre.html">Sobre Nós</a></p>
+                        <p><a href="contato.html">Fale Conosco</a></p>
+                        <p><a href="auth.html">Área do Cliente</a></p>
+                    </nav>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 ALEXCELL & CIA. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="js/api/supabase.js"></script>
+    <script type="module" src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ALEXCELL & CIA</title>
+    <link rel="icon" href="logos/1.png?v=2" type="image/png">
+    <!-- Import Map para resolver dependências do Supabase -->
+    <script type="importmap">
+    {
+        "imports": {
+            "@supabase/supabase-js": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.2/+esm"
+        }
+    }
+    </script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-container-new">
+            <!-- Coluna da Esquerda (Branding) -->
+            <div class="auth-branding">
+                <div class="auth-logo">
+                    <a href="index.html">ALEXCELL <span>&amp; CIA</span></a>
+                </div>
+                <h2>Acesso ao Painel de Controle</h2>
+                <p>Gerencie suas ordens de serviço, clientes e o futuro do seu negócio.</p>
+            </div>
+
+            <!-- Coluna da Direita (Formulário) -->
+            <div class="auth-form-section">
+                <div class="auth-form-wrapper">
+                    <h2 class="auth-title">Bem-vindo de volta!</h2>
+                    <p class="auth-subtitle">Use suas credenciais para acessar o sistema.</p>
+
+                    <form id="login-form" class="auth-form">
+                        <div class="form-group">
+                            <label for="login-email">E-mail</label>
+                            <input type="email" id="login-email" placeholder="seuemail@exemplo.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Senha</label>
+                            <input type="password" id="login-password" placeholder="Sua senha" required>
+                            <span class="password-toggle-icon" data-target="login-password">👁️</span>
+                        </div>
+                        <button type="submit" class="btn btn-auth">Entrar no Sistema</button>
+                    </form>
+
+                    <div class="back-to-site">
+                        <a href="index.html">&larr; Voltar para o site</a>
+                    </div>
+
+                    <!-- Mensagens de Erro/Sucesso -->
+                    <div id="auth-success-message" class="auth-message success">
+                        <span id="success-message-text"></span>
+                    </div>
+                    <div id="auth-error-message" class="auth-message error">
+                        <span id="error-message-text"></span>
+                    </div>
+                </div>
+                <div class="auth-footer-new">
+                    <p>&copy; 2024 ALEXCELL & CIA. Todos os direitos reservados.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/auth/auth.js"></script>
+    <script type="module">
+        import { initializeAuth } from './js/auth/auth.js';
+        document.addEventListener('DOMContentLoaded', initializeAuth);
+    </script>
+</body>
+</html>
