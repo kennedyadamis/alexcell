@@ -31,7 +31,7 @@ export function formatValueForDisplay(value) {
     return num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-export function formatDateForDisplay(dateValue) {
+export function formatDateForDisplay(dateValue, includeTime = false) {
     if (!dateValue) return 'Não definida';
     const date = new Date(dateValue);
     if (isNaN(date.getTime())) {
@@ -42,6 +42,17 @@ export function formatDateForDisplay(dateValue) {
         }
         return dateValue; // Retorna a string original se não for uma data válida
     }
+    
+    if (includeTime) {
+        return date.toLocaleString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+    
     return date.toLocaleDateString('pt-BR');
 }
 
