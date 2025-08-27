@@ -11,11 +11,14 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
+        auth: resolve(__dirname, 'auth.html'),
+        dashboard: resolve(__dirname, 'dashboard.html'),
         servicos: resolve(__dirname, 'servicos.html'),
-        os: resolve(__dirname, 'os.html'),
         sobre: resolve(__dirname, 'sobre.html'),
         contato: resolve(__dirname, 'contato.html'),
+        'consultar-os': resolve(__dirname, 'consultar-os.html'),
+        'store-selector': resolve(__dirname, 'store-selector.html'),
       },
     },
   },
-}) 
+})
