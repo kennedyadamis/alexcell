@@ -150,8 +150,10 @@ export function updatePaginationUI(module, currentPage, totalRecords) {
                     loadCustomersTable(currentPage - 1);
                 }
                 if (module === 'warranty') {
-                    const { loadWarrantyTable } = await import('../modules/warranty.js');
-                    loadWarrantyTable(currentPage - 1);
+                    // A funcionalidade de warranty está no main.js
+                    if (window.loadWarrantyTable) {
+                        window.loadWarrantyTable(currentPage - 1);
+                    }
                 }
             }
         });
@@ -171,8 +173,10 @@ export function updatePaginationUI(module, currentPage, totalRecords) {
                     loadCustomersTable(currentPage + 1);
                 }
                 if (module === 'warranty') {
-                    const { loadWarrantyTable } = await import('../modules/warranty.js');
-                    loadWarrantyTable(currentPage + 1);
+                    // A funcionalidade de warranty está no main.js
+                    if (window.loadWarrantyTable) {
+                        window.loadWarrantyTable(currentPage + 1);
+                    }
                 }
             }
         });
