@@ -27,5 +27,5 @@ export default defineConfig({
     assetsInclude: ['**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.gif', '**/*.svg'],
     copyPublicDir: true,
   },
-  publicDir: 'logos',
+  publicDir: 'public',
 })
