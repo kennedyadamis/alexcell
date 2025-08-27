@@ -169,32 +169,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
         setupModalCloseEvents();
 
-// ========================================
-    // INICIALIZAÇÃO AUTOMÁTICA
-// ========================================
+    // Inicializar consulta de OS na página pública
+    initializeOSConsultation();
+    
+    // Inicializar troca de senha se o formulário estiver presente
+    initializePasswordChange();
+    
+    // Inicializar funcionalidades de configuração se estiverem presentes
+    if (document.getElementById('logo-uploader')) {
+        initializeLogoUploader();
+    }
+    
+    if (document.getElementById('save-banner-btn')) {
+        initializeBannerManagement();
+    }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // Inicializar consulta de OS na página pública
-        initializeOSConsultation();
-        
-        // Inicializar troca de senha se o formulário estiver presente
-        initializePasswordChange();
-        
-        // Inicializar funcionalidades de configuração se estiverem presentes
-        if (document.getElementById('logo-uploader')) {
-            initializeLogoUploader();
-        }
-        
-        if (document.getElementById('save-banner-btn')) {
-            initializeBannerManagement();
-        }
-    
-        if (document.getElementById('module-usuarios-permissoes')) {
-            initializePermissionsModule();
-        }
-    
-        // Debug removido
-    });
+    if (document.getElementById('module-usuarios-permissoes')) {
+        initializePermissionsModule();
+    }
+
+    // Debug removido
 });
 
 // ========================================

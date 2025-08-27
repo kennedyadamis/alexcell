@@ -21,7 +21,11 @@ export default defineConfig({
         'print-cash-template': resolve(__dirname, 'print-cash-template.html'),
         'print-template': resolve(__dirname, 'print-template.html'),
         'print-warranty-template': resolve(__dirname, 'print-warranty-template.html'),
+        'pattern-lock-local': resolve(__dirname, 'pattern-lock-local.js'),
       },
     },
+    assetsInclude: ['**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.gif', '**/*.svg'],
+    copyPublicDir: true,
   },
+  publicDir: 'logos',
 })
