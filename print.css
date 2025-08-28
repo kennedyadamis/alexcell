@@ -90,7 +90,10 @@ body {
 
 .disclaimer strong {
     font-weight: bold;
+    font-size: 11pt; /* Aumenta o tamanho da fonte do texto em negrito */
 }
+
+/* Estilos removidos para evitar conflito com estilos inline */
 
 .receipt-footer {
     margin-top: 20px;
@@ -99,7 +102,7 @@ body {
 }
 
 .signature-block {
-    margin-top: 25px;
+    margin-top: 40px;
     display: block;
     width: 100%;
     text-align: center;
@@ -131,11 +134,12 @@ body {
     margin-top: 5px;
 }
 
-h1, h2, h3, h4, p, span {
+h1, h2, h3, h4, p, span, div, li {
     margin: 0;
     padding: 0;
-    font-size: 1em;
 }
+
+/* Estilos de font-weight removidos para evitar conflito com inline */
 
 h2 {
     margin-top: 15px;
@@ -144,4 +148,4 @@ h2 {
 
 .section p {
     margin-bottom: 3px;
-} 
+}

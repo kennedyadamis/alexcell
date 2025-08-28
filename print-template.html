@@ -3,7 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <title>Ordem de Serviço</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <link rel="stylesheet" href="print.css">
+    <style>
+        /* Estilos inline para garantir aplicação com máxima especificidade */
+        html, body, * { font-weight: 900 !important; color: #000 !important; }
+        body { font-weight: 900 !important; color: #000 !important; line-height: 1.4 !important; }
+        .receipt * { font-weight: 900 !important; color: #000 !important; }
+        strong, b, .strong { font-weight: 900 !important; color: #000 !important; }
+        h1, h2, h3, h4, .h1, .h2, .h3, .h4 { font-weight: 900 !important; color: #000 !important; }
+        #os-details h2 { font-weight: 900 !important; color: #000 !important; }
+        #os-details h4 { font-weight: 900 !important; color: #000 !important; }
+        p, span, div, li, .text { font-weight: 900 !important; color: #000 !important; }
+        .section p, .section span, .section div, .section li { font-weight: 900 !important; color: #000 !important; }
+        .disclaimer p, .disclaimer strong { font-weight: 900 !important; color: #000 !important; }
+        /* Força aplicação em todos os elementos */
+        [style*="font-weight"] { font-weight: 900 !important; }
+        [style*="color"] { color: #000 !important; }
+    </style>
 </head>
 <body>
     <div class="receipt">
@@ -21,7 +40,7 @@
         </section>
 
         <section class="disclaimer">
-            <p><strong>Aviso:</strong><strong> Após aprovado o orçamento, o serviço só será realizado mediante o pagamento de 50% do valor. Após 90 dias da conclusão do serviço, será cobrada uma taxa diária de R$2,00. Após 180 dias, o aparelho será vendido ou descartado para cobrir custos.</strong></p>
+            <p style="font-weight: bold !important;"><strong style="font-size: 11pt !important; font-weight: bold !important;">Aviso:</strong><strong style="font-size: 11pt !important; font-weight: bold !important;"> Após aprovado o orçamento, o serviço só será realizada mediante o pagamento de 50% do valor. Após 90 dias da conclusão do serviço, será cobrada uma taxa diária de R$2,00. Após 180 dias, o aparelho será vendido ou descartado para cobrir custos.</strong></p>
         </section>
 
         <footer class="receipt-footer">
@@ -88,7 +107,7 @@
                         : osData.accessories_checklist;
                     
                     checklistItems = Object.entries(checklist)
-                        .map(([key, value]) => `<li>${key.charAt(0).toUpperCase() + key.slice(1)}: <strong>${value === 'sim' ? 'Sim' : 'Não'}</strong></li>`)
+                        .map(([key, value]) => `<li style="font-weight: 900 !important; color: #000 !important;">${key.charAt(0).toUpperCase() + key.slice(1)}: <strong style="font-weight: 900 !important; color: #000 !important;">${value === 'sim' ? 'Sim' : 'Não'}</strong></li>`)
                         .join('');
                 } catch (e) {
                     console.error('Erro ao processar checklist:', e);
@@ -97,53 +116,53 @@
             }
 
             detailsContainer.innerHTML = `
-                <h2>Ordem de Serviço #${osData.id}</h2>
+                <h2 style="font-weight: 900 !important; color: #000 !important;">Ordem de Serviço #${osData.id}</h2>
                 
                 <div class="section">
-                    <h4>1. Cliente</h4>
-                    <p><strong>Nome:</strong> ${osData.client_name || 'Não informado'}</p>
-                    <p><strong>Telefone:</strong> ${formatPhoneForPrint(osData.client_phone) || 'Não informado'}</p>
-                    <p><strong>Endereço:</strong> ${formatAddressForPrint(osData) || 'Não informado'}</p>
+                    <h4 style="font-weight: 900 !important; color: #000 !important;">1. Cliente</h4>
+                    <p style="font-weight: 900 !important; color: #000 !important;"><strong style="font-weight: 900 !important; color: #000 !important;">Nome:</strong> ${osData.client_name || 'Não informado'}</p>
+                    <p style="font-weight: 900 !important; color: #000 !important;"><strong style="font-weight: 900 !important; color: #000 !important;">Telefone:</strong> ${formatPhoneForPrint(osData.client_phone) || 'Não informado'}</p>
+                    <p style="font-weight: 900 !important; color: #000 !important;"><strong style="font-weight: 900 !important; color: #000 !important;">Endereço:</strong> ${formatAddressForPrint(osData) || 'Não informado'}</p>
                 </div>
                 
                 <div class="section">
-                    <h4>2. Criado por</h4>
-                    <p><strong>Usuário:</strong> ${osData.created_by_user || 'Não identificado'}</p>
+                    <h4 style="font-weight: 900 !important; color: #000 !important;">2. Criado por</h4>
+                    <p style="font-weight: 900 !important; color: #000 !important;"><strong style="font-weight: 900 !important; color: #000 !important;">Usuário:</strong> ${osData.created_by_user || 'Não identificado'}</p>
                 </div>
                 
                 <div class="section">
-                    <h4>3. Equipamento</h4>
-                    <p><strong>Aparelho:</strong> ${osData.equipment_brand || ''} ${osData.equipment_model || ''}</p>
-                    <p><strong>Cor:</strong> ${osData.color || 'Não informada'}</p>
-                    <p><strong>Senha:</strong> ${osData.equipment_password || (osData.pattern_lock_value ? 'Ver desenho abaixo' : 'Não informada')}</p>
+                    <h4 style="font-weight: 900 !important; color: #000 !important;">3. Equipamento</h4>
+                    <p style="font-weight: 900 !important; color: #000 !important;"><strong style="font-weight: 900 !important; color: #000 !important;">Aparelho:</strong> ${osData.equipment_brand || ''} ${osData.equipment_model || ''}</p>
+                    <p style="font-weight: 900 !important; color: #000 !important;"><strong style="font-weight: 900 !important; color: #000 !important;">Cor:</strong> ${osData.color || 'Não informada'}</p>
+                    <p style="font-weight: 900 !important; color: #000 !important;"><strong style="font-weight: 900 !important; color: #000 !important;">Senha:</strong> ${osData.equipment_password || (osData.pattern_lock_value ? 'Ver desenho abaixo' : 'Não informada')}</p>
                 ${osData.pattern_lock_value ? `
                     <div class="pattern-section">
-                        <strong>Senha (Desenho):</strong>
+                        <strong style="font-weight: 900 !important; color: #000 !important;">Senha (Desenho):</strong>
                         <canvas id="print-pattern-canvas" class="pattern-draw-area" width="80" height="80"></canvas>
                     </div>
                     ` : ''}
                 </div>
                 
                 <div class="section">
-                    <h4>4. Descrição do Defeito/Serviço</h4>
-                    <p>${osData.problem_description || 'Nenhuma descrição fornecida.'}</p>
+                    <h4 style="font-weight: 900 !important; color: #000 !important;">4. Descrição do Defeito/Serviço</h4>
+                    <p style="font-weight: 900 !important; color: #000 !important;">${osData.problem_description || 'Nenhuma descrição fornecida.'}</p>
                 </div>
 
                 <div class="section">
-                    <h4>5. Checklist de Acessórios</h4>
-                    <ul class="checklist-print">${checklistItems}</ul>
+                    <h4 style="font-weight: 900 !important; color: #000 !important;">5. Checklist de Acessórios</h4>
+                    <ul class="checklist-print" style="font-weight: 900 !important; color: #000 !important;">${checklistItems}</ul>
                 </div>
 
                 <div class="section">
-                    <h4>6. Observações Adicionais</h4>
-                    <p>${osData.notes || 'Nenhuma.'}</p>
+                    <h4 style="font-weight: 900 !important; color: #000 !important;">6. Observações Adicionais</h4>
+                    <p style="font-weight: 900 !important; color: #000 !important;">${osData.notes || 'Nenhuma.'}</p>
                 </div>
 
                  <div class="section">
-                    <h4>7. Prazo de Entrega</h4>
-                    <p><strong>Previsão de Entrega:</strong> ${osData.estimated_delivery_date ? formatDateTimeForPrint(osData.estimated_delivery_date) : 'Não definida'}</p>
-                    <p><strong>Valor do Orçamento:</strong> R$ ${formatValueForPrint(osData.quote_value)}</p>
-                    <p><strong>Status do Pagamento:</strong> ${osData.payment_status || 'Pendente'}</p>
+                    <h4 style="font-weight: 900 !important; color: #000 !important;">7. Prazo de Entrega</h4>
+                    <p style="font-weight: 900 !important; color: #000 !important;"><strong style="font-weight: 900 !important; color: #000 !important;">Previsão de Entrega:</strong> ${osData.estimated_delivery_date ? formatDateTimeForPrint(osData.estimated_delivery_date) : 'Não definida'}</p>
+                    <p style="font-weight: 900 !important; color: #000 !important;"><strong style="font-weight: 900 !important; color: #000 !important;">Valor do Orçamento:</strong> R$ ${formatValueForPrint(osData.quote_value)}</p>
+                    <p style="font-weight: 900 !important; color: #000 !important;"><strong style="font-weight: 900 !important; color: #000 !important;">Status do Pagamento:</strong> ${osData.payment_status || 'Pendente'}</p>
                 </div>
             `;
 
@@ -168,6 +187,25 @@
             if (!dateString) return 'Não definida';
             
             try {
+                // Se a data está no formato ISO (com T e timezone)
+                if (dateString.includes('T')) {
+                    const date = new Date(dateString);
+                    if (isNaN(date.getTime())) {
+                        // Se não conseguir converter, extrair apenas a parte da data
+                        const datePart = dateString.split('T')[0];
+                        const [year, month, day] = datePart.split('-');
+                        return `${day}/${month}/${year}`;
+                    }
+                    // Formatar com data e hora
+                    return date.toLocaleString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
+                
                 // Se a data está no formato YYYY-MM-DD (padrão do input date)
                 if (dateString.includes('-')) {
                     const [year, month, day] = dateString.split('-');
@@ -351,7 +389,7 @@
             dots.forEach(dot => {
                 ctx.beginPath();
                 ctx.arc(dot.x, dot.y, radius, 0, 2 * Math.PI);
-                ctx.fillStyle = '#ccc';
+                ctx.fillStyle = '#666';
                 ctx.fill();
             });
 

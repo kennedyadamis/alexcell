@@ -263,7 +263,6 @@ async function initializeDashboard(session) {
     setupPDVSplitPayment();
     setupCashMoneyOperations();
     setupCloseCashRegister();
-    setupOSModalEvents();
     setupPatternLock();
     // loadOSTable removido - será carregado apenas quando o módulo OS for acessado
     loadCustomersTable();
@@ -3188,8 +3187,9 @@ async function printWithToast(osId) {
         // Salvar no localStorage para o template de impressão
         localStorage.setItem('currentOS_for_print', JSON.stringify(os));
         
-        // Abrir janela de impressão
-        window.open('print-template.html', '_blank');
+        // Abrir janela de impressão com timestamp para evitar cache
+        const timestamp = new Date().getTime();
+        window.open(`print-template.html?v=${timestamp}`, '_blank');
         
         showToast(`OS #${osId} enviada para impressão`, 'success');
         
@@ -4200,8 +4200,9 @@ async function printWarranty(warrantyId) {
         // Salvar no localStorage para o template de impressão
         localStorage.setItem('currentWarranty_for_print', JSON.stringify(warranty));
         
-        // Abrir janela de impressão usando template dedicado
-        window.open('print-warranty-template.html', '_blank');
+        // Abrir janela de impressão usando template dedicado com timestamp para evitar cache
+        const timestamp = new Date().getTime();
+        window.open(`print-warranty-template.html?v=${timestamp}`, '_blank');
         
         showToast(`Garantia #${warrantyId} enviada para impressão`, 'success');
 

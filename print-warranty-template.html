@@ -3,7 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>Garantia de Serviços</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <link rel="stylesheet" href="print.css">
+    <style>
+        /* Estilos inline para garantir aplicação */
+        body { font-weight: 900 !important; color: #000 !important; }
+        * { font-weight: 900 !important; color: #000 !important; }
+        strong, b { font-weight: 900 !important; color: #000 !important; }
+        h1, h2, h3, h4 { font-weight: 900 !important; color: #000 !important; }
+        #warranty-details h2 { font-weight: 900 !important; color: #000 !important; }
+        #warranty-details h4 { font-weight: 900 !important; color: #000 !important; }
+        p, span, div, li { font-weight: 900 !important; color: #000 !important; }
+    </style>
 </head>
 <body>
     <div class="receipt">
@@ -21,12 +34,12 @@
         </section>
 
         <section class="disclaimer">
-            <p><strong>TELA TOUCH OU FRONTAIS QUE APRESENTEM MAU USO, TRINCADOS, QUEBRADOS, RISCADOS, MANCHADOS, MOLHADO, DESCOLADOS E COM O CABO FLEX ROMPIDO. A GARANTIA É CANCELADA IMEDIATAMENTE NESSAS CONDIÇÕES E NAS CONDIÇÕES A SEGUIR:</strong></p>
-            <ol style="padding-left: 20px; font-size: 9pt;">
-                <li>Funcionamento, instalação e atualização de aplicativos, bem como o sistema operacional do celular ou tablet NÃO FAZEM parte desta garantia;</li>
-                <li>É necessário a apresentação deste termo para a garantia, caso contrário será inválida a garantia;</li>
-                <li>A garantia cobre defeitos que não forem ocasionados pelo cliente, como citado acima, caso contrário apresentar este comprovante para garantia;</li>
-                <li>Caso o aparelho seja aberto por terceiros ou o lacre de garantia seja violado a garantia é cancelada automaticamente.</li>
+            <p style="font-weight: bold !important;"><strong style="font-weight: bold !important;">TELA TOUCH OU FRONTAIS QUE APRESENTEM MAU USO, TRINCADOS, QUEBRADOS, RISCADOS, MANCHADOS, MOLHADO, DESCOLADOS E COM O CABO FLEX ROMPIDO. A GARANTIA É CANCELADA IMEDIATAMENTE NESSAS CONDIÇÕES E NAS CONDIÇÕES A SEGUIR:</strong></p>
+            <ol style="padding-left: 20px; font-size: 12px !important;">
+                <li style="font-size: 12px !important;">Funcionamento, instalação e atualização de aplicativos, bem como o sistema operacional do celular ou tablet NÃO FAZEM parte desta garantia;</li>
+                <li style="font-size: 12px !important;">É necessário a apresentação deste termo para a garantia, caso contrário será inválida a garantia;</li>
+                <li style="font-size: 12px !important;">A garantia cobre defeitos que não forem ocasionados pelo cliente, como citado acima, caso contrário apresentar este comprovante para garantia;</li>
+                <li style="font-size: 12px !important;">Caso o aparelho seja aberto por terceiros ou o lacre de garantia seja violado a garantia é cancelada automaticamente.</li>
             </ol>
         </section>
 
@@ -79,34 +92,34 @@
             validUntil.setDate(repairDate.getDate() + (warrantyData.warranty_period_days || 90));
 
             detailsContainer.innerHTML = `
-                <h2>Garantia de Serviços #${warrantyData.id}</h2>
+                <h2 style="font-weight: 900 !important; color: #000 !important;">Garantia de Serviços #${warrantyData.id}</h2>
                 
                 <div class="section">
-                    <h4>Cliente</h4>
-                    <p><strong>Nome:</strong> ${warrantyData.customer_name || 'Não informado'}</p>
-                    <p><strong>Telefone:</strong> ${warrantyData.customer_phone || 'Não informado'}</p>
+                    <h4 style="font-weight: 900 !important; color: #000 !important;">Cliente</h4>
+                    <p style="font-weight: 900 !important; color: #000 !important;"><strong style="font-weight: 900 !important; color: #000 !important;">Nome:</strong> ${warrantyData.customer_name || 'Não informado'}</p>
+                    <p style="font-weight: 900 !important; color: #000 !important;"><strong style="font-weight: 900 !important; color: #000 !important;">Telefone:</strong> ${warrantyData.customer_phone || 'Não informado'}</p>
                 </div>
                 
                 <div class="section">
-                    <h4>Equipamento</h4>
-                    <p><strong>Aparelho:</strong> ${warrantyData.equipment_brand || ''} ${warrantyData.equipment_model || ''}</p>
+                    <h4 style="font-weight: 900 !important; color: #000 !important;">Equipamento</h4>
+                    <p style="font-weight: 900 !important; color: #000 !important;"><strong style="font-weight: 900 !important; color: #000 !important;">Aparelho:</strong> ${warrantyData.equipment_brand || ''} ${warrantyData.equipment_model || ''}</p>
                 </div>
                 
                 <div class="section">
-                    <h4>Informações da Garantia</h4>
-                    <p style="background: #f8f9fa; padding: 10px; border-left: 4px solid #007bff; margin: 10px 0;">
-                        A Alexcell dá a garantia de <strong>${warrantyData.warranty_period_days || 90} dias</strong>, referente ao reparo feito no telefone descrito acima.
+                    <h4 style="font-weight: 900 !important; color: #000 !important;">Informações da Garantia</h4>
+                    <p style="background: #f8f9fa; padding: 10px; border-left: 4px solid #007bff; margin: 10px 0; font-weight: 900 !important; color: #000 !important;">
+                        A Alexcell dá a garantia de <strong style="font-weight: 900 !important; color: #000 !important;">${warrantyData.warranty_period_days || 90} dias</strong>, referente ao reparo feito no telefone descrito acima.
                     </p>
-                    <p><strong>Peça Substituída:</strong> ${warrantyData.part_replaced || 'Não informada'}</p>
-                    <p><strong>Valor Total:</strong> R$ ${formatValueForPrint(warrantyData.total_value)}</p>
-                    <p><strong>Data do Reparo:</strong> ${formatDateForPrint(warrantyData.repair_date)}</p>
-                    <p><strong>Válida até:</strong> ${formatDateForPrint(validUntil.toISOString().split('T')[0])}</p>
+                    <p style="font-weight: 900 !important; color: #000 !important;"><strong style="font-weight: 900 !important; color: #000 !important;">Peça Substituída:</strong> ${warrantyData.part_replaced || 'Não informada'}</p>
+                    <p style="font-weight: 900 !important; color: #000 !important;"><strong style="font-weight: 900 !important; color: #000 !important;">Valor Total:</strong> R$ ${formatValueForPrint(warrantyData.total_value)}</p>
+                    <p style="font-weight: 900 !important; color: #000 !important;"><strong style="font-weight: 900 !important; color: #000 !important;">Data do Reparo:</strong> ${formatDateForPrint(warrantyData.repair_date)}</p>
+                    <p style="font-weight: 900 !important; color: #000 !important;"><strong style="font-weight: 900 !important; color: #000 !important;">Válida até:</strong> ${formatDateForPrint(validUntil.toISOString().split('T')[0])}</p>
                 </div>
 
                 ${warrantyData.observations ? `
                 <div class="section">
-                    <h4>Observações</h4>
-                    <p>${warrantyData.observations}</p>
+                    <h4 style="font-weight: 900 !important; color: #000 !important;">Observações</h4>
+                    <p style="font-weight: 900 !important; color: #000 !important;">${warrantyData.observations}</p>
                 </div>
                 ` : ''}
             `;
@@ -158,4 +171,4 @@
         }
     </script>
 </body>
-</html> 
+</html>
