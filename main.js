@@ -338,10 +338,7 @@ function initializeDashboardEventListeners() {
                 targetModule.style.display = 'block';
             }
 
-            // Resetar flag do módulo atual para permitir reinicialização
-            if (moduleInitialized[module] !== undefined) {
-                moduleInitialized[module] = false;
-            }
+            // Não resetar a flag - manter inicialização única por módulo
 
             // Inicializar funcionalidades específicas do módulo
             switch(module) {
@@ -1223,6 +1220,12 @@ function renderCashMovementsHtml(groupedEntries, title = 'Todas as Movimentaçõ
 
 // Definição única e correta:
 async function initializeCashRegisterModule() {
+    // Flag para garantir que o módulo seja inicializado apenas uma vez
+    if (initializeCashRegisterModule.hasBeenInitialized) {
+        return;
+    }
+    initializeCashRegisterModule.hasBeenInitialized = true;
+
     // Exibe a tela correta conforme o status do caixa
     const closedView = document.getElementById('cash-closed-view');
     const openView = document.getElementById('cash-open-view');
@@ -3535,6 +3538,12 @@ const WARRANTY_RECORDS_PER_PAGE = 10;
 
 // Inicializar módulo de garantia
 function initializeWarrantyModule() {
+    // Flag para garantir que o módulo seja inicializado apenas uma vez
+    if (initializeWarrantyModule.hasBeenInitialized) {
+        return;
+    }
+    initializeWarrantyModule.hasBeenInitialized = true;
+
     const warrantyModule = document.getElementById('module-garantia');
     if (!warrantyModule) return;
 
