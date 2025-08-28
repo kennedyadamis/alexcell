@@ -16,9 +16,21 @@ import { dbSelect, dbInsert, dbUpdate, dbDelete, authInterceptor } from '../util
 // Re-exportar addEditOSProduct para que possa ser importada pelo main.js
 export { addEditOSProduct };
 
+// Flag para evitar carregamento duplicado da tabela de OS
+let isLoadingOSTable = false;
+
 export async function loadOSTable(page = 1, selectedStoreId = null, printWithToastCallback = null) {
+    // Verificação para evitar carregamento duplicado
+    if (isLoadingOSTable) {
+        console.log('loadOSTable já está em execução, ignorando chamada duplicada');
+        return;
+    }
+    
     const tbody = document.getElementById('os-table-body');
     if (!tbody) return;
+    
+    // Marcar como carregando
+    isLoadingOSTable = true;
     tbody.innerHTML = '<tr><td colspan="7">Carregando...</td></tr>';
 
     const from = (page - 1) * RECORDS_PER_PAGE;
@@ -132,6 +144,9 @@ export async function loadOSTable(page = 1, selectedStoreId = null, printWithToa
     } catch (error) {
         console.error('Erro ao carregar ordens de serviço:', error);
         tbody.innerHTML = `<tr><td colspan="7">Erro ao carregar dados. Tente novamente. (${error.message})</td></tr>`;
+    } finally {
+        // Desmarcar como carregando
+        isLoadingOSTable = false;
     }
 }
 

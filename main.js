@@ -249,6 +249,9 @@ async function initializeDashboard(session) {
         return;
     }
 
+    // Resetar flags de inicialização dos módulos
+    resetModuleFlags();
+    
     // Carrega os dados do usuário, permissões e TODOS os eventos
     loadUserData();
     applyPermissions();
@@ -262,7 +265,7 @@ async function initializeDashboard(session) {
     setupCloseCashRegister();
     setupOSModalEvents();
     setupPatternLock();
-    loadOSTable(1, getSelectedStoreId(), printWithToast);
+    // loadOSTable removido - será carregado apenas quando o módulo OS for acessado
     loadCustomersTable();
     // Chamar setupOpenCashRegister aqui!
     setupOpenCashRegister();
@@ -293,6 +296,29 @@ async function setupSwitchStoreButton() {
     }
 }
 
+// Flags para controlar inicialização dos módulos
+let moduleInitialized = {
+    os: false,
+    pdv: false,
+    caixa: false,
+    estoque: false,
+    relatorios: false,
+    configuracoes: false,
+    garantia: false,
+    'usuarios-permissoes': false
+};
+
+// Função para resetar as flags de inicialização dos módulos
+function resetModuleFlags() {
+    Object.keys(moduleInitialized).forEach(key => {
+        moduleInitialized[key] = false;
+    });
+    // Resetar também a flag de diagnosticModals
+    if (typeof diagnosticModalsExecuted !== 'undefined') {
+        diagnosticModalsExecuted = false;
+    }
+}
+
 // Reestruturada: ÚNICA função para configurar TODOS os eventos do dashboard
 function initializeDashboardEventListeners() {
     // Navegação entre módulos
@@ -313,38 +339,67 @@ function initializeDashboardEventListeners() {
                 targetModule.style.display = 'block';
             }
 
+            // Resetar flag do módulo atual para permitir reinicialização
+            if (moduleInitialized[module] !== undefined) {
+                moduleInitialized[module] = false;
+            }
+
             // Inicializar funcionalidades específicas do módulo
             switch(module) {
                 case 'os':
-                    loadOSTable(1, getSelectedStoreId(), printWithToast); // Passa a loja selecionada e a página inicial
-                    diagnosticModals();
+                    if (!moduleInitialized.os) {
+                        loadOSTable(1, getSelectedStoreId(), printWithToast);
+                        diagnosticModals();
+                        moduleInitialized.os = true;
+                    }
                     break;
                 case 'pdv':
-                    initializePDV();
+                    if (!moduleInitialized.pdv) {
+                        initializePDV();
+                        moduleInitialized.pdv = true;
+                    }
                     break;
                 case 'caixa':
-                    initializeCashRegisterModule();
+                    if (!moduleInitialized.caixa) {
+                        initializeCashRegisterModule();
+                        moduleInitialized.caixa = true;
+                    }
                     break;
                 case 'estoque':
-                    initializeStockModule();
+                    if (!moduleInitialized.estoque) {
+                        initializeStockModule();
+                        moduleInitialized.estoque = true;
+                    }
                     break;
                 case 'relatorios':
-                    initializeReportsModule();
+                    if (!moduleInitialized.relatorios) {
+                        initializeReportsModule();
+                        moduleInitialized.relatorios = true;
+                    }
                     break;
                 case 'configuracoes':
-                    // Inicializar funcionalidades de configuração
-                    initializeLogoUploader();
-                    initializeBannerManagement();
+                    if (!moduleInitialized.configuracoes) {
+                        // Inicializar funcionalidades de configuração
+                        initializeLogoUploader();
+                        initializeBannerManagement();
+                        moduleInitialized.configuracoes = true;
+                    }
                     break;
                 case 'trocar-senha':
                     // Inicializar troca de senha
                     initializePasswordChange();
                     break;
                 case 'garantia':
-                    initializeWarrantyModule();
+                    if (!moduleInitialized.garantia) {
+                        initializeWarrantyModule();
+                        moduleInitialized.garantia = true;
+                    }
                     break;
                 case 'usuarios-permissoes':
-                    initializePermissionsModule();
+                    if (!moduleInitialized['usuarios-permissoes']) {
+                        initializePermissionsModule();
+                        moduleInitialized['usuarios-permissoes'] = true;
+                    }
                     break;
             }
         });
@@ -3146,8 +3201,16 @@ async function printWithToast(osId) {
 
 // As funções viewCustomer e editCustomer agora são importadas do módulo customers.js
 
+// Flag para controlar execução da função diagnosticModals
+let diagnosticModalsExecuted = false;
+
 // FUNÇÃO DE DIAGNÓSTICO: Verifica se os elementos dos modais existem
 function diagnosticModals() {
+    // Evitar execução múltipla
+    if (diagnosticModalsExecuted) {
+        return;
+    }
+    
     const elements = {
         'os-view-modal': document.getElementById('os-view-modal'),
         'os-view-title': document.getElementById('os-view-title'),
@@ -3164,6 +3227,9 @@ function diagnosticModals() {
         // Debug removido
     }
     // Debug removido
+    
+    // Marcar como executada
+    diagnosticModalsExecuted = true;
     
     return elements;
 }
