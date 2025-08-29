@@ -416,7 +416,7 @@ function initEditCustomerModal() {
     
     // Verificar se o modal existe antes de adicionar event listeners
     if (!modal) {
-        console.log('Modal de edição de cliente não encontrado no DOM');
+        // Modal de edição de cliente não encontrado no DOM
         return;
     }
     

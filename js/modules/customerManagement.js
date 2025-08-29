@@ -47,8 +47,26 @@ export function setupCustomerSearch(searchInputId, resultsContainerId, selectedC
             
             resultsContainer.querySelectorAll('.autocomplete-item[data-id]').forEach(item => {
                 item.addEventListener('click', () => {
-                    searchInput.value = item.textContent;
-                    selectedCustomerIdInput.value = item.dataset.id;
+                    const customerName = item.textContent;
+                    const customerId = item.dataset.id;
+                    
+                    searchInput.value = customerName;
+                    selectedCustomerIdInput.value = customerId;
+                    
+                    // Atualizar também o campo edit-os-new-customer-name se existir
+                    const newCustomerNameField = document.getElementById('edit-os-new-customer-name');
+                    if (newCustomerNameField) {
+                        newCustomerNameField.value = customerName;
+                        console.log('✅ Campo edit-os-new-customer-name atualizado:', customerName);
+                    }
+                    
+                    // Atualizar também o campo edit-os-selected-customer-id se existir
+                    const selectedCustomerField = document.getElementById('edit-os-selected-customer-id');
+                    if (selectedCustomerField) {
+                        selectedCustomerField.value = customerId;
+                        console.log('✅ Campo edit-os-selected-customer-id atualizado:', customerId);
+                    }
+                    
                     resultsContainer.innerHTML = '';
                     resultsContainer.style.display = 'none';
                 });

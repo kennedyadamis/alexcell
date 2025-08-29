@@ -8,7 +8,7 @@ export async function fillUserPermissionsList(userId) {
     container.innerHTML = '<p>Carregando permissões...</p>';
     try {
         const { data: userPermissions, error } = await dbSelect('user_store_permissions', {
-            select: 'id, can_manage_os, can_manage_pdv, can_manage_cash, can_manage_stock, can_view_reports, can_manage_users, can_manage_cost_prices, store_id',
+            select: 'id, can_manage_os, can_manage_pdv, can_manage_cash, can_manage_stock, can_view_reports, can_manage_users, can_manage_cost_prices, can_manage_os_expiration, store_id',
             eq: { user_id: userId }
         });
 
@@ -37,6 +37,8 @@ export async function fillUserPermissionsList(userId) {
                     <div class="permission-item"><input type="checkbox" id="perm-relatorios-${p.id}" ${p.can_view_reports ? 'checked' : ''}><label for="perm-relatorios-${p.id}">Relatórios</label></div>
                     <div class="permission-item"><input type="checkbox" id="perm-garantia-${p.id}" ${p.can_manage_users ? 'checked' : ''}><label for="perm-garantia-${p.id}">Garantia</label></div>
                     <div class="permission-item"><input type="checkbox" id="perm-custo-${p.id}" ${p.can_manage_cost_prices ? 'checked' : ''}><label for="perm-custo-${p.id}">Preços de Custo</label></div>
+                    <div class="permission-item"><input type="checkbox" id="perm-expiracao-${p.id}" ${p.can_manage_os_expiration ? 'checked' : ''}><label for="perm-expiracao-${p.id}">Expiração de OS</label></div>
+
                 </div>
             `;
             container.appendChild(group);
@@ -90,8 +92,8 @@ if (editPermissionsForm) {
             const can_view_reports = group.querySelector(`#perm-relatorios-${permId}`)?.checked || false;
             const can_manage_users = group.querySelector(`#perm-garantia-${permId}`)?.checked || false;
             const can_manage_cost_prices = group.querySelector(`#perm-custo-${permId}`)?.checked || false;
-            // Log para depuração
-            console.log('Salvando permissões:', { permId, can_manage_os, can_manage_pdv, can_manage_cash, can_manage_stock, can_view_reports, can_manage_users, can_manage_cost_prices });
+            const can_manage_os_expiration = group.querySelector(`#perm-expiracao-${permId}`)?.checked || false;
+            // Salvando permissões no banco de dados
             // Atualizar permissões no Supabase
             const { error } = await dbUpdate('user_store_permissions', {
                 can_manage_os,
@@ -100,7 +102,8 @@ if (editPermissionsForm) {
                 can_manage_stock,
                 can_view_reports,
                 can_manage_users,
-                can_manage_cost_prices
+                can_manage_cost_prices,
+                can_manage_os_expiration
             }, { eq: { id: permId } });
             if (error) {
                 showToast('Erro ao salvar permissões: ' + error.message, 'error');

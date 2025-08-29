@@ -8,7 +8,7 @@ import { initializePermissionsModule } from './js/modules/permissions.js';
 import { initializeCustomerFormEvents, loadCustomersTable, performCustomerSearch, clearCustomerSearch, saveCustomer, viewCustomer, editCustomer, deleteCustomer } from './js/modules/customers.js';
 import { formatPhoneMask, formatCurrencyBR, formatValueForDisplay, formatDateForDisplay } from './js/utils/formatters.js';
 import { canViewCostPrices, formatCostPrice } from './js/utils/costPermissions.js';
-import { loadOSTable, refreshOSList, openNewOSModal, closeNewOSModal, fetchAddressByCEP, initializePatternLock, confirmAddProduct, updateOSTotal, setupOrderForm, updateOSStatus, markAsAwaitingPickup, markAsDelivered, openOSPaymentModal, setupOSPaymentEvents, updateOSSplitSummary, deleteOS, viewOS, editOS, populateEditOSForm, setupEditPatternLock, setupEditValueFormatting, addEditOSProduct, setupEditCustomerAutocomplete, setupEditProductAutocomplete, updateEditOSTotal as updateEditOSTotalServiceOrders, closeEditOSModal, setupEditOSEvents, initializeOSConsultation, showConsultationMessage, displayOSResults, adjustQuantity, updateProductTotal, formatCurrencyInput, openAddProductModal, closeAddProductModal, closeViewOSModal, saveEditedOSProduct, searchOSByCustomer, clearOSSearch } from './js/modules/serviceOrders.js';
+import { loadOSTable, refreshOSList, openNewOSModal, closeNewOSModal, fetchAddressByCEP, initializePatternLock, confirmAddProduct, updateOSTotal, setupOrderForm, updateOSStatus, markAsAwaitingPickup, markAsDelivered, openOSPaymentModal, setupOSPaymentEvents, updateOSSplitSummary, deleteOS, viewOS, editOS, populateEditOSForm, setupEditPatternLock, setupEditValueFormatting, addEditOSProduct, setupEditCustomerAutocomplete, setupEditProductAutocomplete, updateEditOSTotal as updateEditOSTotalServiceOrders, closeEditOSModal, setupEditOSEvents, initializeOSConsultation, showConsultationMessage, displayOSResults, adjustQuantity, updateProductTotal, formatCurrencyInput, openAddProductModal, closeAddProductModal, closeViewOSModal, saveEditedOSProduct, saveEditedOS, searchOSByCustomer, clearOSSearch } from './js/modules/serviceOrders.js';
 import { resetAddProductModal } from './js/utils/resetAddProductModal.js';
 import { loadDynamicBanner, createDefaultBanners } from './js/modules/banners.js';
 import { initializeOrderForm, validateForm, getFieldLabel, formatEmailContent, simulateEmailSending, showSuccessMessage } from './js/modules/orderForm.js';
@@ -432,6 +432,7 @@ function initializeDashboardEventListeners() {
                         // Inicializar funcionalidades de configuração
                         initializeLogoUploader();
                         initializeBannerManagement();
+                        initializeOSExpirationConfig();
                         moduleInitialized.configuracoes = true;
                     }
                     break;
@@ -474,16 +475,16 @@ function initializeDashboardEventListeners() {
     
     // --- Eventos da Barra de Pesquisa de OS ---
     const btnSearchOS = document.getElementById('btn-search-os');
-    if (btnSearchOS) btnSearchOS.addEventListener('click', searchOSByCustomer);
+    if (btnSearchOS) btnSearchOS.addEventListener('click', () => searchOSByCustomer(getSelectedStoreId(), printWithToast));
     
     const btnClearOSSearch = document.getElementById('btn-clear-os-search');
-    if (btnClearOSSearch) btnClearOSSearch.addEventListener('click', clearOSSearch);
+    if (btnClearOSSearch) btnClearOSSearch.addEventListener('click', () => clearOSSearch(getSelectedStoreId(), printWithToast));
     
     const osSearchInput = document.getElementById('os-search-input');
     if (osSearchInput) {
         osSearchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                searchOSByCustomer();
+                searchOSByCustomer(getSelectedStoreId(), printWithToast);
             }
         });
     }
@@ -614,6 +615,12 @@ function applyPermissions() {
     const bannerSection = document.getElementById('banner-management-section');
     if (bannerSection) {
         bannerSection.style.display = canAccessSettings ? 'block' : 'none';
+    }
+    
+    // Controla a visibilidade da seção de configuração de expiração de OS
+    const osExpirationSection = document.getElementById('os-expiration-config-section');
+    if (osExpirationSection) {
+        osExpirationSection.style.display = canAccessSettings ? 'block' : 'none';
     }
     
     // A aba "Trocar Senha" está sempre visível para todos os usuários logados
@@ -3326,40 +3333,11 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             
             const osId = document.getElementById('edit-os-id').value;
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Salvando...';
-
-            try {
-                const updatedData = {
-                            equipment_model: document.getElementById('edit-os-model').value,
-        problem_description: document.getElementById('edit-os-problem').value,
-        status: document.getElementById('edit-os-status-select').value,
-        quote_value: parseFloat(document.getElementById('edit-os-quote-value').value.replace(/\./g, '').replace(',', '.')) || 0,
-                    estimated_delivery_date: document.getElementById('edit-os-delivery-date').value || null,
-                    notes: document.getElementById('edit-os-notes').value
-                };
-
-                // Atualizar marca
-                const brandInput = document.getElementById('edit-os-brand');
-                if (brandInput.value) {
-                    updatedData.equipment_brand = brandInput.value;
-                }
-
-                const { error } = await supabase.from('service_orders').update(updatedData).eq('id', osId);
-                
-                if (error) throw error;
-
-                showToast(`OS #${osId} atualizada com sucesso!`, 'success');
-                closeEditOSModal();
-                loadOSTable(1, getSelectedStoreId(), printWithToast); // Recarrega a tabela
-                
-            } catch (error) {
-                showToast(`Erro ao atualizar OS: ${error.message}`, 'error');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Salvar Alterações';
-            }
+            const currentUser = getCurrentUser();
+            const selectedStoreId = getSelectedStoreId();
+            
+            // Usar a função saveEditedOS que tem toda a lógica correta
+            await saveEditedOS(osId, currentUser, selectedStoreId);
         });
     }
 });
@@ -3626,7 +3604,7 @@ function setupWarrantyEvents() {
     }
     
     if (btnClearWarrantySearch) {
-        btnClearWarrantySearch.addEventListener('click', clearWarrantySearch);
+        btnClearWarrantySearch.addEventListener('click', () => clearWarrantySearch());
     }
     
     if (warrantySearchInput) {
@@ -4781,6 +4759,165 @@ async function saveNewCustomerFromModal() {
     } catch (error) {
         console.error('Erro ao salvar cliente:', error);
         showToast('Erro ao cadastrar cliente: ' + error.message, 'error');
+    }
+}
+
+// ========================================
+// CONFIGURAÇÃO DE EXPIRAÇÃO DE OS
+// ========================================
+
+// Função para inicializar a configuração de expiração de OS
+async function initializeOSExpirationConfig() {
+    const checkbox = document.getElementById('enable-os-expiration');
+    const timeGroup = document.getElementById('expiration-time-group');
+    const timeSelect = document.getElementById('os-expiration-months');
+    const saveBtn = document.getElementById('save-expiration-config');
+    const feedbackMsg = document.getElementById('expiration-feedback');
+    
+    if (!checkbox || !timeGroup || !timeSelect || !saveBtn) {
+        console.log('Elementos de configuração de expiração de OS não encontrados');
+        return;
+    }
+    
+    // Aplicar verificações de permissão na interface
+    try {
+        const { applyExpirationPermissions } = await import('./js/utils/osExpirationPermissions.js');
+        await applyExpirationPermissions();
+    } catch (error) {
+        console.error('Erro ao aplicar permissões de expiração:', error);
+    }
+    
+    // Carregar configuração atual
+    loadOSExpirationConfig();
+    
+    // Event listener para o checkbox
+    checkbox.addEventListener('change', function() {
+        if (this.checked) {
+            timeGroup.classList.remove('disabled');
+            timeSelect.disabled = false;
+        } else {
+            timeGroup.classList.add('disabled');
+            timeSelect.disabled = true;
+        }
+    });
+    
+    // Event listener para o botão salvar
+    saveBtn.addEventListener('click', saveOSExpirationConfig);
+}
+
+// Função para carregar a configuração atual de expiração de OS
+async function loadOSExpirationConfig() {
+    try {
+        const { data, error } = await supabase
+            .from('site_settings')
+            .select('value')
+            .eq('key', 'os_expiration_config')
+            .single();
+        
+        if (error && error.code !== 'PGRST116') { // PGRST116 = not found
+            throw error;
+        }
+        
+        const checkbox = document.getElementById('enable-os-expiration');
+        const timeGroup = document.getElementById('expiration-time-group');
+        const timeSelect = document.getElementById('os-expiration-months');
+        
+        if (data && data.value) {
+            const config = JSON.parse(data.value);
+            
+            // Configurar checkbox
+            checkbox.checked = config.enabled || false;
+            
+            // Configurar tempo
+            if (config.months) {
+                timeSelect.value = config.months;
+            }
+            
+            // Configurar estado do grupo
+            if (config.enabled) {
+                timeGroup.classList.remove('disabled');
+                timeSelect.disabled = false;
+            } else {
+                timeGroup.classList.add('disabled');
+                timeSelect.disabled = true;
+            }
+        } else {
+            // Configuração padrão
+            checkbox.checked = false;
+            timeGroup.classList.add('disabled');
+            timeSelect.disabled = true;
+            timeSelect.value = '3';
+        }
+        
+    } catch (error) {
+        console.error('Erro ao carregar configuração de expiração de OS:', error);
+    }
+}
+
+// Função para salvar a configuração de expiração de OS
+async function saveOSExpirationConfig() {
+    // Verificar permissão antes de salvar
+    const { validateExpirationSavePermission } = await import('./js/utils/osExpirationPermissions.js');
+    const hasPermission = await validateExpirationSavePermission();
+    
+    if (!hasPermission) {
+        return; // Função já mostra o alerta de erro
+    }
+    
+    const checkbox = document.getElementById('enable-os-expiration');
+    const timeSelect = document.getElementById('os-expiration-months');
+    const feedbackMsg = document.getElementById('expiration-feedback');
+    
+    try {
+        const config = {
+            enabled: checkbox.checked,
+            months: parseInt(timeSelect.value)
+        };
+        
+        // Verificar se já existe uma configuração
+        const { data: existing } = await supabase
+            .from('site_settings')
+            .select('id')
+            .eq('key', 'os_expiration_config')
+            .single();
+        
+        let result;
+        if (existing) {
+            // Atualizar configuração existente
+            result = await supabase
+                .from('site_settings')
+                .update({ value: JSON.stringify(config) })
+                .eq('key', 'os_expiration_config');
+        } else {
+            // Criar nova configuração
+            result = await supabase
+                .from('site_settings')
+                .insert({
+                    key: 'os_expiration_config',
+                    value: JSON.stringify(config)
+                });
+        }
+        
+        if (result.error) {
+            throw result.error;
+        }
+        
+        // Mostrar mensagem de sucesso
+        feedbackMsg.textContent = 'Configuração salva com sucesso!';
+        feedbackMsg.className = 'feedback-message success';
+        feedbackMsg.style.display = 'block';
+        setTimeout(() => {
+            feedbackMsg.style.display = 'none';
+        }, 3000);
+        
+    } catch (error) {
+        console.error('❌ Erro ao salvar configuração de expiração de OS:', error);
+        feedbackMsg.textContent = 'Erro ao salvar configuração: ' + error.message;
+        feedbackMsg.className = 'feedback-message error';
+        feedbackMsg.style.display = 'block';
+        setTimeout(() => {
+            feedbackMsg.style.display = 'none';
+        }, 5000);
     }
 }
 

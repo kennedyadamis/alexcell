@@ -762,6 +762,49 @@
                             <div id="logo-feedback" class="feedback-message" style="display: none;"></div>
                         </div>
 
+                        <!-- Seção: Tempo de Expiração de OS -->
+                        <div id="os-expiration-config-section" class="settings-section form-panel">
+                            <h3>⏰ Tempo de Expiração de Ordens de Serviço</h3>
+                            <p>Configure o tempo limite para que ordens de serviço antigas não apareçam mais na busca. O tempo é contado a partir da data de entrega prevista.</p>
+                            
+                            <div class="expiration-config-container">
+                                <div class="form-group">
+                                    <label class="checkbox-container">
+                                        <input type="checkbox" id="enable-os-expiration" checked>
+                                        <span class="checkmark"></span>
+                                        Ativar filtro de tempo de expiração
+                                    </label>
+                                    <small class="input-hint">Quando ativado, ordens de serviço antigas não aparecerão na busca</small>
+                                </div>
+                                
+                                <div class="form-group" id="expiration-time-group">
+                                    <label for="os-expiration-months">Tempo de expiração (em meses):</label>
+                                    <select id="os-expiration-months" class="form-control">
+                                        <option value="2">2 meses</option>
+                                        <option value="3" selected>3 meses</option>
+                                        <option value="4">4 meses</option>
+                                        <option value="5">5 meses</option>
+                                        <option value="6">6 meses</option>
+                                        <option value="7">7 meses</option>
+                                        <option value="8">8 meses</option>
+                                        <option value="9">9 meses</option>
+                                        <option value="10">10 meses</option>
+                                        <option value="11">11 meses</option>
+                                        <option value="12">12 meses</option>
+                                    </select>
+                                    <small class="input-hint">Ordens de serviço com data de entrega prevista superior ao tempo selecionado não aparecerão na busca</small>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="button" id="save-expiration-config" class="btn btn-primary">
+                                        💾 Salvar Configuração
+                                    </button>
+                                </div>
+                                
+                                <div id="expiration-feedback" class="feedback-message" style="display: none;"></div>
+                            </div>
+                        </div>
+
                         <!-- Seção: Gerenciar Banner Principal -->
                         <div id="banner-management-section" class="settings-section form-panel" style="display: none;">
                             <h3>🎨 Gerenciar Banner Principal</h3>

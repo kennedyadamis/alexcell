@@ -78,7 +78,7 @@ export async function loadOSTable(page = 1, selectedStoreId = null, printWithToa
                 <td>${os.equipment_brand || ''} ${os.equipment_model || ''}</td>
                 <td>${os.problem_description}</td>
                 <td><span class="status-badge status-${os.status === 'pending' || os.status === 'completed' ? 'progress' : os.status}">${getStatusText(os.status)}</span></td>
-                <td>${new Date(os.created_at).toLocaleDateString('pt-BR')}</td>
+                <td>${formatDateForDisplay(os.created_at)}</td>
                 <td class="os-actions"></td>
             `;
 
@@ -249,7 +249,7 @@ export async function searchOSByCustomer(selectedStoreId = null, printWithToastC
                 <td>${os.equipment_brand || ''} ${os.equipment_model || ''}</td>
                 <td>${os.problem_description}</td>
                 <td><span class="status-badge status-${os.status === 'pending' || os.status === 'completed' ? 'progress' : os.status}">${getStatusText(os.status)}</span></td>
-                <td>${new Date(os.created_at).toLocaleDateString('pt-BR')}</td>
+                <td>${formatDateForDisplay(os.created_at)}</td>
                 <td class="os-actions"></td>
             `;
             
@@ -2038,17 +2038,31 @@ export async function editOS(osId, currentUser, selectedStoreId) {
             throw error || new Error('OS não encontrada');
         }
 
+        console.log('🔍 Dados da OS carregada para edição:', {
+            id: os.id,
+            client_name: os.client_name,
+            customer_id: os.customer_id,
+            hasClientName: !!os.client_name,
+            hasCustomerId: !!os.customer_id
+        });
+
         // Carregar dados do cliente separadamente
         let customerData = null;
         if (os.customer_id) {
+            console.log('🔍 Buscando dados do cliente com ID:', os.customer_id);
             const { data: customer, error: customerError } = await dbSelect('customers', {
                 select: 'id, full_name, phone, birth_date, address',
                 eq: { id: os.customer_id },
                 single: true
             });
-            if (!customerError) {
+            if (!customerError && customer) {
                 customerData = customer;
+                console.log('✅ Dados do cliente encontrados:', customerData);
+            } else {
+                console.error('❌ Erro ao buscar cliente ou cliente não encontrado:', customerError);
             }
+        } else {
+            console.log('⚠️ OS não possui customer_id, tentando usar client_name:', os.client_name);
         }
 
         // Buscar produtos diretamente da coluna products da OS
@@ -2129,11 +2143,21 @@ export async function populateEditOSForm(os, customerData) {
         console.error('❌ Elemento edit-os-id não encontrado');
     }
     
-    // Preencher nome do cliente
+    // Preencher dados do cliente - CORREÇÃO PARA EVITAR NOME DESAPARECENDO
+    console.log('🔧 Preenchendo dados do cliente na edição:', { customerData, osClientName: os.client_name });
+    
+    // Determinar o nome do cliente (priorizar customerData, depois os.client_name)
+    const clientName = customerData?.full_name || os.client_name || 'N/A';
+    const clientPhone = customerData?.phone || 'N/A';
+    const clientId = customerData?.id || os.customer_id || '';
+    
+    console.log('📝 Dados do cliente determinados:', { clientName, clientPhone, clientId });
+    
+    // Preencher nome do cliente no display
     const customerNameElement = document.getElementById('edit-os-customer-name-display');
     if (customerNameElement) {
-        customerNameElement.textContent = customerData?.full_name || 'N/A';
-        // Nome do cliente preenchido
+        customerNameElement.textContent = clientName;
+        console.log('✅ Nome do cliente preenchido no display:', clientName);
     } else {
         console.error('❌ Elemento edit-os-customer-name-display não encontrado');
     }
@@ -2141,8 +2165,8 @@ export async function populateEditOSForm(os, customerData) {
     // Preencher telefone do cliente
     const customerPhoneElement = document.getElementById('edit-os-customer-phone-display');
     if (customerPhoneElement) {
-        customerPhoneElement.textContent = customerData?.phone ? formatPhone(customerData.phone) : 'N/A';
-        // Telefone do cliente preenchido
+        customerPhoneElement.textContent = clientPhone !== 'N/A' ? formatPhone(clientPhone) : 'N/A';
+        console.log('✅ Telefone do cliente preenchido:', clientPhone);
     } else {
         console.error('❌ Elemento edit-os-customer-phone-display não encontrado');
     }
@@ -2150,22 +2174,50 @@ export async function populateEditOSForm(os, customerData) {
     // Preencher ID do cliente (campo oculto)
     const customerIdElement = document.getElementById('edit-os-customer-id-input');
     if (customerIdElement) {
-        customerIdElement.value = customerData?.id || '';
-        // ID do cliente preenchido
+        customerIdElement.value = clientId;
+        console.log('✅ ID do cliente preenchido:', clientId);
     } else {
         console.error('❌ Elemento edit-os-customer-id-input não encontrado');
     }
     
-    // Preencher o campo de busca do cliente
+    // Preencher campo de busca do cliente
     const customerSearchInput = document.getElementById('edit-os-customer-search');
-    if (customerSearchInput && customerData?.full_name) {
-        customerSearchInput.value = customerData.full_name;
+    if (customerSearchInput) {
+        customerSearchInput.value = clientName !== 'N/A' ? clientName : '';
+        console.log('✅ Campo de busca preenchido:', clientName);
+    }
+    
+    // Preencher campo de nome do novo cliente (fallback) - só se estiver vazio
+    const newCustomerNameInput = document.getElementById('edit-os-new-customer-name');
+    if (newCustomerNameInput) {
+        // Só preencher se o campo estiver vazio ou com valor padrão
+        const currentValue = newCustomerNameInput.value.trim();
+        if (!currentValue || currentValue === 'N/A') {
+            newCustomerNameInput.value = clientName !== 'N/A' ? clientName : '';
+            console.log('✅ Campo de novo cliente preenchido:', clientName);
+        } else {
+            console.log('✅ Campo de novo cliente mantido (já tinha valor):', currentValue);
+        }
+    }
+    
+    // Preencher campo de ID do cliente selecionado - só se estiver vazio
+    const selectedCustomerIdInput = document.getElementById('edit-os-selected-customer-id');
+    if (selectedCustomerIdInput) {
+        // Só preencher se o campo estiver vazio para não sobrescrever valor do autocomplete
+        const currentIdValue = selectedCustomerIdInput.value.trim();
+        if (!currentIdValue) {
+            selectedCustomerIdInput.value = clientId;
+            console.log('✅ ID do cliente selecionado preenchido:', clientId);
+        } else {
+            console.log('✅ ID do cliente selecionado mantido (já tinha valor):', currentIdValue);
+        }
     }
     
     // Mostrar informações do cliente selecionado
     const customerDisplay = document.getElementById('edit-os-customer-display');
-    if (customerDisplay && customerData) {
+    if (customerDisplay && (customerData || os.client_name)) {
         customerDisplay.style.display = 'block';
+        console.log('✅ Display do cliente mostrado');
     }
 
     document.getElementById('edit-os-brand').value = os.equipment_brand || '';
@@ -2748,9 +2800,52 @@ export function setupEditCustomerAutocomplete() {
                 const editCheckFone = document.querySelector('input[name="edit-check-fone"]:checked')?.value || 'nao';
                 const editCheckAranhado = document.querySelector('input[name="edit-check-aranhado"]:checked')?.value || 'nao';
 
+                // Debug: verificar valores dos campos antes de salvar
+                const clientNameField = document.getElementById('edit-os-new-customer-name');
+                const selectedCustomerIdField = document.getElementById('edit-os-selected-customer-id');
+                
+                // Determinar o nome do cliente correto
+                let clientName = '';
+                if (customerId && customerId !== null) {
+                    // Se há um customer_id, buscar o nome do cliente no banco
+                    try {
+                        const { data: customerData, error: customerError } = await supabase
+                            .from('customers')
+                            .select('full_name')
+                            .eq('id', customerId)
+                            .single();
+                        
+                        if (!customerError && customerData) {
+                            clientName = customerData.full_name;
+                        }
+                    } catch (error) {
+                        console.error('Erro ao buscar nome do cliente:', error);
+                    }
+                } else {
+                    // Se não há customer_id, usar o valor do campo de novo cliente
+                    clientName = clientNameField?.value || '';
+                }
+                
+                console.log('🔍 Debug salvamento - Campos do cliente:', {
+                    clientNameField: clientNameField,
+                    clientNameValue: clientNameField?.value,
+                    selectedCustomerIdField: selectedCustomerIdField,
+                    selectedCustomerIdValue: selectedCustomerIdField?.value,
+                    newSelectedCustomerIdInput: newSelectedCustomerIdInput,
+                    newSelectedCustomerIdInputValue: newSelectedCustomerIdInput?.value,
+                    customerId: customerId,
+                    customerIdBeforeConversion: newSelectedCustomerIdInput?.value,
+                    clientNameFinal: clientName
+                });
+                
+                console.log('🔍 Debug salvamento - osData que será enviado:', {
+                    customer_id: customerId,
+                    client_name: clientName
+                });
+
                 const osData = {
                     customer_id: customerId,
-                    client_name: document.getElementById('edit-os-new-customer-name')?.value || '',
+                    client_name: clientName,
                     equipment_brand: document.getElementById('edit-os-brand')?.value || '',
                     equipment_model: document.getElementById('edit-os-model')?.value || '',
                     color: document.getElementById('edit-os-color')?.value || '',
@@ -2963,12 +3058,19 @@ export function setupEditOSEvents(osId) {
 
 // Função para inicializar o sistema de consulta de OS na página pública
 export function initializeOSConsultation() {
+    // Só executa se estiver na página de consulta de OS
+    if (!document.getElementById('phone-input') || !document.getElementById('consultation-form')) {
+        return; // Sai silenciosamente se não estiver na página correta
+    }
+    
+    // Inicializando consulta de OS
     const consultationForm = document.getElementById('consultation-form');
     const consultationResultsDiv = document.getElementById('consultation-results');
     const consultationPhoneInput = document.getElementById('phone-input'); // ID correto do campo de telefone
     
     // Garante que o input de telefone tenha a máscara de telefone aplicada
     if (consultationPhoneInput) {
+        // Aplicando máscara de telefone
         consultationPhoneInput.addEventListener('input', (e) => {
             e.target.value = formatPhone(e.target.value);
         });
@@ -2977,20 +3079,28 @@ export function initializeOSConsultation() {
     if (consultationForm && consultationResultsDiv) {
         consultationForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            // INICIANDO CONSULTA DE OS
+            
             // Verificação de segurança para o campo de telefone
             if (!consultationPhoneInput) {
+                console.error('❌ Campo de telefone não encontrado');
+                alert('❌ ERRO: Campo de telefone não encontrado');
                 showConsultationMessage('error', 'Campo de telefone não encontrado.');
                 return;
             }
             
             const phone = consultationPhoneInput.value.replace(/\D/g, ''); // Remove caracteres não numéricos
             const customerName = document.getElementById('consultation-name')?.value?.trim() || '';
+            
+            // Dados da consulta coletados
 
             if (!phone && !customerName) {
+                console.log('⚠️ Nenhum dado informado para consulta');
                 showConsultationMessage('error', 'Por favor, preencha o telefone ou o nome do cliente.');
                 return;
             }
             
+            // Iniciando busca no banco de dados
             consultationResultsDiv.innerHTML = '<p class="loading-message">Buscando ordens de serviço...</p>';
             consultationResultsDiv.style.display = 'block';
 
@@ -3001,19 +3111,33 @@ export function initializeOSConsultation() {
                 };
 
                 if (phone) {
+                    // Buscando por telefone
+                    
                     // Busca por telefone do cliente associado (remove formatação para comparação)
                     const { data: allOrders, error: searchError } = await dbSelect('service_orders', {
                         select: '*, customers(id, full_name, phone, address)'
                     });
                     
-                    if (searchError) throw searchError;
+                    if (searchError) {
+                        console.error('❌ Erro na busca:', searchError);
+                        throw searchError;
+                    }
+                    
+                    // Total de OS no banco verificado
                     
                     // Filtra manualmente por telefone removendo formatação
-                    const filteredOrders = allOrders.filter(order => {
+                    let filteredOrders = allOrders.filter(order => {
                         if (!order.customers?.phone) return false;
                         const cleanDbPhone = order.customers.phone.replace(/\D/g, '');
                         return cleanDbPhone.includes(phone);
                     });
+                    
+                    // OS encontradas por telefone
+                    
+                    // Aplicar filtro de expiração se configurado
+                    // Aplicando filtro de expiração
+                    filteredOrders = await applyExpirationFilter(filteredOrders);
+                    // OS após filtro de expiração verificadas
                     
                     // Se também há busca por nome, filtra adicionalmente
                     if (customerName) {
@@ -3039,19 +3163,25 @@ export function initializeOSConsultation() {
                 
                 if (customerName) {
                     // Busca apenas por nome do cliente
-                    query = query.filter('customers.full_name', 'ilike', `%${customerName}%`);
-                }
-
-                // Não filtra mais por status - mostra todas as OS para consulta pública
-
-                const { data: serviceOrders, error } = await query;
-
-                if (error) throw error;
-
-                if (serviceOrders.length === 0) {
-                    showConsultationMessage('info', 'Nenhuma ordem de serviço encontrada com os dados fornecidos.');
-                } else {
-                    displayOSResults(serviceOrders);
+                    const { data: allOrders, error: searchError } = await dbSelect('service_orders', {
+                        select: '*, customers(id, full_name, phone, address)'
+                    });
+                    
+                    if (searchError) throw searchError;
+                    
+                    // Filtra manualmente por nome do cliente
+                    let filteredOrders = allOrders.filter(order => 
+                        order.customers?.full_name?.toLowerCase().includes(customerName.toLowerCase())
+                    );
+                    
+                    // Aplicar filtro de expiração se configurado
+                    filteredOrders = await applyExpirationFilter(filteredOrders);
+                    
+                    if (filteredOrders.length === 0) {
+                        showConsultationMessage('info', 'Nenhuma ordem de serviço encontrada com os dados fornecidos.');
+                    } else {
+                        displayOSResults(filteredOrders);
+                    }
                 }
             } catch (error) {
                 console.error('Erro na consulta de OS:', error);
@@ -3193,9 +3323,24 @@ export async function saveEditedOS(osId, currentUser, selectedStoreId) {
             });
         }
         
+        // Coletar dados do formulário com logs detalhados
+        const deliveryDateValue = document.getElementById('edit-os-delivery-date')?.value || '';
+        console.log('📅 Data de entrega coletada do formulário:', deliveryDateValue);
+        
+        // Logs de depuração para campos do cliente
+        const customerIdField = document.getElementById('edit-os-selected-customer-id');
+        const customerNameField = document.getElementById('edit-os-new-customer-name');
+        
+        console.log('🔍 DEBUG - Campos do cliente no salvamento:', {
+            customerIdField: customerIdField ? 'encontrado' : 'NÃO ENCONTRADO',
+            customerIdValue: customerIdField?.value || 'VAZIO',
+            customerNameField: customerNameField ? 'encontrado' : 'NÃO ENCONTRADO', 
+            customerNameValue: customerNameField?.value || 'VAZIO'
+        });
+        
         const osData = {
-            customer_id: document.getElementById('edit-os-selected-customer-id')?.value || null,
-            client_name: document.getElementById('edit-os-new-customer-name')?.value || '',
+            customer_id: customerIdField?.value || null,
+            client_name: customerNameField?.value || '',
             equipment_brand: document.getElementById('edit-os-brand')?.value || '',
             equipment_model: document.getElementById('edit-os-model')?.value || '',
             color: document.getElementById('edit-os-color')?.value || '',
@@ -3204,46 +3349,118 @@ export async function saveEditedOS(osId, currentUser, selectedStoreId) {
             quote_value: parseFloat((document.getElementById('edit-os-quote-value')?.value || '0').replace(/\./g, '').replace(',', '.')),
             amount_paid: parseFloat((document.getElementById('edit-os-amount-paid')?.value || '0').replace(/\./g, '').replace(',', '.')),
             payment_method: document.getElementById('edit-os-payment-method')?.value || '',
-            estimated_delivery_date: document.getElementById('edit-os-delivery-date')?.value || '',
+            estimated_delivery_date: deliveryDateValue,
             pattern_lock_value: document.getElementById('edit-os-pattern-lock-value')?.value || '',
             status: document.getElementById('edit-os-status-select')?.value || 'pending',
             notes: document.getElementById('edit-os-notes')?.value || '',
             user_id: getCurrentUser()?.id,
             store_id: getSelectedStoreId()
         };
-
-        // Atualizar dados da OS
-        const { error: osError } = await dbUpdate('service_orders', osData, { eq: { id: osId } });
-        if (osError) throw osError;
-
-        // Gerenciar produtos da OS
-        // 1. Deletar todos os produtos existentes da OS
-        const { error: deleteError } = await dbDelete('service_order_products', { eq: { service_order_id: osId } });
-        if (deleteError) throw deleteError;
-
-        // 2. Inserir os novos produtos
-        if (osProducts.length > 0) {
-            const productsToInsert = osProducts.map(product => ({
-                service_order_id: osId,
-                product_id: product.id,
-                quantity: product.quantity,
-                unit_price: product.price
-            })).filter(product => product.product_id); // Filtrar apenas produtos com ID válido
-
-            if (productsToInsert.length > 0) {
-                const { error: insertError } = await dbInsert('service_order_products', productsToInsert);
-                if (insertError) throw insertError;
-            }
-        }
         
+        console.log('💾 Dados da OS para salvar:', osData);
+        console.log('📅 Data de entrega que será salva:', osData.estimated_delivery_date);
+
+        // Adicionar produtos ao osData
+        osData.products = osProducts;
+        
+        // Atualizar dados da OS incluindo produtos
+        console.log('🔄 Atualizando OS no banco de dados com produtos...');
+        console.log('📦 Produtos que serão salvos:', osProducts);
+        
+        const { error: osError } = await dbUpdate('service_orders', osData, { eq: { id: osId } });
+        if (osError) {
+            console.error('❌ Erro ao atualizar OS:', osError);
+            throw osError;
+        }
+        console.log('✅ OS atualizada com sucesso no banco, incluindo produtos');
+        
+        console.log('🎉 OS editada com sucesso! Fechando modal e atualizando lista...');
         showToast('Ordem de Serviço atualizada com sucesso!', 'success');
         closeEditOSModal();
+        
+        console.log('🔄 Atualizando lista de OS...');
         refreshOSList(selectedStoreId); // Passa selectedStoreId para a atualização da lista
+        console.log('✅ Lista de OS atualizada');
     } catch (error) {
         console.error('Erro ao salvar OS editada:', error);
         showToast(`Erro ao salvar OS editada: ${error.message}`, 'error');
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = '💾 Salvar OS';
+    }
+}
+
+// Função para aplicar filtro de expiração de OS
+export async function applyExpirationFilter(orders) {
+    try {
+        // Aplicando filtro de expiração
+        
+        // Buscar configuração de expiração
+        const { data: configData, error } = await dbSelect('site_settings', {
+            select: 'value',
+            eq: { key: 'os_expiration_config' },
+            single: true
+        });
+
+        // Se não há configuração, criar uma padrão
+        if (error || !configData) {
+            // Nenhuma configuração de expiração encontrada, criando configuração padrão
+            const defaultConfig = {
+                enabled: false,
+                months: 12
+            };
+            
+            // Tentar criar configuração padrão
+            try {
+                await dbInsert('site_settings', {
+                    key: 'os_expiration_config',
+                    value: JSON.stringify(defaultConfig)
+                });
+                // Configuração padrão criada
+            } catch (insertError) {
+                // Erro ao criar configuração padrão, usando valores padrão
+            }
+            
+            // Como está desabilitado por padrão, retorna todas as ordens
+            return orders;
+        }
+
+        const config = JSON.parse(configData.value);
+        // Configuração de expiração carregada
+        
+        // Se o filtro está desabilitado, retorna todas as ordens
+        if (!config.enabled) {
+            // Filtro de expiração desabilitado, retornando todas as ordens
+            return orders;
+        }
+
+        const expirationMonths = parseInt(config.months);
+        const currentDate = new Date();
+        // Data atual e meses de expiração configurados verificados
+
+        // Filtrar ordens que não expiraram
+        const filteredOrders = orders.filter(order => {
+            if (!order.estimated_delivery_date) {
+                // OS sem data de entrega, mantendo na busca
+                return true; // Se não tem data de entrega, mantém na busca
+            }
+
+            const deliveryDate = new Date(order.estimated_delivery_date);
+            const expirationDate = new Date(deliveryDate);
+            expirationDate.setMonth(expirationDate.getMonth() + expirationMonths);
+
+            const isExpired = currentDate > expirationDate;
+            // Verificação de expiração da OS
+
+            // Retorna true se ainda não expirou
+            return !isExpired;
+        });
+        
+        // Filtro aplicado com sucesso
+        return filteredOrders;
+    } catch (error) {
+        console.error('❌ Erro ao aplicar filtro de expiração:', error);
+        // Em caso de erro, retorna todas as ordens
+        return orders;
     }
 }
