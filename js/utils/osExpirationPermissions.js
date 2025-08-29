@@ -4,6 +4,7 @@
 
 import { supabase } from '../api/supabase.js';
 import { dbSelect } from './authInterceptor.js';
+import { getSelectedStoreId } from './globals.js';
 
 // Cache das permissões do usuário atual
 let userExpirationPermissions = null;
@@ -28,7 +29,7 @@ export async function canManageOSExpiration() {
 
         const { data: permissions, error } = await dbSelect('user_store_permissions', {
             select: 'can_manage_os_expiration',
-            eq: { user_id: user.id, store_id: currentStoreId }
+            eq: { user_id: user.id }
         });
 
         if (error || !permissions || permissions.length === 0) {
