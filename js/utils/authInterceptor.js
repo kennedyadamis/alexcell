@@ -204,6 +204,12 @@ class AuthInterceptor {
                 });
             }
             
+            if (conditions.in) {
+                Object.entries(conditions.in).forEach(([key, value]) => {
+                    query = query.in(key, value);
+                });
+            }
+            
             const { data, error } = await query;
             
             if (error) throw error;

@@ -46,6 +46,7 @@ window.viewOS = viewOS;
 window.editOS = editOS;
 window.deleteOS = deleteOS;
 window.openOSPaymentModal = openOSPaymentModal;
+window.printWithToast = printWithToast;
 
 // Funções do modal de novo cliente
 window.openNewCustomerModal = openNewCustomerModal;
@@ -318,6 +319,58 @@ function resetModuleFlags() {
     }
 }
 
+// Função para atualizar dados dos módulos quando as abas são clicadas
+function refreshModuleData(module) {
+    switch(module) {
+        case 'os':
+            // Recarregar tabela de OS se o módulo já foi inicializado
+            if (moduleInitialized.os) {
+                loadOSTable(1, getSelectedStoreId(), printWithToast);
+            }
+            break;
+        case 'clientes':
+            // Recarregar tabela de clientes se o módulo já foi inicializado
+            if (moduleInitialized.clientes) {
+                // Importar e chamar a função do módulo de clientes
+                import('./js/modules/customers.js').then(module => {
+                    module.loadCustomersTable();
+                });
+            }
+            break;
+        case 'caixa':
+            // Atualizar resumo do caixa se o módulo já foi inicializado
+            if (moduleInitialized.caixa) {
+                updateCashSummaryPanel();
+                loadClosedCashHistory();
+            }
+            break;
+        case 'estoque':
+            // Recarregar dados do estoque se o módulo já foi inicializado
+            if (moduleInitialized.estoque) {
+                loadProducts();
+            }
+            break;
+        case 'garantia':
+            // Recarregar dados de garantia se o módulo já foi inicializado
+            if (moduleInitialized.garantia) {
+                loadWarrantyTable();
+            }
+            break;
+        case 'relatorios':
+            // Módulo de relatórios não precisa de atualização automática
+            // pois os dados são carregados sob demanda
+            break;
+        // Módulos que não precisam de atualização automática
+        case 'pdv':
+        case 'configuracoes':
+        case 'trocar-senha':
+        case 'usuarios-permissoes':
+        default:
+            // Não fazer nada para estes módulos
+            break;
+    }
+}
+
 // Reestruturada: ÚNICA função para configurar TODOS os eventos do dashboard
 function initializeDashboardEventListeners() {
     // Navegação entre módulos
@@ -338,9 +391,10 @@ function initializeDashboardEventListeners() {
                 targetModule.style.display = 'block';
             }
 
-            // Não resetar a flag - manter inicialização única por módulo
+            // Atualizar dados do módulo sempre que a aba for clicada
+            refreshModuleData(module);
 
-            // Inicializar funcionalidades específicas do módulo
+            // Inicializar funcionalidades específicas do módulo (apenas na primeira vez)
             switch(module) {
                 case 'os':
                     if (!moduleInitialized.os) {

@@ -143,7 +143,7 @@ export function updatePaginationUI(module, currentPage, totalRecords) {
                 if (module === 'os') {
                     const { loadOSTable } = await import('../modules/serviceOrders.js');
                     const { getSelectedStoreId } = await import('../auth/auth.js');
-                    loadOSTable(currentPage - 1, getSelectedStoreId());
+                    loadOSTable(currentPage - 1, getSelectedStoreId(), window.printWithToast);
                 }
                 if (module === 'customers') {
                     const { loadCustomersTable } = await import('../modules/customers.js');
@@ -166,7 +166,7 @@ export function updatePaginationUI(module, currentPage, totalRecords) {
                 if (module === 'os') {
                     const { loadOSTable } = await import('../modules/serviceOrders.js');
                     const { getSelectedStoreId } = await import('../auth/auth.js');
-                    loadOSTable(currentPage + 1, getSelectedStoreId());
+                    loadOSTable(currentPage + 1, getSelectedStoreId(), window.printWithToast);
                 }
                 if (module === 'customers') {
                     const { loadCustomersTable } = await import('../modules/customers.js');

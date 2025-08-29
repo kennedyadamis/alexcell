@@ -1391,7 +1391,7 @@ async function processDelivery(osId) {
             
             // Abrindo modal de pagamento
             // Abrir modal de pagamento diretamente
-            openOSPaymentModal(osId, products, totalAmount, cashRegisterId);
+            openOSPaymentModal(osId, products, totalAmount, cashRegisterId, window.printWithToast);
         } else {
 
             refreshOSList(selectedStoreId);
