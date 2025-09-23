@@ -11,6 +11,7 @@ import { canViewCostPrices, formatCostPrice } from './js/utils/costPermissions.j
 import { loadOSTable, refreshOSList, openNewOSModal, closeNewOSModal, fetchAddressByCEP, initializePatternLock, confirmAddProduct, updateOSTotal, setupOrderForm, updateOSStatus, markAsAwaitingPickup, markAsDelivered, openOSPaymentModal, setupOSPaymentEvents, updateOSSplitSummary, deleteOS, viewOS, editOS, populateEditOSForm, setupEditPatternLock, setupEditValueFormatting, addEditOSProduct, setupEditCustomerAutocomplete, setupEditProductAutocomplete, updateEditOSTotal as updateEditOSTotalServiceOrders, closeEditOSModal, setupEditOSEvents, initializeOSConsultation, showConsultationMessage, displayOSResults, adjustQuantity, updateProductTotal, formatCurrencyInput, openAddProductModal, closeAddProductModal, closeViewOSModal, saveEditedOSProduct, saveEditedOS, searchOSByCustomer, clearOSSearch } from './js/modules/serviceOrders.js';
 import { resetAddProductModal } from './js/utils/resetAddProductModal.js';
 import { loadDynamicBanner, createDefaultBanners } from './js/modules/banners.js';
+import { initializeReportsModule } from './js/modules/reports.js';
 import { initializeOrderForm, validateForm, getFieldLabel, formatEmailContent, simulateEmailSending, showSuccessMessage } from './js/modules/orderForm.js';
 import { getCurrentUser, getSelectedStoreId, setCurrentUser, setSelectedStoreId } from './js/utils/globals.js';
 let osCurrentPage = 1;
