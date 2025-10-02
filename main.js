@@ -1780,10 +1780,7 @@ window.deleteProduct = async function(productId) {
     }
 };
 
-// Função global para inicializar o módulo de relatórios (placeholder)
-function initializeReportsModule() {
-    // Implemente a lógica real se desejar
-}
+// A função initializeReportsModule já está importada do módulo reports.js
 
 function showToast(message, type = 'success') {
     let toast = document.getElementById('toast-notification');
