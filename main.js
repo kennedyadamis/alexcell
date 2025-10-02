@@ -395,11 +395,12 @@ function initializeDashboardEventListeners() {
             // Atualizar dados do módulo sempre que a aba for clicada
             refreshModuleData(module);
 
-            // Inicializar funcionalidades específicas do módulo (apenas na primeira vez)
+            // Inicializar funcionalidades específicas do módulo (sempre que a aba for clicada)
             switch(module) {
                 case 'os':
+                    // Sempre atualiza a tabela de OS ao clicar na aba
+                    loadOSTable(1, getSelectedStoreId(), printWithToast);
                     if (!moduleInitialized.os) {
-                        loadOSTable(1, getSelectedStoreId(), printWithToast);
                         diagnosticModals();
                         moduleInitialized.os = true;
                     }
@@ -1464,8 +1465,8 @@ function setupStockEvents() {
                     return;
                 }
 
-                if (!productData.price || productData.price <= 0) {
-                    showToast('Valor de venda deve ser maior que zero', 'error');
+                if (!productData.price && productData.price !== 0) {
+                    showToast('Valor de venda deve ser informado', 'error');
                     return;
                 }
 

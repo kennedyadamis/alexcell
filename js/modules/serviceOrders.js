@@ -655,12 +655,15 @@ export function confirmAddProduct() {
     const price = parseFloat(priceText.replace(/\./g, '').replace(',', '.'));
     
     if (quantity <= 0 || price < 0) {
-        showToast('Quantidade e preço devem ser válidos', 'error');
-        if (confirmButton) {
-            confirmButton.disabled = false;
-            confirmButton.textContent = '✅ Adicionar à OS';
+        // Permitir preço zero, mas quantidade deve ser maior que zero
+        if (quantity <= 0) {
+            showToast('Quantidade deve ser maior que zero', 'error');
+            if (confirmButton) {
+                confirmButton.disabled = false;
+                confirmButton.textContent = '✅ Adicionar à OS';
+            }
+            return;
         }
-        return;
     }
     
     // Verificar estoque apenas se o produto controla estoque
@@ -909,10 +912,12 @@ export function saveEditedOSProduct(productId) {
     const newPriceText = priceElement?.value || '0,00';
     const newPrice = parseFloat(newPriceText.replace(/\./g, '').replace(',', '.'));
 
-    if (newQuantity <= 0 || newPrice < 0) {
-        showToast('Quantidade e preço devem ser válidos', 'error');
+    if (newQuantity <= 0) {
+        showToast('Quantidade deve ser maior que zero', 'error');
         return;
     }
+    
+    // Permitir preço zero
 
     // Atualizar os data attributes do elemento
     productItem.dataset.quantity = newQuantity;
@@ -2749,10 +2754,8 @@ export function setupEditCustomerAutocomplete() {
                         user_id: getCurrentUser()?.id || null
                     };
 
-                    const { data: newCustomer, error: customerError } = await supabase
-                        .from('customers')
-                        .insert([customerData])
-                        .select();
+                    // Usando dbInsert para manter consistência e evitar duplicação
+                    const { data: newCustomer, error: customerError } = await dbInsert('customers', [customerData], '*');
 
                     if (customerError) {
                         console.error('Erro ao cadastrar novo cliente para OS:', customerError);
