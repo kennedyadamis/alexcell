@@ -320,8 +320,15 @@ function resetModuleFlags() {
     }
 }
 
+// Variável para controlar a última aba ativa (evitar recarregamentos desnecessários)
+let lastActiveModule = null;
+
 // Função para atualizar dados dos módulos quando as abas são clicadas
 function refreshModuleData(module) {
+    // Se é a mesma aba que já estava ativa, não recarregar dados desnecessariamente
+    if (lastActiveModule === module) {
+        return;
+    }
     switch(module) {
         case 'os':
             // Recarregar tabela de OS se o módulo já foi inicializado
@@ -370,6 +377,9 @@ function refreshModuleData(module) {
             // Não fazer nada para estes módulos
             break;
     }
+    
+    // Atualizar a última aba ativa
+    lastActiveModule = module;
 }
 
 // Reestruturada: ÚNICA função para configurar TODOS os eventos do dashboard
@@ -392,14 +402,16 @@ function initializeDashboardEventListeners() {
                 targetModule.style.display = 'block';
             }
 
-            // Atualizar dados do módulo sempre que a aba for clicada
+            // Atualizar dados do módulo apenas quando necessário
             refreshModuleData(module);
 
-            // Inicializar funcionalidades específicas do módulo (sempre que a aba for clicada)
+            // Inicializar funcionalidades específicas do módulo (apenas na primeira vez)
             switch(module) {
                 case 'os':
-                    // Sempre atualiza a tabela de OS ao clicar na aba
-                    loadOSTable(1, getSelectedStoreId(), printWithToast);
+                    // Sempre atualiza a tabela de OS ao clicar na aba (dados críticos)
+                    if (lastActiveModule !== module) {
+                        loadOSTable(1, getSelectedStoreId(), printWithToast);
+                    }
                     if (!moduleInitialized.os) {
                         diagnosticModals();
                         moduleInitialized.os = true;
@@ -439,7 +451,7 @@ function initializeDashboardEventListeners() {
                     }
                     break;
                 case 'trocar-senha':
-                    // Inicializar troca de senha
+                    // Sempre inicializar troca de senha (limpar campos)
                     initializePasswordChange();
                     break;
                 case 'garantia':
@@ -511,9 +523,27 @@ function initializeDashboardEventListeners() {
     // --- Eventos do Modal de Novo Cliente (para OS) ---
     const newCustomerModalForm = document.getElementById('new-customer-modal-form');
     if (newCustomerModalForm) {
-        newCustomerModalForm.addEventListener('submit', async (e) => {
+        // Remover event listeners existentes para evitar duplicação
+        const newForm = newCustomerModalForm.cloneNode(true);
+        newCustomerModalForm.parentNode.replaceChild(newForm, newCustomerModalForm);
+        
+        // Adicionar novo event listener
+        const updatedForm = document.getElementById('new-customer-modal-form');
+        updatedForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            await saveNewCustomerFromModal();
+            
+            // Verificar se já está processando para evitar múltiplas submissões
+            if (updatedForm.dataset.submitting === 'true') {
+                return;
+            }
+            
+            updatedForm.dataset.submitting = 'true';
+            
+            try {
+                await saveNewCustomerFromModal();
+            } finally {
+                updatedForm.dataset.submitting = 'false';
+            }
         });
     }
 
@@ -2139,13 +2169,17 @@ async function finalizarVendaComPagamentos(pagamentos) {
     }
     // Registrar uma linha por método de pagamento (para o caixa e os totais ficarem certos)
     for (const p of pagamentos) {
+        // Criar descrição detalhada com os itens vendidos
+        const itemsDescription = items.map(item => `${item.name} (${item.qty}x)`).join(', ');
+        const description = `Venda PDV - ${itemsDescription}`;
+        
         await dbInsert('cash_register_entries', {
             cash_register_id: cashRegisterId,
             sale_id: sale.id,
             type: 'entrada',
             amount: p.valor,
             payment_method: p.metodo,
-            description: 'Venda PDV',
+            description: description,
             user_id: getCurrentUser()?.id || null
         });
     }
@@ -2154,10 +2188,97 @@ async function finalizarVendaComPagamentos(pagamentos) {
     renderCart();
     updatePDVSummary();
     updateCashSummaryPanel();
-    alert('Venda finalizada com sucesso!');
+    
+    // Mostrar modal bonito de venda concluída
+    showSaleSuccessModal(subtotal, pagamentos);
 }
 
 // Removido listener duplicado - setupPDVSplitPayment será chamado no listener principal
+
+// ========== MODAL DE VENDA CONCLUÍDA ==========
+function showSaleSuccessModal(total, pagamentos) {
+    const modal = document.getElementById('sale-success-modal');
+    const totalElement = document.getElementById('success-total');
+    const paymentElement = document.getElementById('success-payment');
+    const datetimeElement = document.getElementById('success-datetime');
+    
+    if (!modal) return;
+    
+    // Preencher dados da venda
+    totalElement.textContent = `R$ ${total.toFixed(2)}`;
+    
+    // Formatar métodos de pagamento
+    const paymentMethods = pagamentos.map(p => {
+        const methodNames = {
+            'dinheiro': 'Dinheiro',
+            'credito': 'Cartão de Crédito',
+            'debito': 'Cartão de Débito',
+            'pix': 'PIX'
+        };
+        return `${methodNames[p.metodo] || p.metodo}: R$ ${p.valor.toFixed(2)}`;
+    }).join(', ');
+    
+    paymentElement.textContent = paymentMethods;
+    
+    // Data e hora atual
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('pt-BR');
+    const timeStr = now.toLocaleTimeString('pt-BR');
+    datetimeElement.textContent = `${dateStr} às ${timeStr}`;
+    
+    // Mostrar modal com animação
+    modal.style.display = 'block';
+    
+    // Configurar botões
+    setupSaleSuccessModalButtons();
+    
+    // Fechar modal automaticamente após 10 segundos
+    setTimeout(() => {
+        closeSaleSuccessModal();
+    }, 10000);
+}
+
+function setupSaleSuccessModalButtons() {
+    const btnNewSale = document.getElementById('btn-new-sale');
+    const btnPrintReceipt = document.getElementById('btn-print-receipt');
+    
+    // Botão Nova Venda
+    if (btnNewSale) {
+        btnNewSale.onclick = () => {
+            closeSaleSuccessModal();
+            // Limpar carrinho (já foi limpo, mas garantir)
+            cart = [];
+            renderCart();
+            updatePDVSummary();
+        };
+    }
+    
+    // Botão Imprimir Recibo
+    if (btnPrintReceipt) {
+        btnPrintReceipt.onclick = () => {
+            // Implementar impressão do recibo se necessário
+            console.log('Imprimir recibo - funcionalidade a ser implementada');
+            closeSaleSuccessModal();
+        };
+    }
+    
+    // Fechar modal clicando fora
+    const modal = document.getElementById('sale-success-modal');
+    if (modal) {
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                closeSaleSuccessModal();
+            }
+        };
+    }
+}
+
+function closeSaleSuccessModal() {
+    const modal = document.getElementById('sale-success-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
 
 // Função global para renderizar o carrinho do PDV
 function renderCart() {
@@ -4694,12 +4815,29 @@ async function saveNewCustomerFromModal() {
     const form = document.getElementById('new-customer-modal-form');
     if (!form) return;
     
+    // Verificar se já está processando
+    if (form.dataset.processing === 'true') {
+        console.log('Já está processando, ignorando...');
+        return;
+    }
+    
+    form.dataset.processing = 'true';
+    
     // Validar campos obrigatórios
     const nameInput = document.getElementById('modal-new-customer-name');
     if (!nameInput || !nameInput.value.trim()) {
         showToast('Nome é obrigatório!', 'error');
         if (nameInput) nameInput.focus();
+        form.dataset.processing = 'false';
         return;
+    }
+    
+    // Desabilitar botão de submit
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn ? submitBtn.textContent : '';
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Salvando...';
     }
     
     try {
@@ -4758,6 +4896,13 @@ async function saveNewCustomerFromModal() {
     } catch (error) {
         console.error('Erro ao salvar cliente:', error);
         showToast('Erro ao cadastrar cliente: ' + error.message, 'error');
+    } finally {
+        // Reabilitar botão e resetar estado
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
+        form.dataset.processing = 'false';
     }
 }
 

@@ -7730,3 +7730,189 @@ textarea[required]:valid {
     }
 }
 
+/* ===== MODAL DE VENDA CONCLUÍDA ===== */
+.sale-success-modal {
+    max-width: 500px;
+    text-align: center;
+    border-radius: 20px;
+    padding: 0;
+    overflow: hidden;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.4s ease-out;
+}
+
+.success-animation {
+    padding: 40px 20px 20px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.checkmark-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: checkmarkBounce 0.6s ease-out 0.2s both;
+}
+
+.checkmark {
+    width: 40px;
+    height: 40px;
+    position: relative;
+}
+
+.checkmark::before {
+    content: '✓';
+    font-size: 32px;
+    font-weight: bold;
+    color: #4CAF50;
+    animation: checkmarkDraw 0.4s ease-out 0.4s both;
+}
+
+.success-content {
+    padding: 20px 30px 30px;
+    background: white;
+    color: #333;
+}
+
+.success-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 10px;
+    color: #2c3e50;
+}
+
+.success-message {
+    font-size: 16px;
+    color: #7f8c8d;
+    margin: 0 0 25px;
+}
+
+.sale-details {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+    border-left: 4px solid #4CAF50;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 8px 0;
+}
+
+.detail-row:last-child {
+    margin-bottom: 0;
+    border-top: 2px solid #e9ecef;
+    padding-top: 12px;
+    font-weight: 600;
+}
+
+.detail-label {
+    font-weight: 500;
+    color: #6c757d;
+}
+
+.detail-value {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.success-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.success-actions .btn {
+    flex: 1;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.success-actions .btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.success-actions .btn-secondary:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+}
+
+.success-actions .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.success-actions .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Animações */
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8) translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes checkmarkBounce {
+    0% {
+        opacity: 0;
+        transform: scale(0);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes checkmarkDraw {
+    from {
+        opacity: 0;
+        transform: scale(0);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Responsividade */
+@media (max-width: 600px) {
+    .sale-success-modal {
+        max-width: 90%;
+        margin: 20px;
+    }
+    
+    .success-actions {
+        flex-direction: column;
+    }
+    
+    .success-title {
+        font-size: 24px;
+    }
+}
+

@@ -1182,7 +1182,7 @@ export function setupOrderForm(currentUser, selectedStoreId) {
 
                 const osData = {
                     customer_id: customerId,
-                    client_name: document.getElementById('os-new-customer-name')?.value || '',
+                    client_name: customerId ? '' : document.getElementById('os-new-customer-name')?.value || '',
                     equipment_brand: document.getElementById('os-brand')?.value || '',
                     equipment_model: document.getElementById('os-model')?.value || '',
                     color: document.getElementById('os-color')?.value || '',
