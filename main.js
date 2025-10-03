@@ -325,10 +325,7 @@ let lastActiveModule = null;
 
 // Função para atualizar dados dos módulos quando as abas são clicadas
 function refreshModuleData(module) {
-    // Se é a mesma aba que já estava ativa, não recarregar dados desnecessariamente
-    if (lastActiveModule === module) {
-        return;
-    }
+    // Sempre atualizar os dados quando uma aba for clicada (removida verificação de lastActiveModule)
     switch(module) {
         case 'os':
             // Recarregar tabela de OS se o módulo já foi inicializado
@@ -337,7 +334,7 @@ function refreshModuleData(module) {
             }
             break;
         case 'clientes':
-            // Recarregar tabela de clientes se o módulo já foi inicializado
+            // Sempre recarregar tabela de clientes quando a aba for clicada
             if (moduleInitialized.clientes) {
                 // Importar e chamar a função do módulo de clientes
                 import('./js/modules/customers.js').then(module => {
@@ -346,20 +343,20 @@ function refreshModuleData(module) {
             }
             break;
         case 'caixa':
-            // Atualizar resumo do caixa se o módulo já foi inicializado
+            // Sempre atualizar resumo do caixa quando a aba for clicada
             if (moduleInitialized.caixa) {
                 updateCashSummaryPanel();
                 loadClosedCashHistory();
             }
             break;
         case 'estoque':
-            // Recarregar dados do estoque se o módulo já foi inicializado
+            // Sempre recarregar dados do estoque quando a aba for clicada
             if (moduleInitialized.estoque) {
                 loadProducts();
             }
             break;
         case 'garantia':
-            // Recarregar dados de garantia se o módulo já foi inicializado
+            // Sempre recarregar dados de garantia quando a aba for clicada
             if (moduleInitialized.garantia) {
                 loadWarrantyTable();
             }
@@ -409,9 +406,7 @@ function initializeDashboardEventListeners() {
             switch(module) {
                 case 'os':
                     // Sempre atualiza a tabela de OS ao clicar na aba (dados críticos)
-                    if (lastActiveModule !== module) {
-                        loadOSTable(1, getSelectedStoreId(), printWithToast);
-                    }
+                    loadOSTable(1, getSelectedStoreId(), printWithToast);
                     if (!moduleInitialized.os) {
                         diagnosticModals();
                         moduleInitialized.os = true;
