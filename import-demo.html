@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demonstração - Importação Automática</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .demo-section {
+            margin: 30px 0;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 5px solid #007bff;
+            background: #f8f9fa;
+        }
+        
+        .demo-section h3 {
+            color: #007bff;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .import-button {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px auto;
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+        }
+        
+        .import-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
+        }
+        
+        .import-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .results-table th {
+            background: #007bff;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+        
+        .results-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .results-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .price-highlight {
+            font-weight: bold;
+            color: #28a745;
+        }
+        
+        .margin-badge {
+            background: #ffc107;
+            color: #212529;
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .status {
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.processing {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .store-selector {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            justify-content: center;
+        }
+        
+        .store-card {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            min-width: 200px;
+        }
+        
+        .store-card:hover {
+            border-color: #007bff;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .store-card.selected {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+        
+        .store-card h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .store-card p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .processing {
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Importação Automática</h1>
+            <p>Demonstração da importação da planilha "Tabela Tiaguinho cell.xlsx"</p>
+        </div>
+        
+        <div class="content">
+            <!-- Seleção de Loja -->
+            <div class="demo-section">
+                <h3>📍 1. Selecione a Loja de Destino</h3>
+                <div class="store-selector">
+                    <div class="store-card" onclick="selectStore(1, 'Alexcell Paraíso Sul')">
+                        <h4>Alexcell Paraíso Sul</h4>
+                        <p>Loja Principal</p>
+                    </div>
+                    <div class="store-card" onclick="selectStore(2, 'Alexcell Feira')">
+                        <h4>Alexcell Feira</h4>
+                        <p>Filial</p>
+                    </div>
+                </div>
+                <div id="selectedStore" class="status" style="display: none;"></div>
+            </div>
+            
+            <!-- Simulação da Importação -->
+            <div class="demo-section">
+                <h3>📊 2. Processar Planilha</h3>
+                <p>A planilha "Tabela Tiaguinho cell.xlsx" será processada automaticamente com as regras de margem:</p>
+                <ul>
+                    <li><strong>Custo < R$ 65:</strong> +150% (x2.5)</li>
+                    <li><strong>Custo R$ 66-80:</strong> +110% (x2.1)</li>
+                    <li><strong>Custo R$ 80-120:</strong> +130% (x2.3)</li>
+                    <li><strong>Custo > R$ 120:</strong> +100% (x2.0)</li>
+                </ul>
+                
+                <button id="importBtn" class="import-button" onclick="startImportDemo()" disabled>
+                    🔄 Iniciar Importação Automática
+                </button>
+                
+                <div id="progressContainer" style="display: none;">
+                    <div class="progress-bar">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+                    <p id="progressText" class="text-center">Preparando importação...</p>
+                </div>
+            </div>
+            
+            <!-- Resultados -->
+            <div class="demo-section" id="resultsSection" style="display: none;">
+                <h3>✅ 3. Resultados da Importação</h3>
+                <div id="importStatus"></div>
+                <div id="resultsTable"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config/supabase.js"></script>
+    <script>
+        let selectedStoreId = null;
+        let selectedStoreName = '';
+        
+        // Dados simulados da planilha (baseados em produtos típicos de loja de celular)
+        const simulatedProducts = [
+            { nome: 'iPhone 14 Pro Max 256GB', custo: 4500, categoria: 'Smartphones' },
+            { nome: 'Samsung Galaxy S23 Ultra', custo: 3800, categoria: 'Smartphones' },
+            { nome: 'Xiaomi Redmi Note 12', custo: 850, categoria: 'Smartphones' },
+            { nome: 'Motorola Edge 40', custo: 1200, categoria: 'Smartphones' },
+            { nome: 'Capinha iPhone 14', custo: 25, categoria: 'Acessórios' },
+            { nome: 'Película de Vidro Samsung', custo: 15, categoria: 'Acessórios' },
+            { nome: 'Carregador Turbo 65W', custo: 45, categoria: 'Acessórios' },
+            { nome: 'Fone Bluetooth JBL', custo: 180, categoria: 'Áudio' },
+            { nome: 'Power Bank 20000mAh', custo: 95, categoria: 'Acessórios' },
+            { nome: 'Cabo USB-C Premium', custo: 35, categoria: 'Acessórios' },
+            { nome: 'Suporte Veicular Magnético', custo: 55, categoria: 'Acessórios' },
+            { nome: 'Smartwatch Apple Watch SE', custo: 1800, categoria: 'Wearables' },
+            { nome: 'AirPods Pro 2ª Geração', custo: 1200, categoria: 'Áudio' },
+            { nome: 'Caixa de Som Portátil', custo: 120, categoria: 'Áudio' },
+            { nome: 'Adaptador Lightning para P2', custo: 28, categoria: 'Acessórios' }
+        ];
+        
+        function selectStore(storeId, storeName) {
+            selectedStoreId = storeId;
+            selectedStoreName = storeName;
+            
+            // Remove seleção anterior
+            document.querySelectorAll('.store-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Adiciona seleção atual
+            event.target.classList.add('selected');
+            
+            // Mostra confirmação
+            const statusDiv = document.getElementById('selectedStore');
+            statusDiv.innerHTML = `✅ Loja selecionada: <strong>${storeName}</strong>`;
+            statusDiv.className = 'status success';
+            statusDiv.style.display = 'block';
+            
+            // Habilita botão de importação
+            document.getElementById('importBtn').disabled = false;
+        }
+        
+        function calculatePrice(cost) {
+            let margin, multiplier, marginText;
+            
+            if (cost < 65) {
+                margin = 150;
+                multiplier = 2.5;
+                marginText = '+150%';
+            } else if (cost >= 66 && cost <= 80) {
+                margin = 110;
+                multiplier = 2.1;
+                marginText = '+110%';
+            } else if (cost >= 80 && cost <= 120) {
+                margin = 130;
+                multiplier = 2.3;
+                marginText = '+130%';
+            } else {
+                margin = 100;
+                multiplier = 2.0;
+                marginText = '+100%';
+            }
+            
+            return {
+                price: cost * multiplier,
+                margin: marginText,
+                multiplier: multiplier
+            };
+        }
+        
+        async function startImportDemo() {
+            if (!selectedStoreId) {
+                alert('Por favor, selecione uma loja primeiro!');
+                return;
+            }
+            
+            const importBtn = document.getElementById('importBtn');
+            const progressContainer = document.getElementById('progressContainer');
+            const resultsSection = document.getElementById('resultsSection');
+            
+            // Desabilita botão e mostra progresso
+            importBtn.disabled = true;
+            importBtn.innerHTML = '⏳ Processando...';
+            progressContainer.style.display = 'block';
+            resultsSection.style.display = 'none';
+            
+            // Simula o processo de importação
+            const steps = [
+                'Lendo planilha Excel...',
+                'Validando dados...',
+                'Calculando preços...',
+                'Criando categorias...',
+                'Inserindo produtos...',
+                'Finalizando importação...'
+            ];
+            
+            let progress = 0;
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            for (let i = 0; i < steps.length; i++) {
+                progressText.textContent = steps[i];
+                progress = ((i + 1) / steps.length) * 100;
+                progressFill.style.width = progress + '%';
+                
+                // Simula tempo de processamento
+                await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
+            }
+            
+            // Processa produtos simulados
+            const processedProducts = simulatedProducts.map(product => {
+                const pricing = calculatePrice(product.custo);
+                return {
+                    ...product,
+                    preco: pricing.price,
+                    margem: pricing.margin
+                };
+            });
+            
+            // Simula inserção no banco (aqui você faria a inserção real)
+            try {
+                await simulateSupabaseInsert(processedProducts);
+                showResults(processedProducts);
+            } catch (error) {
+                showError(error.message);
+            }
+            
+            // Restaura botão
+            importBtn.disabled = false;
+            importBtn.innerHTML = '🔄 Iniciar Importação Automática';
+            progressContainer.style.display = 'none';
+        }
+        
+        async function simulateSupabaseInsert(products) {
+            // Simula inserção no Supabase
+            console.log('Simulando inserção de', products.length, 'produtos na loja', selectedStoreId);
+            
+            // Aqui seria o código real:
+            /*
+            const { data, error } = await supabase
+                .from('products')
+                .insert(products.map(p => ({
+                    name: p.nome,
+                    cost_price: p.custo,
+                    price: p.preco,
+                    category_id: getCategoryId(p.categoria),
+                    store_id: selectedStoreId,
+                    stock: 0,
+                    track_stock: true
+                })));
+            
+            if (error) throw error;
+            */
+            
+            // Simula delay da rede
+            await new Promise(resolve => setTimeout(resolve, 1500));
+        }
+        
+        function showResults(products) {
+            const resultsSection = document.getElementById('resultsSection');
+            const importStatus = document.getElementById('importStatus');
+            const resultsTable = document.getElementById('resultsTable');
+            
+            // Status de sucesso
+            importStatus.innerHTML = `
+                <div class="status success">
+                    <h4>🎉 Importação Concluída com Sucesso!</h4>
+                    <p><strong>${products.length} produtos</strong> foram importados para <strong>${selectedStoreName}</strong></p>
+                    <p>Total em estoque: <strong>R$ ${products.reduce((sum, p) => sum + p.preco, 0).toFixed(2)}</strong></p>
+                </div>
+            `;
+            
+            // Tabela de resultados
+            let tableHTML = `
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Categoria</th>
+                            <th>Custo</th>
+                            <th>Preço Final</th>
+                            <th>Margem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            products.forEach(product => {
+                tableHTML += `
+                    <tr>
+                        <td><strong>${product.nome}</strong></td>
+                        <td>${product.categoria}</td>
+                        <td>R$ ${product.custo.toFixed(2)}</td>
+                        <td class="price-highlight">R$ ${product.preco.toFixed(2)}</td>
+                        <td><span class="margin-badge">${product.margem}</span></td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+            
+            resultsTable.innerHTML = tableHTML;
+            resultsSection.style.display = 'block';
+            
+            // Scroll para os resultados
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function showError(message) {
+            const importStatus = document.getElementById('importStatus');
+            importStatus.innerHTML = `
+                <div class="status" style="background: #f8d7da; color: #721c24; border-color: #f5c6cb;">
+                    <h4>❌ Erro na Importação</h4>
+                    <p>${message}</p>
+                </div>
+            `;
+            
+            document.getElementById('resultsSection').style.display = 'block';
+        }
+        
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Demo de importação carregada');
+            console.log('Produtos simulados:', simulatedProducts.length);
+        });
+    </script>
+</body>
+</html>

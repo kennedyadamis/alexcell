@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Importação de Produtos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .test-section h3 {
+            color: #007bff;
+            margin-top: 0;
+        }
+        
+        .pricing-test {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 10px;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .pricing-test div {
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .pricing-test .header {
+            background: #007bff;
+            color: white;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        .file-input {
+            margin: 10px 0;
+            padding: 10px;
+            border: 2px dashed #ddd;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        input[type="file"] {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste de Importação de Produtos</h1>
+        
+        <!-- Teste das Regras de Preço -->
+        <div class="test-section">
+            <h3>1. Teste das Regras de Margem</h3>
+            <p>Testando o cálculo automático de preços baseado no custo:</p>
+            
+            <div class="pricing-test">
+                <div class="header">Custo</div>
+                <div class="header">Regra</div>
+                <div class="header">Margem</div>
+                <div class="header">Preço Final</div>
+            </div>
+            
+            <div id="pricingResults"></div>
+            
+            <button onclick="testPricingRules()">Testar Regras de Preço</button>
+        </div>
+        
+        <!-- Teste de Validação de Excel -->
+        <div class="test-section">
+            <h3>2. Teste de Validação de Arquivo Excel</h3>
+            <p>Selecione um arquivo Excel para testar a validação:</p>
+            
+            <div class="file-input">
+                <input type="file" id="testFile" accept=".xlsx,.xls" onchange="testFileValidation()">
+                <p>Arraste um arquivo Excel aqui ou clique para selecionar</p>
+            </div>
+            
+            <div id="validationResults"></div>
+        </div>
+        
+        <!-- Teste de Conexão Supabase -->
+        <div class="test-section">
+            <h3>3. Teste de Conexão com Supabase</h3>
+            <p>Verificando conexão com o banco de dados:</p>
+            
+            <button onclick="testSupabaseConnection()">Testar Conexão</button>
+            <div id="supabaseResults"></div>
+        </div>
+        
+        <!-- Logs de Teste -->
+        <div class="test-section">
+            <h3>4. Logs de Teste</h3>
+            <div id="testLogs" style="background: #f8f9fa; padding: 10px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; max-height: 300px; overflow-y: auto;"></div>
+            <button onclick="clearLogs()">Limpar Logs</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config/supabase.js"></script>
+    <script type="module">
+        import { validateExcelFile } from './js/utils/excelImporter.js';
+        
+        // Função para log
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logElement = document.getElementById('testLogs');
+            const typeIcon = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+            logElement.textContent += `[${timestamp}] ${typeIcon} ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        // Teste das regras de preço
+        window.testPricingRules = function() {
+            log('Iniciando teste das regras de preço...');
+            
+            const testCosts = [30, 50, 70, 90, 150, 200];
+            const resultsDiv = document.getElementById('pricingResults');
+            resultsDiv.innerHTML = '';
+            
+            testCosts.forEach(cost => {
+                let margin, multiplier, price, rule;
+                
+                if (cost < 65) {
+                    margin = '150%';
+                    multiplier = 2.5;
+                    rule = 'Abaixo de R$ 65';
+                } else if (cost >= 66 && cost <= 80) {
+                    margin = '110%';
+                    multiplier = 2.1;
+                    rule = 'Entre R$ 66-80';
+                } else if (cost >= 80 && cost <= 120) {
+                    margin = '130%';
+                    multiplier = 2.3;
+                    rule = 'Entre R$ 80-120';
+                } else {
+                    margin = '100%';
+                    multiplier = 2.0;
+                    rule = 'Acima de R$ 120';
+                }
+                
+                price = cost * multiplier;
+                
+                const testRow = document.createElement('div');
+                testRow.className = 'pricing-test';
+                testRow.innerHTML = `
+                    <div>R$ ${cost.toFixed(2)}</div>
+                    <div>${rule}</div>
+                    <div>${margin}</div>
+                    <div>R$ ${price.toFixed(2)}</div>
+                `;
+                resultsDiv.appendChild(testRow);
+                
+                log(`Custo R$ ${cost} → Preço R$ ${price.toFixed(2)} (${margin})`, 'success');
+            });
+            
+            log('Teste das regras de preço concluído!', 'success');
+        };
+        
+        // Teste de validação de arquivo
+        window.testFileValidation = async function() {
+            const fileInput = document.getElementById('testFile');
+            const resultsDiv = document.getElementById('validationResults');
+            
+            if (!fileInput.files[0]) {
+                resultsDiv.innerHTML = '<div class="error">Nenhum arquivo selecionado</div>';
+                return;
+            }
+            
+            log('Iniciando validação do arquivo Excel...');
+            resultsDiv.innerHTML = '<div>Validando arquivo...</div>';
+            
+            try {
+                const validation = await validateExcelFile(fileInput.files[0]);
+                
+                if (validation.valid) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Arquivo válido!</h4>
+                            <p><strong>Planilhas:</strong> ${validation.sheets.join(', ')}</p>
+                            <p><strong>Linhas:</strong> ${validation.rows}</p>
+                            <p><strong>Colunas:</strong> ${validation.headers.join(', ')}</p>
+                        </div>
+                    `;
+                    log(`Arquivo validado com sucesso: ${validation.rows} linhas`, 'success');
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Arquivo inválido</h4>
+                            <p>${validation.error}</p>
+                        </div>
+                    `;
+                    log(`Erro na validação: ${validation.error}`, 'error');
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Erro na validação</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+                log(`Erro na validação: ${error.message}`, 'error');
+            }
+        };
+        
+        // Teste de conexão Supabase
+        window.testSupabaseConnection = async function() {
+            log('Testando conexão com Supabase...');
+            const resultsDiv = document.getElementById('supabaseResults');
+            resultsDiv.innerHTML = '<div>Testando conexão...</div>';
+            
+            try {
+                // Testa conexão listando lojas
+                const { data: stores, error } = await supabase
+                    .from('stores')
+                    .select('id, name')
+                    .limit(5);
+                
+                if (error) throw error;
+                
+                resultsDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Conexão bem-sucedida!</h4>
+                        <p><strong>Lojas encontradas:</strong></p>
+                        <ul>
+                            ${stores.map(store => `<li>${store.name} (ID: ${store.id})</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                log(`Conexão Supabase OK - ${stores.length} lojas encontradas`, 'success');
+                
+                // Testa também a tabela de produtos
+                const { data: products, error: productsError } = await supabase
+                    .from('products')
+                    .select('id', { count: 'exact' })
+                    .limit(1);
+                
+                if (!productsError) {
+                    log(`Tabela de produtos acessível - ${products.length} produtos`, 'success');
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Erro de conexão</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+                log(`Erro de conexão Supabase: ${error.message}`, 'error');
+            }
+        };
+        
+        // Limpar logs
+        window.clearLogs = function() {
+            document.getElementById('testLogs').textContent = '';
+            log('Logs limpos');
+        };
+        
+        // Log inicial
+        log('Sistema de teste carregado');
+        log('Pronto para executar testes de importação');
+    </script>
+</body>
+</html>

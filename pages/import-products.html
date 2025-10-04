@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importar Produtos - Alexcell</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <style>
+        .import-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .import-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .import-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.5rem;
+        }
+
+        .import-header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .quick-start-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .quick-start-card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quick-start-card h2::before {
+            content: "🚀";
+            font-size: 1.5em;
+        }
+
+        .pricing-rules {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .pricing-rules h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pricing-rules h3::before {
+            content: "💰";
+        }
+
+        .pricing-rule {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+
+        .pricing-rule.rule-1 { border-left-color: #28a745; }
+        .pricing-rule.rule-2 { border-left-color: #ffc107; }
+        .pricing-rule.rule-3 { border-left-color: #fd7e14; }
+        .pricing-rule.rule-4 { border-left-color: #dc3545; }
+
+        .rule-condition {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .rule-margin {
+            background: #e9ecef;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .excel-requirements {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .excel-requirements h3 {
+            color: #1976d2;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .excel-requirements h3::before {
+            content: "📊";
+        }
+
+        .requirements-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .requirements-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #bbdefb;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .requirements-list li:last-child {
+            border-bottom: none;
+        }
+
+        .requirements-list li::before {
+            content: "✓";
+            color: #4caf50;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .import-button {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px auto;
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .import-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+        }
+
+        .import-button::before {
+            content: "📤";
+            font-size: 1.2em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .help-section {
+            background: #fff3cd;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+
+        .help-section h3 {
+            color: #856404;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .help-section h3::before {
+            content: "💡";
+        }
+
+        .help-tips {
+            list-style: none;
+            padding: 0;
+        }
+
+        .help-tips li {
+            padding: 8px 0;
+            color: #856404;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .help-tips li::before {
+            content: "•";
+            color: #ffc107;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-top: 2px;
+        }
+
+        @media (max-width: 768px) {
+            .import-container {
+                padding: 10px;
+            }
+            
+            .import-header h1 {
+                font-size: 2rem;
+            }
+            
+            .pricing-rule {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .import-button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="import-container">
+        <!-- Header -->
+        <div class="import-header">
+            <h1>Importar Produtos</h1>
+            <p>Importe produtos da planilha Excel com cálculo automático de margens</p>
+        </div>
+
+        <!-- Quick Start Card -->
+        <div class="quick-start-card">
+            <h2>Início Rápido</h2>
+            <p>Clique no botão abaixo para começar a importação dos seus produtos. O sistema irá guiá-lo através de um processo simples em 4 etapas.</p>
+            
+            <button id="importProductsBtn" class="import-button">
+                Iniciar Importação
+            </button>
+        </div>
+
+        <!-- Pricing Rules -->
+        <div class="pricing-rules">
+            <h3>Regras de Margem Automática</h3>
+            <p>O sistema aplicará automaticamente as seguintes margens baseadas no custo do produto:</p>
+            
+            <div class="pricing-rule rule-1">
+                <span class="rule-condition">Custo abaixo de R$ 65,00</span>
+                <span class="rule-margin">+150% (x2.5)</span>
+            </div>
+            
+            <div class="pricing-rule rule-2">
+                <span class="rule-condition">Custo entre R$ 66,00 - R$ 80,00</span>
+                <span class="rule-margin">+110% (x2.1)</span>
+            </div>
+            
+            <div class="pricing-rule rule-3">
+                <span class="rule-condition">Custo entre R$ 80,00 - R$ 120,00</span>
+                <span class="rule-margin">+130% (x2.3)</span>
+            </div>
+            
+            <div class="pricing-rule rule-4">
+                <span class="rule-condition">Custo acima de R$ 120,00</span>
+                <span class="rule-margin">+100% (x2.0)</span>
+            </div>
+        </div>
+
+        <!-- Excel Requirements -->
+        <div class="excel-requirements">
+            <h3>Requisitos da Planilha Excel</h3>
+            <p>Para uma importação bem-sucedida, sua planilha deve conter as seguintes colunas:</p>
+            
+            <ul class="requirements-list">
+                <li><strong>Nome/Produto:</strong> Nome ou descrição do produto (obrigatório)</li>
+                <li><strong>Custo:</strong> Preço de custo do produto (obrigatório)</li>
+                <li><strong>Categoria:</strong> Categoria do produto (opcional - será ajustada automaticamente)</li>
+                <li><strong>SKU:</strong> Código do produto (opcional - será gerado automaticamente se não fornecido)</li>
+                <li><strong>Estoque:</strong> Quantidade inicial em estoque (opcional - padrão: 0)</li>
+            </ul>
+            
+            <p><small><strong>Nota:</strong> Os nomes das colunas podem variar. O sistema reconhece automaticamente variações como "Produto", "Descrição", "Preço de Custo", etc.</small></p>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalStores">2</div>
+                <div class="stat-label">Lojas Disponíveis</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-number" id="totalProducts">-</div>
+                <div class="stat-label">Produtos Cadastrados</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-number" id="totalCategories">-</div>
+                <div class="stat-label">Categorias Ativas</div>
+            </div>
+        </div>
+
+        <!-- Help Section -->
+        <div class="help-section">
+            <h3>Dicas para uma Importação Perfeita</h3>
+            <ul class="help-tips">
+                <li>Certifique-se de que os valores de custo estão em formato numérico (ex: 45.50)</li>
+                <li>Remova linhas vazias ou com dados incompletos da planilha</li>
+                <li>Use nomes descritivos para os produtos para facilitar a identificação</li>
+                <li>Se uma categoria não existir, ela será criada automaticamente</li>
+                <li>O sistema pode processar arquivos .xlsx e .xls</li>
+                <li>Faça backup dos seus dados antes de importações grandes</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="../js/config/supabase.js"></script>
+    <script src="../js/components/toast.js"></script>
+    <script src="../js/components/modal.js"></script>
+    <script type="module" src="../js/modules/productImporter.js"></script>
+    
+    <script>
+        // Carrega estatísticas da página
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Carrega total de produtos
+                const { data: products, error: productsError } = await supabase
+                    .from('products')
+                    .select('id', { count: 'exact' });
+                
+                if (!productsError) {
+                    document.getElementById('totalProducts').textContent = products.length;
+                }
+
+                // Carrega total de categorias
+                const { data: categories, error: categoriesError } = await supabase
+                    .from('categories')
+                    .select('id', { count: 'exact' });
+                
+                if (!categoriesError) {
+                    document.getElementById('totalCategories').textContent = categories.length;
+                }
+
+            } catch (error) {
+                console.error('Erro ao carregar estatísticas:', error);
+            }
+        });
+    </script>
+</body>
+</html>
