@@ -375,6 +375,29 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Controles de Paginação -->
+                    <div class="pagination-container" style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+                        <div class="pagination-info">
+                            <span id="pagination-info-text">Mostrando 0 de 0 produtos</span>
+                        </div>
+                        <div class="pagination-controls">
+                            <button id="btn-first-page" class="btn btn-secondary" title="Primeira página">⏮️</button>
+                            <button id="btn-prev-page" class="btn btn-secondary" title="Página anterior">⬅️</button>
+                            <span id="pagination-pages" style="margin: 0 15px;">Página 1 de 1</span>
+                            <button id="btn-next-page" class="btn btn-secondary" title="Próxima página">➡️</button>
+                            <button id="btn-last-page" class="btn btn-secondary" title="Última página">⏭️</button>
+                        </div>
+                        <div class="pagination-size">
+                            <label for="page-size-select">Itens por página:</label>
+                            <select id="page-size-select" style="margin-left: 5px;">
+                                <option value="10">10</option>
+                                <option value="25" selected>25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Módulo: Clientes -->

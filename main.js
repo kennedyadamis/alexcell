@@ -1368,11 +1368,21 @@ function initializeStockModule() {
     loadProducts();
     setupStockEvents();
     
-    // Eventos de filtro
+    // Eventos de filtro - resetar paginação quando filtrar
     const searchInput = document.getElementById('stock-search-name');
     const categorySelect = document.getElementById('stock-filter-category');
-    if (searchInput) searchInput.addEventListener('input', loadProducts);
-    if (categorySelect) categorySelect.addEventListener('change', loadProducts);
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            currentPage = 1; // Resetar para primeira página ao filtrar
+            loadProducts();
+        });
+    }
+    if (categorySelect) {
+        categorySelect.addEventListener('change', () => {
+            currentPage = 1; // Resetar para primeira página ao filtrar
+            loadProducts();
+        });
+    }
 }
 
 // Configurar eventos do módulo de estoque
@@ -1385,6 +1395,29 @@ function setupStockEvents() {
 
     // Configurar formatação de valores nos campos de preço
     setupProductValueFormatting();
+
+    // Event listeners para paginação
+    const btnFirstPage = document.getElementById('btn-first-page');
+    const btnPrevPage = document.getElementById('btn-prev-page');
+    const btnNextPage = document.getElementById('btn-next-page');
+    const btnLastPage = document.getElementById('btn-last-page');
+    const pageSizeSelect = document.getElementById('page-size-select');
+
+    if (btnFirstPage) {
+        btnFirstPage.addEventListener('click', () => goToPage(1));
+    }
+    if (btnPrevPage) {
+        btnPrevPage.addEventListener('click', () => goToPage(currentPage - 1));
+    }
+    if (btnNextPage) {
+        btnNextPage.addEventListener('click', () => goToPage(currentPage + 1));
+    }
+    if (btnLastPage) {
+        btnLastPage.addEventListener('click', () => goToPage(totalPages));
+    }
+    if (pageSizeSelect) {
+        pageSizeSelect.addEventListener('change', (e) => changePageSize(e.target.value));
+    }
 
     // Botão para mostrar formulário de novo produto
     if (btnNewProduct) {
@@ -1582,35 +1615,75 @@ async function loadCategories() {
     }
 }
 
+// Variáveis globais para paginação
+let currentPage = 1;
+let pageSize = 25;
+let totalProducts = 0;
+let totalPages = 1;
+
 async function loadProducts() {
     const tbody = document.getElementById('products-table-body');
     const searchInput = document.getElementById('stock-search-name');
     const categorySelect = document.getElementById('stock-filter-category');
     if (!tbody) return;
+    
     tbody.innerHTML = '<tr><td colspan="6">Carregando...</td></tr>';
+    
     try {
         // Verificar permissões de custo
         const canViewCost = await canViewCostPrices();
         
-        const options = {
-            select: '*, categories(name)',
-            eq: { store_id: getSelectedStoreId() },
-            order: { column: 'created_at', ascending: false }
-        };
+        // Primeiro, contar o total de produtos para paginação
+        let countQuery = supabase
+            .from('products')
+            .select('*', { count: 'exact', head: true })
+            .eq('store_id', getSelectedStoreId());
         
         if (searchInput && searchInput.value) {
-            options.ilike = { name: `%${searchInput.value}%` };
+            countQuery = countQuery.ilike('name', `%${searchInput.value}%`);
         }
         if (categorySelect && categorySelect.value) {
-            options.eq.category_id = categorySelect.value;
+            countQuery = countQuery.eq('category_id', categorySelect.value);
         }
         
-        const { data: products, error } = await dbSelect('products', options);
+        const { count, error: countError } = await countQuery;
+        if (countError) throw countError;
+        
+        totalProducts = count || 0;
+        totalPages = Math.ceil(totalProducts / pageSize);
+        
+        // Ajustar página atual se necessário
+        if (currentPage > totalPages && totalPages > 0) {
+            currentPage = totalPages;
+        }
+        if (currentPage < 1) {
+            currentPage = 1;
+        }
+        
+        // Buscar produtos da página atual
+        let query = supabase
+            .from('products')
+            .select('*, categories(name)')
+            .eq('store_id', getSelectedStoreId())
+            .order('created_at', { ascending: false })
+            .range((currentPage - 1) * pageSize, currentPage * pageSize - 1);
+        
+        if (searchInput && searchInput.value) {
+            query = query.ilike('name', `%${searchInput.value}%`);
+        }
+        if (categorySelect && categorySelect.value) {
+            query = query.eq('category_id', categorySelect.value);
+        }
+        
+        const { data: products, error } = await query;
         if (error) throw error;
+        
         if (!products || products.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6">Nenhum produto encontrado.</td></tr>';
+            updatePaginationControls();
             return;
         }
+        
         tbody.innerHTML = '';
         
         for (const prod of products) {
@@ -1641,10 +1714,54 @@ async function loadProducts() {
             `;
             tbody.appendChild(row);
         }
+        
+        updatePaginationControls();
+        
     } catch (err) {
         console.error('Erro ao carregar produtos:', err);
         tbody.innerHTML = `<tr><td colspan="6">Erro ao carregar produtos.</td></tr>`;
+        updatePaginationControls();
     }
+}
+
+// Função para atualizar os controles de paginação
+function updatePaginationControls() {
+    const paginationInfo = document.getElementById('pagination-info-text');
+    const paginationPages = document.getElementById('pagination-pages');
+    const btnFirstPage = document.getElementById('btn-first-page');
+    const btnPrevPage = document.getElementById('btn-prev-page');
+    const btnNextPage = document.getElementById('btn-next-page');
+    const btnLastPage = document.getElementById('btn-last-page');
+    
+    if (paginationInfo) {
+        const startItem = totalProducts === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+        const endItem = Math.min(currentPage * pageSize, totalProducts);
+        paginationInfo.textContent = `Mostrando ${startItem} a ${endItem} de ${totalProducts} produtos`;
+    }
+    
+    if (paginationPages) {
+        paginationPages.textContent = `Página ${currentPage} de ${totalPages || 1}`;
+    }
+    
+    // Habilitar/desabilitar botões
+    if (btnFirstPage) btnFirstPage.disabled = currentPage <= 1;
+    if (btnPrevPage) btnPrevPage.disabled = currentPage <= 1;
+    if (btnNextPage) btnNextPage.disabled = currentPage >= totalPages;
+    if (btnLastPage) btnLastPage.disabled = currentPage >= totalPages;
+}
+
+// Função para ir para uma página específica
+function goToPage(page) {
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    loadProducts();
+}
+
+// Função para alterar o tamanho da página
+function changePageSize(newSize) {
+    pageSize = parseInt(newSize);
+    currentPage = 1; // Resetar para primeira página
+    loadProducts();
 }
 
 // Função para configurar formatação de valores nos campos de produto
