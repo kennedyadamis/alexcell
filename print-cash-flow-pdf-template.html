@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Fluxo de Caixa por Período</title>
+    <link rel="stylesheet" href="print.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* Estilos específicos para relatório de fluxo de caixa em formato A4 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        .download-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+            transition: all 0.3s ease;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .download-btn:hover {
+            background: linear-gradient(135deg, #0056b3, #004085);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,123,255,0.4);
+        }
+        
+        .download-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(0,123,255,0.2);
+        }
+
+        .page-container {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 20px auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            padding: 20mm;
+            box-sizing: border-box;
+        }
+
+        .cash-flow-report {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .receipt-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #333;
+        }
+
+        .logo-container {
+            flex: 0 0 auto;
+            margin-right: 20px;
+        }
+
+        .logo {
+            max-width: 150px;
+            max-height: 100px;
+            object-fit: contain;
+        }
+
+        .store-info {
+            flex: 1;
+            text-align: left;
+        }
+
+        .store-info h2 {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .store-info p {
+            font-size: 1em;
+            margin: 5px 0;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .report-title {
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #333;
+            text-transform: uppercase;
+        }
+
+        .report-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+
+        .report-info h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 1.2em;
+        }
+
+        .report-info p {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .cash-flow-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9em;
+        }
+
+        .cash-flow-table th,
+        .cash-flow-table td {
+            border: 1px solid #ddd;
+            padding: 10px 8px;
+            text-align: left;
+        }
+
+        .cash-flow-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+        }
+
+        .cash-flow-table td {
+            text-align: center;
+        }
+
+        .cash-flow-table .text-left {
+            text-align: left;
+        }
+
+        .cash-flow-table .text-right {
+            text-align: right;
+        }
+
+        .total-row {
+            background-color: #e9ecef;
+            font-weight: bold;
+        }
+
+        .summary-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border: 1px solid #dee2e6;
+        }
+
+        .summary-section h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 1.2em;
+            text-align: center;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 3px;
+            border-left: 3px solid #007bff;
+        }
+
+        .summary-item strong {
+            color: #333;
+        }
+
+        .summary-value {
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .signature {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .signature-line {
+            margin: 0 auto;
+            width: 200px;
+            border-top: 1px solid #333;
+            margin-bottom: 5px;
+        }
+
+        .receipt-footer {
+            margin-top: 30px;
+            font-size: 12px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 15px;
+        }
+
+        @media print {
+            body {
+                background: none;
+                margin: 0;
+                padding: 0;
+            }
+            
+            .page-container {
+                width: 100%;
+                height: auto;
+                margin: 0;
+                padding: 10mm;
+                box-shadow: none;
+                min-height: auto;
+            }
+            
+            .download-btn {
+                display: none;
+            }
+            
+            .receipt-header {
+                page-break-inside: avoid;
+            }
+            
+            .logo {
+                max-height: 80px;
+            }
+
+            .cash-flow-table {
+                page-break-inside: avoid;
+            }
+
+            .summary-section {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="download-btn" id="download-pdf">Baixar PDF</button>
+    
+    <div class="page-container" id="report-container">
+        <div class="cash-flow-report">
+            <header class="receipt-header">
+                <div class="logo-container">
+                    <img src="" alt="Logo da Loja" class="logo" id="print-logo" style="display: none;">
+                </div>
+                <div class="store-info" id="store-info">
+                    <h2 id="store-name">Assistência Técnica Especializada</h2>
+                    <p id="store-address">R. 38, N 518 - Sala 02 - Lot. Paraíso do Sul, Santa Maria, Aracaju - SE, 49044-451</p>
+                    <p id="store-phones">(79) 9.8160-6441 / (79) 3011-2293</p>
+                </div>
+            </header>
+
+            <h1 class="report-title">Relatório de Fluxo de Caixa por Período</h1>
+            
+            <div class="report-info" id="report-info">
+                <!-- Informações do relatório serão preenchidas aqui -->
+            </div>
+
+            <div id="cash-flow-details">
+                <!-- Detalhes do fluxo de caixa serão preenchidos aqui -->
+            </div>
+
+            <div class="summary-section" id="summary-section">
+                <!-- Resumo será preenchido aqui -->
+            </div>
+
+            <div class="signature">
+                <div class="signature-line"></div>
+                <p>Responsável pelo Relatório</p>
+            </div>
+
+            <footer class="receipt-footer">
+                <div class="timestamp">
+                    Relatório gerado em: <span id="print-timestamp"></span>
+                </div>
+            </footer>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const reportData = JSON.parse(localStorage.getItem('cash_flow_pdf_report_data'));
+            console.log("Dados do relatório de fluxo de caixa PDF recebidos:", reportData);
+
+            if (!reportData) {
+                document.body.innerHTML = '<h1>Erro: Não foi possível carregar os dados do relatório.</h1>';
+                return;
+            }
+
+            // Atualiza as informações da loja
+            if (reportData.storeInfo) {
+                if (reportData.storeInfo.name) {
+                    document.getElementById('store-name').textContent = reportData.storeInfo.name;
+                }
+                document.getElementById('store-address').textContent = reportData.storeInfo.address || 'Endereço não disponível';
+                document.getElementById('store-phones').textContent = reportData.storeInfo.phones || 'Telefone não disponível';
+            }
+
+            // Atualiza o logo com fallbacks
+            const logoImg = document.getElementById('print-logo');
+            const logoContainer = document.querySelector('.logo-container');
+            
+            if (logoImg && logoContainer) {
+                if (reportData.logoUrl) {
+                    logoImg.src = reportData.logoUrl;
+                    logoImg.style.display = 'block';
+                    
+                    logoImg.onerror = function() {
+                        console.log('Erro ao carregar logo, tentando fallbacks...');
+                        const fallbacks = [
+                            'logos/1.png',
+                            'logos/2.png', 
+                            'logos/3.png',
+                            'public/logos/1.png',
+                            'public/logos/2.png',
+                            'public/logos/3.png'
+                        ];
+                        
+                        let fallbackIndex = 0;
+                        const tryFallback = () => {
+                            if (fallbackIndex < fallbacks.length) {
+                                logoImg.src = fallbacks[fallbackIndex];
+                                fallbackIndex++;
+                            } else {
+                                logoImg.style.display = 'none';
+                                const storeInfo = document.getElementById('store-info');
+                                if (storeInfo) {
+                                    storeInfo.style.paddingLeft = '0';
+                                }
+                            }
+                        };
+                        tryFallback();
+                    };
+                } else {
+                    logoImg.style.display = 'none';
+                    const storeInfo = document.getElementById('store-info');
+                    if (storeInfo) {
+                        storeInfo.style.paddingLeft = '0';
+                    }
+                }
+            }
+
+            // Atualiza informações do relatório
+            const reportInfoElement = document.getElementById('report-info');
+            if (reportData.info) {
+                reportInfoElement.innerHTML = `
+                    <h3>Informações do Relatório</h3>
+                    <p><strong>Período:</strong> ${reportData.info.dateRange}</p>
+                    <p><strong>Total de Registros de Caixa:</strong> ${reportData.info.totalRegisters}</p>
+                `;
+            }
+
+            // Preenche os detalhes do fluxo de caixa
+            const detailsContainer = document.getElementById('cash-flow-details');
+            if (reportData.cashRegisters && reportData.cashRegisters.length > 0) {
+                let tableHTML = `
+                    <table class="cash-flow-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Saldo Inicial</th>
+                                <th>Saldo Final</th>
+                                <th>Total Vendas</th>
+                                <th>Total Entradas</th>
+                                <th>Total Saídas</th>`;
+                                
+                if (reportData.canViewCosts) {
+                    tableHTML += `<th>Lucro</th>`;
+                }
+                
+                tableHTML += `
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                // Linhas da tabela
+                reportData.cashRegisters.forEach((cash) => {
+                    tableHTML += `
+                        <tr>
+                            <td class="text-left">${cash.date}</td>
+                            <td class="text-right">${cash.opening}</td>
+                            <td class="text-right">${cash.closing}</td>
+                            <td class="text-right">${cash.sales}</td>
+                            <td class="text-right">${cash.entries}</td>
+                            <td class="text-right">${cash.withdrawals}</td>`;
+                            
+                    if (reportData.canViewCosts) {
+                        tableHTML += `<td class="text-right">${cash.profit}</td>`;
+                    }
+                    
+                    tableHTML += `
+                        </tr>
+                    `;
+                });
+                
+                tableHTML += `
+                        </tbody>
+                    </table>
+                `;
+                
+                detailsContainer.innerHTML = tableHTML;
+            } else {
+                detailsContainer.innerHTML = '<p>Nenhum registro de caixa encontrado no período.</p>';
+            }
+
+            // Preenche o resumo
+            const summaryElement = document.getElementById('summary-section');
+            if (reportData.summary) {
+                let summaryHTML = '<h3>Resumo Geral do Período</h3><div class="summary-grid">';
+                
+                Object.entries(reportData.summary).forEach(([key, value]) => {
+                    summaryHTML += `
+                        <div class="summary-item">
+                            <span><strong>${key}:</strong></span>
+                            <span class="summary-value">${value}</span>
+                        </div>
+                    `;
+                });
+                
+                summaryHTML += '</div>';
+                summaryElement.innerHTML = summaryHTML;
+            }
+
+            // Atualiza o timestamp de impressão
+            document.getElementById('print-timestamp').textContent = reportData.generatedAt || new Date().toLocaleString('pt-BR');
+            
+            // Configurar botão para download do PDF
+            document.getElementById('download-pdf').addEventListener('click', function() {
+                downloadAsPDF();
+            });
+        });
+
+        // Função para baixar o relatório como PDF
+        function downloadAsPDF() {
+            // Ocultamos o botão temporariamente para o PDF
+            const downloadBtn = document.getElementById('download-pdf');
+            downloadBtn.style.display = 'none';
+            
+            const reportTitle = document.querySelector('.report-title').textContent;
+            const date = document.getElementById('print-timestamp').textContent.split(': ')[1] || new Date().toLocaleString('pt-BR');
+            const filename = `${reportTitle.replace(/\s+/g, '_')}_${date.replace(/[\/\s:]/g, '-')}.pdf`;
+            
+            const element = document.getElementById('report-container');
+            const options = {
+                margin: 10,
+                filename: filename,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            html2pdf()
+                .set(options)
+                .from(element)
+                .save()
+                .then(() => {
+                    // Após o download, exibimos o botão novamente e removemos os dados
+                    downloadBtn.style.display = 'block';
+                    setTimeout(() => {
+                        localStorage.removeItem('cash_flow_pdf_report_data');
+                    }, 1000);
+                });
+        }
+    </script>
+</body>
+</html>

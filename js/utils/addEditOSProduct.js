@@ -16,10 +16,13 @@ export function addEditOSProduct(product) {
     productDiv.className = 'product-item-edit'; // Corrigido para corresponder ao que updateEditOSTotal espera
     productDiv.dataset.productId = product.id;
     productDiv.dataset.costPrice = product.cost_price || 0;
-
-    // Usar price ao invés de sale_price e incluir quantidade
+    
+    // Adicionar data attributes para quantidade e preço
     const quantity = product.quantity || 1;
     const price = product.price || 0;
+    
+    productDiv.dataset.quantity = quantity;
+    productDiv.dataset.price = price;
 
     productDiv.innerHTML = `
         <div class="product-info">

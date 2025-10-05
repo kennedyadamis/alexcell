@@ -294,6 +294,7 @@
                     <div class="module-header">
                         <h1>Controle de Estoque</h1>
                         <div class="module-actions">
+                            <button class="btn btn-secondary" id="btn-manage-categories">🏷️ Gerenciar Categorias</button>
                             <button class="btn btn-primary" id="btn-new-product">➕ Adicionar Produto</button>
                         </div>
                     </div>
@@ -726,6 +727,39 @@
                         <h1>Relatórios Gerenciais</h1>
                     </div>
                     <div class="reports-container">
+                        <!-- Seção: Relatório de OS por Status -->
+                        <div class="report-section form-panel">
+                            <h3>Relatório de OS por Status</h3>
+                            <div class="report-controls">
+                                <p>Gere relatórios detalhados das ordens de serviço por status específico.</p>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Status das OS</label>
+                                        <select id="os-status-filter" class="form-control">
+                                            <option value="">Selecione um status</option>
+                                            <option value="progress">Em Conserto</option>
+                                            <option value="awaiting_pickup">Aguardando Retirada</option>
+                                            <option value="delivered">Entregue</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Data de Início</label>
+                                        <input type="date" id="os-report-start-date" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Data de Fim</label>
+                                        <input type="date" id="os-report-end-date" class="form-control">
+                                    </div>
+                                </div>
+                                <button id="btn-generate-os-status-report" class="btn btn-primary">Gerar Relatório</button>
+                            </div>
+                            <div id="os-status-report-content" class="report-content">
+                                <!-- O relatório será exibido aqui -->
+                            </div>
+                        </div>
+
                         <!-- Seção: Relatório de Produtos Mais Vendidos -->
                         <div class="report-section form-panel">
                             <h3>Produtos Mais Vendidos</h3>
@@ -753,6 +787,7 @@
                                     </div>
                                 </div>
                                 <button id="btn-generate-cash-flow-report" class="btn btn-primary">Gerar Relatório</button>
+                                <button id="btn-generate-cash-flow-pdf" class="btn btn-success" style="margin-left: 10px;">Gerar PDF</button>
                             </div>
                             <div id="cash-flow-report-content" class="report-content">
                                 <!-- O relatório será exibido aqui -->
@@ -1529,7 +1564,12 @@
                         <div class="form-row">
                              <div class="form-group"><label>Valor (R$) *</label><input type="text" id="os-quote-value" placeholder="Ex: 1.500,00" required></div>
                              <div class="form-group"><label>Status Pagamento</label><select id="os-payment-status"><option value="Pendente">Pendente</option><option value="Parcial">Parcial</option><option value="Pago">Pago</option></select></div>
-                            <div class="form-group" id="os-amount-paid-group" style="display:none;"><label>Valor Pago (R$)</label><input type="text" id="os-amount-paid" placeholder="Ex: 750,00"></div>
+                            <div class="form-group" id="os-amount-paid-group" style="display:none;">
+                                <label>Valor Pago (R$)</label>
+                                <input type="text" id="os-amount-paid" placeholder="Ex: 750,00" style="background: yellow !important; z-index: 9999 !important; position: relative !important;">
+                                <!-- Campo de teste para debug -->
+                                <input type="text" id="test-input" placeholder="Teste de digitação" style="margin-top: 5px; border: 2px solid red;">
+                            </div>
                         </div>
                     </fieldset>
 
@@ -1668,10 +1708,7 @@
                             <label>Valor Pago:</label>
                             <span id="view-os-amount-paid">-</span>
                         </div>
-                        <div class="os-view-item">
-                            <label>Método de Pagamento:</label>
-                            <span id="view-os-payment-method">-</span>
-                        </div>
+
                         <div class="os-view-item">
                             <label>Previsão de Entrega:</label>
                             <span id="view-os-delivery-date">-</span>
@@ -1728,6 +1765,42 @@
                         <button type="submit" class="btn btn-primary">💾 Salvar Categoria</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE GERENCIAR CATEGORIAS -->
+    <div id="manage-categories-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h2>🏷️ Gerenciar Categorias</h2>
+                <button id="btn-close-manage-categories-modal" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="categories-management">
+                    <div class="categories-header">
+                        <p>Gerencie as categorias do seu estoque. <strong>Atenção:</strong> Ao remover uma categoria, todos os produtos associados ficarão sem categoria.</p>
+                        <button id="btn-add-new-category" class="btn btn-primary btn-sm">➕ Nova Categoria</button>
+                    </div>
+                    
+                    <div class="categories-list">
+                        <div class="categories-table-container">
+                            <table class="os-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nome da Categoria</th>
+                                        <th>Produtos Associados</th>
+                                        <th>Editar</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="categories-table-body">
+                                    <!-- Categorias serão carregadas aqui -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -2251,20 +2324,7 @@
                              <div class="form-group"><label>Status Pagamento</label><select id="edit-os-payment-status"><option value="Pendente">Pendente</option><option value="Parcial">Parcial</option><option value="Pago">Pago</option></select></div>
                             <div class="form-group" id="edit-os-amount-paid-group" style="display:none;"><label>Valor Pago (R$)</label><input type="text" id="edit-os-amount-paid" placeholder="Ex: 750,00"></div>
                         </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Método de Pagamento</label>
-                                <select id="edit-os-payment-method">
-                                    <option value="">Selecione...</option>
-                                    <option value="dinheiro">Dinheiro</option>
-                                    <option value="cartao_credito">Cartão de Crédito</option>
-                                    <option value="cartao_debito">Cartão de Débito</option>
-                                    <option value="pix">PIX</option>
-                                    <option value="transferencia">Transferência</option>
-                                    <option value="cheque">Cheque</option>
-                                </select>
-                            </div>
-                        </div>
+
                     </fieldset>
 
                     <!-- Seção de Produtos do Estoque -->
@@ -2383,6 +2443,20 @@
                 <form id="new-warranty-form" class="os-form" novalidate>
                     <input type="hidden" id="warranty-edit-id">
                     
+                    <!-- Seção de Busca de OS -->
+                    <fieldset>
+                        <legend>🔍 Buscar OS Entregue (Opcional)</legend>
+                        <div class="form-group autocomplete-container">
+                            <label>Buscar OS Entregue para Preenchimento Automático</label>
+                            <input type="text" id="warranty-os-search" placeholder="Digite o número da OS ou nome do cliente...">
+                            <div id="warranty-os-results" class="autocomplete-results"></div>
+                        </div>
+                        <input type="hidden" id="warranty-selected-os-id">
+                        <div class="form-group">
+                            <small style="color: #666;">💡 Dica: Busque uma OS entregue para preencher automaticamente os dados do cliente, equipamento e peças utilizadas.</small>
+                        </div>
+                    </fieldset>
+
                     <!-- Seção do Cliente -->
                     <fieldset>
                         <legend>1. Cliente</legend>

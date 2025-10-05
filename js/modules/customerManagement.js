@@ -46,29 +46,54 @@ export function setupCustomerSearch(searchInputId, resultsContainerId, selectedC
             resultsContainer.style.display = 'block';
             
             resultsContainer.querySelectorAll('.autocomplete-item[data-id]').forEach(item => {
-                item.addEventListener('click', () => {
-                    const customerName = item.textContent;
+                item.addEventListener('click', async () => {
                     const customerId = item.dataset.id;
                     
-                    searchInput.value = customerName;
-                    selectedCustomerIdInput.value = customerId;
-                    
-                    // Atualizar também o campo edit-os-new-customer-name se existir
-                    const newCustomerNameField = document.getElementById('edit-os-new-customer-name');
-                    if (newCustomerNameField) {
-                        newCustomerNameField.value = customerName;
-                        console.log('✅ Campo edit-os-new-customer-name atualizado:', customerName);
+                    // Buscar dados completos do cliente no banco
+                    try {
+                        const { data: customer, error } = await supabase
+                            .from('customers')
+                            .select('id, full_name, phone')
+                            .eq('id', customerId)
+                            .single();
+
+                        if (error) {
+                            console.error('Erro ao buscar dados do cliente:', error);
+                            return;
+                        }
+
+                        const customerName = customer.full_name || '';
+                        const customerPhone = customer.phone || '';
+
+                        searchInput.value = customerName;
+                        selectedCustomerIdInput.value = customerId;
+                        
+                        // Atualizar também o campo edit-os-new-customer-name se existir
+                        const newCustomerNameField = document.getElementById('edit-os-new-customer-name');
+                        if (newCustomerNameField) {
+                            newCustomerNameField.value = customerName;
+                            console.log('✅ Campo edit-os-new-customer-name atualizado:', customerName);
+                        }
+                        
+                        // Atualizar também o campo edit-os-new-customer-phone se existir
+                        const newCustomerPhoneField = document.getElementById('edit-os-new-customer-phone');
+                        if (newCustomerPhoneField) {
+                            newCustomerPhoneField.value = customerPhone;
+                            console.log('✅ Campo edit-os-new-customer-phone atualizado:', customerPhone);
+                        }
+                        
+                        // Atualizar também o campo edit-os-selected-customer-id se existir
+                        const selectedCustomerField = document.getElementById('edit-os-selected-customer-id');
+                        if (selectedCustomerField) {
+                            selectedCustomerField.value = customerId;
+                            console.log('✅ Campo edit-os-selected-customer-id atualizado:', customerId);
+                        }
+                        
+                        resultsContainer.innerHTML = '';
+                        resultsContainer.style.display = 'none';
+                    } catch (error) {
+                        console.error('Erro ao buscar cliente:', error);
                     }
-                    
-                    // Atualizar também o campo edit-os-selected-customer-id se existir
-                    const selectedCustomerField = document.getElementById('edit-os-selected-customer-id');
-                    if (selectedCustomerField) {
-                        selectedCustomerField.value = customerId;
-                        console.log('✅ Campo edit-os-selected-customer-id atualizado:', customerId);
-                    }
-                    
-                    resultsContainer.innerHTML = '';
-                    resultsContainer.style.display = 'none';
                 });
             });
         } catch (error) {
@@ -96,7 +121,7 @@ export function setupValueFormatting(fieldIds) {
         if (field) {
             // Formatação durante a digitação
             field.addEventListener('input', function(e) {
-                let value = e.target.value.replace(/[^\\d,]/g, ''); // Remove tudo exceto números e vírgula
+                let value = e.target.value.replace(/[^\d,]/g, ''); // Remove tudo exceto números e vírgula
                 
                 // Se tem vírgula, separa inteiros e decimais
                 let parts = value.split(',');
@@ -110,7 +135,7 @@ export function setupValueFormatting(fieldIds) {
                 
                 // Adiciona pontos para milhares na parte inteira
                 if (integerPart.length > 3) {
-                    integerPart = integerPart.replace(/\\B(?=(?:\\d{3})+(?!\\d))/g, '.');
+                    integerPart = integerPart.replace(/\B(?=(?:\d{3})+(?!\d))/g, '.');
                 }
                 
                 // Reconstrói o valor
@@ -124,13 +149,13 @@ export function setupValueFormatting(fieldIds) {
             
             // Remove formatação ao focar para edição mais fácil
             field.addEventListener('focus', function(e) {
-                let value = e.target.value.replace(/\\./g, ''); // Remove pontos
+                let value = e.target.value.replace(/\./g, ''); // Remove pontos
                 e.target.value = value;
             });
             
             // Reaplica formatação ao sair do campo
             field.addEventListener('blur', function(e) {
-                let value = e.target.value.replace(/[^\\d,]/g, '');
+                let value = e.target.value.replace(/[^\d,]/g, '');
                 if (value) {
                     let parts = value.split(',');
                     let integerPart = parts[0];
@@ -141,7 +166,7 @@ export function setupValueFormatting(fieldIds) {
                     }
                     
                     if (integerPart.length > 3) {
-                        integerPart = integerPart.replace(/\\B(?=(?:\\d{3})+(?!\\d))/g, '.');
+                        integerPart = integerPart.replace(/\B(?=(?:\d{3})+(?!\d))/g, '.');
                     }
                     
                     let formattedValue = integerPart;

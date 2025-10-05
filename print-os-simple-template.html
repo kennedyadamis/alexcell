@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de OS por Status - Simples</title>
+    <link rel="stylesheet" href="print.css">
+    <style>
+        /* Estilos específicos para relatório simples em formato 80mm */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        .page-container {
+            width: 80mm;
+            margin: 0 auto;
+            background: white;
+            box-shadow: none;
+            min-height: auto;
+            padding: 0;
+        }
+
+        .os-report {
+            padding: 10px;
+            font-size: 10pt;
+            line-height: 1.4;
+            display: block;
+        }
+
+        .receipt-header {
+            text-align: center;
+            border-bottom: 1px dashed #000;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .logo {
+            max-width: 200px;
+            max-height: 80px;
+            display: block;
+            margin: 0 auto 15px auto;
+            object-fit: contain;
+        }
+
+        .store-info {
+            text-align: center;
+        }
+
+        .store-info h2 {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 0;
+            padding: 0;
+            color: #000;
+        }
+
+        .store-info p {
+            font-size: 1em;
+            margin: 0;
+            padding: 0;
+            line-height: 1.4;
+            color: #000;
+        }
+
+        .report-title {
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin: 15px 0;
+            padding: 10px 0;
+            border-bottom: 1px solid #000;
+        }
+
+        .report-info {
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px dashed #000;
+        }
+
+        .report-info h3 {
+            font-size: 1.1em;
+            margin: 0 0 10px 0;
+            font-weight: bold;
+        }
+
+        .report-info p {
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+
+        /* Estilo para OS individuais - sem tabela */
+        .os-item {
+            border-bottom: 1px dashed #ccc;
+            padding: 10px 0;
+            margin-bottom: 10px;
+        }
+
+        .os-item:last-child {
+            border-bottom: 1px solid #000;
+        }
+
+        .os-header {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .os-details {
+            font-size: 0.9em;
+            line-height: 1.3;
+        }
+
+        .os-details div {
+            margin: 2px 0;
+        }
+
+        .summary-section {
+            margin-top: 15px;
+            padding: 10px 0;
+            border-top: 1px solid #000;
+        }
+
+        .summary-section h3 {
+            font-size: 1.1em;
+            margin: 0 0 10px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            font-size: 0.9em;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 0;
+        }
+
+        .signature {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .signature-line {
+            border-top: 1px solid #000;
+            width: 200px;
+            margin: 20px auto 10px auto;
+        }
+
+        .signature p {
+            font-size: 0.9em;
+            margin: 0;
+        }
+
+        .receipt-footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.8em;
+            border-top: 1px dashed #000;
+            padding-top: 10px;
+        }
+
+        /* Estilos para impressão */
+        @media print {
+            body {
+                background-color: white;
+            }
+            
+            .page-container {
+                width: 80mm;
+                box-shadow: none;
+                margin: 0;
+            }
+            
+            .download-btn {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container" id="report-container">
+        <div class="os-report">
+            <header class="receipt-header">
+                <div class="logo-container">
+                    <img src="" alt="Logo da Loja" class="logo" id="print-logo" style="display: none;">
+                </div>
+                <div class="store-info" id="store-info">
+                    <h2 id="store-name">Assistência Técnica Especializada</h2>
+                    <p id="store-address">R. 38, N 518 - Sala 02 - Lot. Paraíso do Sul, Santa Maria, Aracaju - SE, 49044-451</p>
+                    <p id="store-phones">(79) 9.8160-6441 / (79) 3011-2293</p>
+                </div>
+            </header>
+
+            <h1 class="report-title" id="report-title">Relatório de OS por Status</h1>
+            
+            <div class="report-info" id="report-info">
+                <!-- Informações do relatório serão preenchidas aqui -->
+            </div>
+
+            <div id="os-list">
+                <!-- Lista de OS será preenchida aqui -->
+            </div>
+
+            <div class="summary-section" id="summary-section">
+                <!-- Resumo será preenchido aqui -->
+            </div>
+
+            <div class="signature">
+                <div class="signature-line"></div>
+                <p>Responsável pelo Relatório</p>
+            </div>
+
+            <footer class="receipt-footer">
+                <div class="timestamp">
+                    Relatório gerado em: <span id="print-timestamp"></span>
+                </div>
+            </footer>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const reportData = JSON.parse(localStorage.getItem('os_status_report_data'));
+            console.log("Dados do relatório de OS recebidos:", reportData);
+
+            if (!reportData) {
+                document.body.innerHTML = '<h1>Erro: Não foi possível carregar os dados do relatório.</h1>';
+                return;
+            }
+
+            // Atualiza as informações da loja
+            if (reportData.storeInfo) {
+                if (reportData.storeInfo.name) {
+                    document.getElementById('store-name').textContent = reportData.storeInfo.name;
+                }
+                document.getElementById('store-address').textContent = reportData.storeInfo.address || 'Endereço não disponível';
+                document.getElementById('store-phones').textContent = reportData.storeInfo.phones || 'Telefone não disponível';
+            }
+
+            // Atualiza o logo
+            const logoImg = document.getElementById('print-logo');
+            const logoContainer = document.querySelector('.logo-container');
+            
+            if (logoImg && logoContainer) {
+                if (reportData.logoUrl) {
+                    logoImg.src = reportData.logoUrl;
+                    logoImg.style.display = 'block';
+                    logoImg.onerror = function() {
+                        this.style.display = 'none';
+                        logoContainer.style.display = 'none';
+                        const storeInfo = document.getElementById('store-info');
+                        if (storeInfo) {
+                            storeInfo.style.paddingLeft = '0';
+                        }
+                    };
+                } else {
+                    logoContainer.style.display = 'none';
+                    const storeInfo = document.getElementById('store-info');
+                    if (storeInfo) {
+                        storeInfo.style.paddingLeft = '0';
+                    }
+                }
+            }
+
+            // Atualiza o título do relatório
+            document.getElementById('report-title').textContent = reportData.title || 'Relatório de OS por Status';
+
+            // Preenche as informações do relatório
+            const reportInfoContainer = document.getElementById('report-info');
+            if (reportInfoContainer && reportData.info) {
+                let infoHTML = '<h3>Informações do Relatório</h3>';
+                infoHTML += `<p><strong>Status:</strong> ${reportData.info.status}</p>`;
+                if (reportData.info.dateRange) {
+                    infoHTML += `<p><strong>Período:</strong> ${reportData.info.dateRange}</p>`;
+                }
+                infoHTML += `<p><strong>Total de OS:</strong> ${reportData.info.totalOS}</p>`;
+                reportInfoContainer.innerHTML = infoHTML;
+            }
+
+            // Preenche a lista de OS (sem tabela)
+            const osListContainer = document.getElementById('os-list');
+            if (osListContainer && reportData.serviceOrders) {
+                let listHTML = '';
+
+                reportData.serviceOrders.forEach(os => {
+                    listHTML += `
+                        <div class="os-item">
+                            <div class="os-header">OS #${os.id} - ${os.customer}</div>
+                            <div class="os-details">
+                                <div><strong>Equipamento:</strong> ${os.equipment}</div>
+                                <div><strong>Produtos:</strong> ${os.products}</div>
+                                <div><strong>Valor OS:</strong> ${os.value}</div>
+                                <div><strong>Valor Pago:</strong> ${os.paidValue}</div>
+                                <div><strong>Data:</strong> ${os.date}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                osListContainer.innerHTML = listHTML;
+            }
+
+            // Preenche o resumo
+            const summaryContainer = document.getElementById('summary-section');
+            if (summaryContainer && reportData.summary) {
+                let summaryHTML = '<h3>Resumo do Relatório</h3>';
+                summaryHTML += '<div class="summary-grid">';
+                
+                Object.entries(reportData.summary).forEach(([key, value]) => {
+                    summaryHTML += `
+                        <div class="summary-item">
+                            <span><strong>${key}:</strong></span>
+                            <span>${value}</span>
+                        </div>
+                    `;
+                });
+                
+                summaryHTML += '</div>';
+                summaryContainer.innerHTML = summaryHTML;
+            }
+
+            // Atualiza o timestamp
+            document.getElementById('print-timestamp').textContent = reportData.generatedAt || new Date().toLocaleString('pt-BR');
+
+            // Auto-imprimir após carregar
+            setTimeout(() => {
+                window.print();
+            }, 1000);
+
+            // Remover dados do localStorage após usar
+            localStorage.removeItem('os_status_report_data');
+        });
+    </script>
+</body>
+</html>

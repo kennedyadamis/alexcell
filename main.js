@@ -8,7 +8,7 @@ import { initializePermissionsModule } from './js/modules/permissions.js';
 import { initializeCustomerFormEvents, loadCustomersTable, performCustomerSearch, clearCustomerSearch, saveCustomer, viewCustomer, editCustomer, deleteCustomer } from './js/modules/customers.js';
 import { formatPhoneMask, formatCurrencyBR, formatValueForDisplay, formatDateForDisplay } from './js/utils/formatters.js';
 import { canViewCostPrices, formatCostPrice } from './js/utils/costPermissions.js';
-import { loadOSTable, refreshOSList, openNewOSModal, closeNewOSModal, fetchAddressByCEP, initializePatternLock, confirmAddProduct, updateOSTotal, setupOrderForm, updateOSStatus, markAsAwaitingPickup, markAsDelivered, openOSPaymentModal, setupOSPaymentEvents, updateOSSplitSummary, deleteOS, viewOS, editOS, populateEditOSForm, setupEditPatternLock, setupEditValueFormatting, addEditOSProduct, setupEditCustomerAutocomplete, setupEditProductAutocomplete, updateEditOSTotal as updateEditOSTotalServiceOrders, closeEditOSModal, setupEditOSEvents, initializeOSConsultation, showConsultationMessage, displayOSResults, adjustQuantity, updateProductTotal, formatCurrencyInput, openAddProductModal, closeAddProductModal, closeViewOSModal, saveEditedOSProduct, saveEditedOS, searchOSByCustomer, clearOSSearch } from './js/modules/serviceOrders.js';
+import { loadOSTable, refreshOSList, openNewOSModal, closeNewOSModal, fetchAddressByCEP, initializePatternLock, confirmAddProduct, updateOSTotal, setupOrderForm, updateOSStatus, markAsAwaitingPickup, markAsDelivered, openOSPaymentModal, setupOSPaymentEvents, updateOSSplitSummary, deleteOS, viewOS, editOS, populateEditOSForm, setupEditPatternLock, setupEditValueFormatting, addEditOSProduct, setupEditCustomerAutocomplete, setupEditProductAutocomplete, updateEditOSTotal as updateEditOSTotalServiceOrders, closeEditOSModal, setupEditOSEvents, initializeOSConsultation, showConsultationMessage, displayOSResults, adjustQuantity, updateProductTotal, formatCurrencyInput, formatPaymentInput, openAddProductModal, closeAddProductModal, closeViewOSModal, saveEditedOSProduct, saveEditedOS, searchOSByCustomer, clearOSSearch } from './js/modules/serviceOrders.js';
 import { resetAddProductModal } from './js/utils/resetAddProductModal.js';
 import { loadDynamicBanner, createDefaultBanners } from './js/modules/banners.js';
 import { initializeReportsModule } from './js/modules/reports.js';
@@ -170,6 +170,26 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     setupModalCloseEvents();
+
+    // ADICIONADO: Event listeners para o modal de edição de OS
+    const btnCloseEditOS = document.getElementById('btn-close-os-edit-modal');
+    const btnCancelEditOS = document.getElementById('btn-cancel-edit-os');
+    
+    if (btnCloseEditOS) {
+        btnCloseEditOS.addEventListener('click', function() {
+            import('./js/modules/serviceOrders.js').then(module => {
+                module.closeEditOSModal();
+            });
+        });
+    }
+    
+    if (btnCancelEditOS) {
+        btnCancelEditOS.addEventListener('click', function() {
+            import('./js/modules/serviceOrders.js').then(module => {
+                module.closeEditOSModal();
+            });
+        });
+    }
 
     // Inicializar consulta de OS na página pública
     initializeOSConsultation();
@@ -454,6 +474,10 @@ function initializeDashboardEventListeners() {
                         initializeWarrantyModule();
                         moduleInitialized.garantia = true;
                     }
+                    // Recarregar dados da garantia apenas se necessário
+                    if (document.getElementById('warranty-table-body').innerHTML.trim() === '') {
+                        loadWarrantyTable();
+                    }
                     break;
                 case 'usuarios-permissoes':
                     if (!moduleInitialized['usuarios-permissoes']) {
@@ -480,7 +504,33 @@ function initializeDashboardEventListeners() {
     if(osCustomerSearch) osCustomerSearch.addEventListener('keyup', (e) => { /* ... debounce ... */ });
 
     const osPaymentStatus = document.getElementById('os-payment-status');
-    if(osPaymentStatus) osPaymentStatus.addEventListener('change', (e) => { /* ... */ });
+    if(osPaymentStatus) {
+        // Variável para armazenar o valor parcial anterior
+        let previousPartialValue = '';
+        
+        osPaymentStatus.addEventListener('change', (e) => {
+            const amountPaidGroup = document.getElementById('os-amount-paid-group');
+            const amountPaidInput = document.getElementById('os-amount-paid');
+            
+            if (e.target.value === 'Parcial') {
+                // Mostrar campo de valor pago
+                if (amountPaidGroup) amountPaidGroup.style.display = 'block';
+                
+                // Restaurar valor anterior se existir
+                if (amountPaidInput && previousPartialValue) {
+                    amountPaidInput.value = previousPartialValue;
+                }
+            } else {
+                // Salvar valor atual antes de esconder
+                if (amountPaidInput && amountPaidInput.value.trim() !== '') {
+                    previousPartialValue = amountPaidInput.value;
+                }
+                
+                // Esconder campo de valor pago
+                if (amountPaidGroup) amountPaidGroup.style.display = 'none';
+            }
+        });
+    }
     
     // --- Eventos da Barra de Pesquisa de OS ---
     const btnSearchOS = document.getElementById('btn-search-os');
@@ -560,8 +610,22 @@ function initializeDashboardEventListeners() {
     // --- Eventos do Módulo de Relatórios ---
     initializeReportsModule();
 
-    // --- Eventos do Módulo de Garantia ---
-    initializeWarrantyModule();
+function initializeWarrantyModule() {
+    // Flag para garantir que o módulo seja inicializado apenas uma vez
+    if (initializeWarrantyModule.hasBeenInitialized) {
+        return;
+    }
+    initializeWarrantyModule.hasBeenInitialized = true;
+
+    const warrantyModule = document.getElementById('module-garantia');
+    if (!warrantyModule) return;
+
+    // Configurar eventos
+    setupWarrantyEvents();
+    
+    // Carregar garantias apenas na primeira inicialização
+    loadWarrantyTable();
+}
 
     // --- Eventos dos botões de marca na edição de OS ---
     // Eventos removidos - funções addEditOSBrand e removeEditOSBrand não existem mais
@@ -1390,6 +1454,7 @@ function setupStockEvents() {
     const btnNewProduct = document.getElementById('btn-new-product');
     const btnCancelNewProduct = document.getElementById('btn-cancel-new-product');
     const btnNewCategory = document.getElementById('btn-new-category');
+    const btnManageCategories = document.getElementById('btn-manage-categories');
     const newProductForm = document.getElementById('new-product-form');
     const newProductContainer = document.getElementById('new-product-form-container');
 
@@ -1440,6 +1505,47 @@ function setupStockEvents() {
             if (newProductContainer) {
                 newProductContainer.style.display = 'none';
                 newProductForm.reset();
+            }
+        });
+    }
+
+    // Botão para gerenciar categorias
+    if (btnManageCategories) {
+        btnManageCategories.addEventListener('click', () => {
+            const modal = document.getElementById('manage-categories-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                loadCategoriesForManagement();
+            }
+        });
+    }
+
+    // Configurar eventos do modal de gerenciar categorias
+    const manageCategoriesModal = document.getElementById('manage-categories-modal');
+    const btnCloseManageCategories = document.getElementById('btn-close-manage-categories-modal');
+    const btnAddNewCategory = document.getElementById('btn-add-new-category');
+
+    if (btnCloseManageCategories) {
+        btnCloseManageCategories.addEventListener('click', () => {
+            if (manageCategoriesModal) {
+                manageCategoriesModal.style.display = 'none';
+            }
+        });
+    }
+
+    if (manageCategoriesModal) {
+        manageCategoriesModal.addEventListener('click', (e) => {
+            if (e.target === manageCategoriesModal) {
+                manageCategoriesModal.style.display = 'none';
+            }
+        });
+    }
+
+    if (btnAddNewCategory) {
+        btnAddNewCategory.addEventListener('click', () => {
+            const categoryModal = document.getElementById('category-modal-container');
+            if (categoryModal) {
+                categoryModal.style.display = 'flex';
             }
         });
     }
@@ -3530,50 +3636,6 @@ function diagnosticModals() {
     return elements;
 }
 
-// ADICIONADO: Evento para fechar o modal de visualização da OS
-document.addEventListener('DOMContentLoaded', () => {
-    // Executar diagnóstico ao carregar a página
-    setTimeout(() => diagnosticModals(), 1000);
-    
-    const btnClose = document.getElementById('btn-close-os-view-modal');
-    if(btnClose) {
-        btnClose.addEventListener('click', () => {
-            const modal = document.getElementById('os-view-modal');
-            if(modal) modal.style.display = 'none';
-        });
-    }
-
-    // ADICIONADO: Eventos para o modal de edição
-    const btnCloseEdit = document.getElementById('btn-close-os-edit-modal');
-    const btnCancelEdit = document.getElementById('btn-cancel-edit-os');
-    const editForm = document.getElementById('edit-os-form');
-
-    if (btnCloseEdit) {
-        btnCloseEdit.addEventListener('click', () => {
-            closeEditOSModal();
-        });
-    }
-
-    if (btnCancelEdit) {
-        btnCancelEdit.addEventListener('click', () => {
-            closeEditOSModal();
-        });
-    }
-
-    if (editForm) {
-        editForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const osId = document.getElementById('edit-os-id').value;
-            const currentUser = getCurrentUser();
-            const selectedStoreId = getSelectedStoreId();
-            
-            // Usar a função saveEditedOS que tem toda a lógica correta
-            await saveEditedOS(osId, currentUser, selectedStoreId);
-        });
-    }
-});
-
 // ==========================================
 // FUNÇÕES AUXILIARES PARA MODAL DE EDIÇÃO DE OS
 // ==========================================
@@ -3671,6 +3733,7 @@ function formatPriceForDisplay(price) {
 
 // Disponibilizar função importada globalmente
 window.formatCurrencyInput = formatCurrencyInput;
+window.formatPaymentInput = formatPaymentInput;
 
 // Disponibilizar função importada globalmente
 window.confirmAddProduct = confirmAddProduct;
@@ -3910,6 +3973,7 @@ function setupWarrantyModalEvents() {
     // Configurar autocomplete de clientes para garantia
     setupWarrantyCustomerAutocomplete();
     setupEditWarrantyCustomerAutocomplete();
+    setupWarrantyOSSearch();
 
     // Configurar formatação de valores
     setupWarrantyValueFormatting();
@@ -4316,20 +4380,187 @@ function setupWarrantyCustomerAutocomplete() {
         }, 300);
     });
 
-    resultsDiv.addEventListener('click', (e) => {
+    resultsDiv.addEventListener('click', async (e) => {
         const item = e.target.closest('.autocomplete-item');
         if (item && item.dataset.customerId) {
             const customerId = item.dataset.customerId;
-            const customerName = item.textContent.split(' (')[0];
-            const phoneMatch = item.textContent.match(/\(([^)]+)\)/);
-            const customerPhone = phoneMatch ? phoneMatch[1] : '';
-
-            searchInput.value = customerName;
-            nameInput.value = customerName;
-            phoneInput.value = customerPhone;
-            customerIdInput.value = customerId;
             
+            // Buscar dados completos do cliente no banco
+            try {
+                const { data: customer, error } = await supabase
+                    .from('customers')
+                    .select('id, full_name, phone')
+                    .eq('id', customerId)
+                    .single();
+
+                if (error) {
+                    console.error('Erro ao buscar dados do cliente:', error);
+                    return;
+                }
+
+                const customerName = customer.full_name || '';
+                const customerPhone = customer.phone || '';
+
+                searchInput.value = customerName;
+                if (nameInput) nameInput.value = customerName;
+                if (phoneInput) phoneInput.value = customerPhone;
+                customerIdInput.value = customerId;
+                
+                resultsDiv.style.display = 'none';
+            } catch (error) {
+                console.error('Erro ao buscar cliente:', error);
+            }
+        }
+    });
+}
+
+// Configurar busca de OS entregue para garantia
+function setupWarrantyOSSearch() {
+    const searchInput = document.getElementById('warranty-os-search');
+    const resultsDiv = document.getElementById('warranty-os-results');
+    const selectedOSInput = document.getElementById('warranty-selected-os-id');
+
+    if (!searchInput || !resultsDiv) return;
+
+    let searchTimeout;
+
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.trim();
+        
+        clearTimeout(searchTimeout);
+        
+        if (searchTerm.length < 2) {
             resultsDiv.style.display = 'none';
+            return;
+        }
+
+        searchTimeout = setTimeout(async () => {
+            try {
+                // Verificar se o termo de busca é um número (ID da OS)
+                const isNumeric = /^\d+$/.test(searchTerm);
+                
+                let query = supabase
+                    .from('service_orders')
+                    .select('id, customers(full_name, phone), equipment_brand, equipment_model, products')
+                    .eq('status', 'delivered');
+
+                if (isNumeric) {
+                    // Se for número, buscar por ID
+                    query = query.eq('id', parseInt(searchTerm));
+                } else {
+                    // Se for texto, buscar por nome do cliente
+                    query = query.ilike('customers.full_name', `%${searchTerm}%`);
+                }
+
+                const { data, error } = await query.limit(10);
+
+                if (error) throw error;
+
+                resultsDiv.innerHTML = '';
+                
+                if (data.length === 0) {
+                    resultsDiv.innerHTML = '<div class="autocomplete-item">Nenhuma OS entregue encontrada</div>';
+                } else {
+                    data.forEach(os => {
+                        const item = document.createElement('div');
+                        item.className = 'autocomplete-item';
+                        const customerName = os.customers?.full_name || 'Cliente não informado';
+                        const equipment = `${os.equipment_brand || ''} ${os.equipment_model || ''}`.trim() || 'Equipamento não informado';
+                        item.innerHTML = `
+                            <strong>OS #${os.id}</strong><br>
+                            <small>${customerName} - ${equipment}</small>
+                        `;
+                        item.dataset.osId = os.id;
+                        resultsDiv.appendChild(item);
+                    });
+                }
+                
+                resultsDiv.style.display = 'block';
+            } catch (error) {
+                console.error('Erro ao buscar OS:', error);
+                resultsDiv.innerHTML = '<div class="autocomplete-item">Erro ao buscar OS</div>';
+                resultsDiv.style.display = 'block';
+            }
+        }, 300);
+    });
+
+    // Fechar resultados ao clicar fora
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
+            resultsDiv.style.display = 'none';
+        }
+    });
+
+    // Selecionar OS
+    resultsDiv.addEventListener('click', async function(e) {
+        const item = e.target.closest('.autocomplete-item');
+        if (item && item.dataset.osId) {
+            const osId = item.dataset.osId;
+            
+            try {
+                // Buscar dados completos da OS incluindo quote_value
+                const { data: os, error } = await supabase
+                    .from('service_orders')
+                    .select('id, customers(id, full_name, phone), equipment_brand, equipment_model, products, quote_value')
+                    .eq('id', osId)
+                    .single();
+
+                if (error) throw error;
+
+                // Preencher dados do cliente
+                if (os.customers) {
+                    document.getElementById('warranty-customer-name').value = os.customers.full_name || '';
+                    document.getElementById('warranty-customer-phone').value = os.customers.phone || '';
+                    document.getElementById('warranty-selected-customer-id').value = os.customers.id || '';
+                    document.getElementById('warranty-customer-search').value = os.customers.full_name || '';
+                }
+
+                // Preencher dados do equipamento
+                document.getElementById('warranty-equipment-brand').value = os.equipment_brand || '';
+                document.getElementById('warranty-equipment-model').value = os.equipment_model || '';
+
+                // Preencher peças substituídas (nomes dos produtos utilizados)
+                if (os.products && os.products.length > 0) {
+                    const productNames = os.products.map(product => product.name).join(', ');
+                    document.getElementById('warranty-part-replaced').value = productNames;
+                }
+
+                // Calcular e preencher valor total
+                let totalValue = 0;
+                
+                // Primeiro, tentar usar o valor dos produtos
+                if (os.products && os.products.length > 0) {
+                    totalValue = os.products.reduce((total, product) => {
+                        const quantity = parseInt(product.quantity) || 1;
+                        const price = parseFloat(product.price) || 0;
+                        return total + (quantity * price);
+                    }, 0);
+                }
+                
+                // Se não há produtos ou valor é 0, usar quote_value
+                if (totalValue === 0 && os.quote_value) {
+                    totalValue = parseFloat(os.quote_value) || 0;
+                }
+                
+                // Preencher campo de valor total formatado
+                if (totalValue > 0) {
+                    const formattedValue = totalValue.toLocaleString('pt-BR', { 
+                        minimumFractionDigits: 2, 
+                        maximumFractionDigits: 2 
+                    }).replace('.', ',');
+                    document.getElementById('warranty-total-value').value = formattedValue;
+                }
+
+                selectedOSInput.value = osId;
+                searchInput.value = `OS #${osId} - ${os.customers?.full_name || 'Cliente não informado'}`;
+                resultsDiv.style.display = 'none';
+
+                showToast('Dados da OS carregados com sucesso!', 'success');
+                
+            } catch (error) {
+                console.error('Erro ao buscar dados da OS:', error);
+                showToast('Erro ao carregar dados da OS', 'error');
+            }
         }
     });
 }
@@ -4386,20 +4617,36 @@ function setupEditWarrantyCustomerAutocomplete() {
         }, 300);
     });
 
-    resultsDiv.addEventListener('click', (e) => {
+    resultsDiv.addEventListener('click', async (e) => {
         const item = e.target.closest('.autocomplete-item');
         if (item && item.dataset.customerId) {
             const customerId = item.dataset.customerId;
-            const customerName = item.textContent.split(' (')[0];
-            const phoneMatch = item.textContent.match(/\(([^)]+)\)/);
-            const customerPhone = phoneMatch ? phoneMatch[1] : '';
-
-            searchInput.value = customerName;
-            nameInput.value = customerName;
-            phoneInput.value = customerPhone;
-            customerIdInput.value = customerId;
             
-            resultsDiv.style.display = 'none';
+            // Buscar dados completos do cliente no banco
+            try {
+                const { data: customer, error } = await supabase
+                    .from('customers')
+                    .select('id, full_name, phone')
+                    .eq('id', customerId)
+                    .single();
+
+                if (error) {
+                    console.error('Erro ao buscar dados do cliente:', error);
+                    return;
+                }
+
+                const customerName = customer.full_name || '';
+                const customerPhone = customer.phone || '';
+
+                searchInput.value = customerName;
+                if (nameInput) nameInput.value = customerName;
+                if (phoneInput) phoneInput.value = customerPhone;
+                customerIdInput.value = customerId;
+                
+                resultsDiv.style.display = 'none';
+            } catch (error) {
+                console.error('Erro ao buscar cliente:', error);
+            }
         }
     });
 }
@@ -4707,21 +4954,59 @@ function initializePasswordChange() {
 
 // Função para editar preço/quantidade do produto na OS
 window.editOSProductPrice = function(productId) {
-    const productDiv = document.querySelector(`.product-item[data-product-id="${productId}"]`);
+    // Procurar tanto na criação (.product-item) quanto na edição (.product-item-edit)
+    let productDiv = document.querySelector(`.product-item[data-product-id="${productId}"]`);
+    if (!productDiv) {
+        productDiv = document.querySelector(`.product-item-edit[data-product-id="${productId}"]`);
+    }
+    
+    console.log('Produto encontrado:', productDiv);
+    console.log('Todos os elementos .product-item-edit:', document.querySelectorAll('.product-item-edit'));
+    
+    // Verificar se existe algum elemento com o ID usando diferentes formas
+    if (!productDiv) {
+        console.log('Tentando buscar por outros atributos...');
+        productDiv = document.querySelector(`[data-product-id="${productId}"]`);
+        console.log('Busca geral por data-product-id:', productDiv);
+        
+        // Verificar todos os elementos com data-product-id
+        const allElements = document.querySelectorAll('[data-product-id]');
+        console.log('Todos os elementos com data-product-id:', allElements);
+        allElements.forEach(el => {
+            console.log('- Elemento:', el, 'ID:', el.dataset.productId);
+        });
+    }
+    
     if (!productDiv) {
         console.error('Produto não encontrado:', productId);
+        console.log('Elementos disponíveis com .product-item:', document.querySelectorAll('.product-item'));
+        console.log('Elementos disponíveis com .product-item-edit:', document.querySelectorAll('.product-item-edit'));
         return;
     }
     
-    const productNameElement = productDiv.querySelector('.product-info strong');
+    const productNameElement = productDiv.querySelector('.product-info strong') || productDiv.querySelector('.product-name');
     if (!productNameElement) {
-        console.error('Elemento strong não encontrado no produto');
+        console.error('Elemento do nome do produto não encontrado');
         return;
     }
     
     const productName = productNameElement.textContent;
-    const currentQty = productDiv.dataset.quantity;
-    const currentPrice = productDiv.dataset.price;
+    
+    // Extrair quantidade e preço dependendo da estrutura
+    let currentQty, currentPrice;
+    
+    if (productDiv.classList.contains('product-item-edit')) {
+        // Estrutura da edição - extrair do HTML
+        const quantityMatch = productDiv.textContent.match(/Qtd: (\d+)/);
+        const priceMatch = productDiv.textContent.match(/x R\$ ([\d.,]+)/);
+        
+        currentQty = quantityMatch ? quantityMatch[1] : '1';
+        currentPrice = priceMatch ? priceMatch[1].replace(/\./g, '').replace(',', '.') : '0';
+    } else {
+        // Estrutura da criação - usar data attributes
+        currentQty = productDiv.dataset.quantity;
+        currentPrice = productDiv.dataset.price;
+    }
     
     // Criar produto fictício para usar o modal (sem controle de estoque na edição)
     const product = {
@@ -4765,7 +5050,65 @@ window.editOSProductPrice = function(productId) {
     // Alterar texto do botão
     const confirmBtn = modal.querySelector('.btn-primary');
     confirmBtn.textContent = '💾 Salvar Alterações';
-    confirmBtn.onclick = () => saveEditedOSProduct(productId);
+    
+    // Remover listeners anteriores e adicionar novo
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    
+    newConfirmBtn.onclick = () => {
+        // Obter valores do modal
+        const quantityElement = document.getElementById('product-quantity');
+        const priceElement = document.getElementById('product-custom-price');
+        
+        const newQuantity = parseInt(quantityElement?.value) || 1;
+        const newPriceText = priceElement?.value || '0,00';
+        const newPrice = parseFloat(newPriceText.replace(/\./g, '').replace(',', '.'));
+
+        if (newQuantity <= 0) {
+            showToast('Quantidade deve ser maior que zero', 'error');
+            return;
+        }
+        
+        // Atualizar dependendo da estrutura do produto
+        if (productDiv.classList.contains('product-item-edit')) {
+            // Estrutura da edição - atualizar o HTML diretamente
+            const formattedPrice = formatPriceForDisplay(newPrice);
+            const formattedTotal = formatPriceForDisplay(newQuantity * newPrice);
+            
+            const smallElement = productDiv.querySelector('small');
+            if (smallElement) {
+                smallElement.innerHTML = `Qtd: ${newQuantity} x R$ ${formattedPrice} = R$ ${formattedTotal}`;
+            }
+            
+            // Atualizar data attributes se existirem
+            productDiv.dataset.quantity = newQuantity;
+            productDiv.dataset.price = newPrice;
+            
+            // Atualizar total da edição
+            updateEditOSTotalServiceOrders();
+        } else {
+            // Estrutura da criação - usar data attributes
+            productDiv.dataset.quantity = newQuantity;
+            productDiv.dataset.price = newPrice;
+
+            // Atualizar o HTML visível
+            const formattedPrice = formatPriceForDisplay(newPrice);
+            const formattedTotal = formatPriceForDisplay(newQuantity * newPrice);
+            productDiv.querySelector('small').innerHTML = `Qtd: ${newQuantity} x R$ ${formattedPrice} = R$ ${formattedTotal}`;
+
+            // Atualizar total da criação
+            updateOSTotal();
+        }
+
+        // Fechar modal e mostrar sucesso
+        modal.style.display = 'none';
+        showToast('Produto atualizado com sucesso!', 'success');
+        
+        // Restaurar título e botão do modal
+        modal.querySelector('h2').textContent = '➕ Adicionar Produto à OS';
+        newConfirmBtn.textContent = '✅ Adicionar à OS';
+        newConfirmBtn.onclick = confirmAddProduct;
+    };
     
     // Exibir modal
     modal.style.display = 'flex';
@@ -4778,15 +5121,25 @@ window.editOSProductPrice = function(productId) {
 
 // Função para remover produto da OS
 window.removeOSProduct = function(productId) {
-    const productDiv = document.querySelector(`.product-item[data-product-id="${productId}"]`);
+    // Procurar tanto na criação (.product-item) quanto na edição (.product-item-edit)
+    let productDiv = document.querySelector(`.product-item[data-product-id="${productId}"]`);
+    if (!productDiv) {
+        productDiv = document.querySelector(`.product-item-edit[data-product-id="${productId}"]`);
+    }
+    
+    // Verificar se existe algum elemento com o ID usando diferentes formas
+    if (!productDiv) {
+        productDiv = document.querySelector(`[data-product-id="${productId}"]`);
+    }
+    
     if (!productDiv) {
         console.error('Produto não encontrado:', productId);
         return;
     }
     
-    const productNameElement = productDiv.querySelector('.product-info strong');
+    const productNameElement = productDiv.querySelector('.product-info strong') || productDiv.querySelector('.product-name');
     if (!productNameElement) {
-        console.error('Elemento strong não encontrado no produto');
+        console.error('Elemento do nome do produto não encontrado');
         return;
     }
     
@@ -4794,7 +5147,14 @@ window.removeOSProduct = function(productId) {
     
     if (confirm(`Remover "${productName}" da OS?`)) {
         productDiv.remove();
-        updateOSTotal(); // Atualizar total da OS
+        
+        // Atualizar total dependendo do contexto
+        if (document.getElementById('edit-os-products-list')) {
+            updateEditOSTotalServiceOrders();
+        } else {
+            updateOSTotal();
+        }
+        
         showToast(`Produto "${productName}" removido!`, 'success');
     }
 };
@@ -5179,4 +5539,224 @@ async function saveOSExpirationConfig() {
 
 // Log de confirmação de carregamento completo do main.js
 // Debug removido
+
+// =================================================================
+// FUNÇÕES DE GERENCIAMENTO DE CATEGORIAS
+// =================================================================
+
+// Função para carregar categorias no modal de gerenciamento
+async function loadCategoriesForManagement() {
+    const tbody = document.getElementById('categories-table-body');
+    if (!tbody) {
+        console.error('Elemento categories-table-body não encontrado!');
+        return;
+    }
+    
+    tbody.innerHTML = '<tr><td colspan="4">Carregando...</td></tr>';
+    
+    try {
+        // Remover logs de debug desnecessários
+        console.log('Carregando categorias para gerenciamento...');
+        const storeId = getSelectedStoreId();
+        
+        if (!storeId) {
+            console.error('Store ID não definido!');
+            tbody.innerHTML = '<tr><td colspan="4">Erro: Store ID não definido.</td></tr>';
+            return;
+        }
+        
+        // Buscar categorias (incluindo globais)
+        const { data: categories, error: categoriesError } = await supabase
+            .from('categories')
+            .select('id, name, store_id')
+            .or(`store_id.eq.${storeId},store_id.is.null`)
+            .order('name', { ascending: true });
+        
+        if (categoriesError) {
+            console.error('Erro na query de categorias:', categoriesError);
+            throw categoriesError;
+        }
+        
+        if (!categories || categories.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4">Nenhuma categoria encontrada.</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = '';
+        
+        // Para cada categoria, buscar a contagem de produtos
+        for (let i = 0; i < categories.length; i++) {
+            const category = categories[i];
+            
+            const { count: productCount, error: countError } = await supabase
+                .from('products')
+                .select('*', { count: 'exact', head: true })
+                .eq('category_id', category.id)
+                .eq('store_id', storeId);
+            
+            if (countError) {
+                console.error('Erro ao contar produtos da categoria:', category.name, countError);
+            }
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    ${category.name}
+                    ${category.store_id === null ? '<span class="badge badge-info ml-2">Global</span>' : ''}
+                </td>
+                <td>${productCount || 0} produto${(productCount || 0) !== 1 ? 's' : ''}</td>
+                <td>
+                    <button class="btn btn-secondary btn-sm" onclick="editCategory(${category.id}, '${category.name.replace(/'/g, "\\'")}')">
+                        ✏️ Editar
+                    </button>
+                </td>
+                <td>
+                    ${category.store_id !== null ? `
+                        <button class="btn btn-danger btn-sm" onclick="confirmDeleteCategory(${category.id}, '${category.name.replace(/'/g, "\\'")}', ${productCount || 0})">
+                            🗑️ Remover
+                        </button>
+                    ` : '<span class="text-muted">Categoria global - não removível</span>'}
+                </td>
+            `;
+            
+            tbody.appendChild(row);
+        }
+        
+    } catch (error) {
+        console.error('Erro ao carregar categorias:', error);
+        tbody.innerHTML = '<tr><td colspan="4">Erro ao carregar categorias.</td></tr>';
+        showToast('Erro ao carregar categorias: ' + error.message, 'error');
+    }
+}
+
+// Função para editar categoria
+async function editCategory(categoryId, currentName) {
+    const newName = prompt('Digite o novo nome da categoria:', currentName);
+    if (!newName || newName.trim() === '' || newName.trim() === currentName) {
+        return;
+    }
+    
+    try {
+        // Primeiro, buscar informações da categoria para saber se é global
+        const { data: categoryInfo, error: categoryError } = await supabase
+            .from('categories')
+            .select('store_id')
+            .eq('id', categoryId)
+            .single();
+        
+        if (categoryError) throw categoryError;
+        
+        const isGlobalCategory = categoryInfo.store_id === null;
+        
+        // Verificar se já existe uma categoria com esse nome
+        let checkQuery = supabase
+            .from('categories')
+            .select('id')
+            .eq('name', newName.trim())
+            .neq('id', categoryId);
+        
+        // Para categorias globais, verificar apenas outras categorias globais
+        // Para categorias da loja, verificar apenas na mesma loja
+        if (isGlobalCategory) {
+            checkQuery = checkQuery.is('store_id', null);
+        } else {
+            checkQuery = checkQuery.eq('store_id', getSelectedStoreId());
+        }
+        
+        const { data: existingCategory, error: checkError } = await checkQuery.single();
+        
+        if (checkError && checkError.code !== 'PGRST116') {
+            throw checkError;
+        }
+        
+        if (existingCategory) {
+            showToast('Já existe uma categoria com esse nome!', 'error');
+            return;
+        }
+        
+        // Atualizar o nome da categoria
+        const { error: updateError } = await supabase
+            .from('categories')
+            .update({ name: newName.trim() })
+            .eq('id', categoryId);
+        
+        if (updateError) throw updateError;
+        
+        showToast(`Categoria renomeada para "${newName.trim()}" com sucesso!`, 'success');
+        
+        // Recarregar as categorias no modal e nos selects
+        await loadCategoriesForManagement();
+        await loadCategories();
+        
+    } catch (error) {
+        console.error('Erro ao editar categoria:', error);
+        showToast('Erro ao editar categoria: ' + error.message, 'error');
+    }
+}
+
+// Função para confirmar remoção de categoria
+async function confirmDeleteCategory(categoryId, categoryName, productCount) {
+    let message = `Tem certeza que deseja remover a categoria "${categoryName}"?`;
+    
+    if (productCount > 0) {
+        message += `\n\nATENÇÃO: Esta categoria possui ${productCount} produto${productCount !== 1 ? 's' : ''} associado${productCount !== 1 ? 's' : ''}. `;
+        message += `Ao remover a categoria, ${productCount !== 1 ? 'estes produtos ficarão' : 'este produto ficará'} sem categoria.`;
+    }
+    
+    if (confirm(message)) {
+        await deleteCategory(categoryId);
+    }
+}
+
+// Função para remover categoria
+async function deleteCategory(categoryId) {
+    try {
+        // Verificar se o usuário tem permissão para gerenciar estoque
+        if (!currentUserPermissions.can_manage_stock) {
+            showToast('Você não tem permissão para remover categorias', 'error');
+            return;
+        }
+        
+        // Primeiro, atualizar produtos para remover a categoria
+        const { error: updateError } = await supabase
+            .from('products')
+            .update({ category_id: null })
+            .eq('category_id', categoryId)
+            .eq('store_id', getSelectedStoreId());
+        
+        if (updateError) throw updateError;
+        
+        // Depois, remover a categoria
+        const { error: deleteError } = await supabase
+            .from('categories')
+            .delete()
+            .eq('id', categoryId)
+            .eq('store_id', getSelectedStoreId());
+        
+        if (deleteError) throw deleteError;
+        
+        showToast('Categoria removida com sucesso!', 'success');
+        
+        // Recarregar lista de categorias no modal
+        await loadCategoriesForManagement();
+        
+        // Recarregar categorias nos selects
+        await loadCategories();
+        
+        // Recarregar produtos se estiver na tela de estoque
+        if (document.getElementById('products-table-body')) {
+            await loadProducts();
+        }
+        
+    } catch (error) {
+        console.error('Erro ao remover categoria:', error);
+        showToast('Erro ao remover categoria: ' + error.message, 'error');
+    }
+}
+
+// Expor funções globalmente
+window.editCategory = editCategory;
+window.confirmDeleteCategory = confirmDeleteCategory;
+window.deleteCategory = deleteCategory;
+window.loadCategoriesForManagement = loadCategoriesForManagement;
 

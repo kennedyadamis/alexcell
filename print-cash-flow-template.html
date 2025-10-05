@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Fluxo de Caixa - Simples</title>
+    <link rel="stylesheet" href="print.css">
+    <style>
+        /* Estilos específicos para relatório simples em formato 80mm */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        .page-container {
+            width: 80mm;
+            margin: 0 auto;
+            background: white;
+            box-shadow: none;
+            min-height: auto;
+            padding: 0;
+        }
+
+        .cash-flow-report {
+            padding: 10px;
+            font-size: 10pt;
+            line-height: 1.4;
+            display: block;
+        }
+
+        .receipt-header {
+            text-align: center;
+            border-bottom: 1px dashed #000;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .logo {
+            max-width: 200px;
+            max-height: 80px;
+            display: block;
+            margin: 0 auto 15px auto;
+            object-fit: contain;
+        }
+
+        .store-info {
+            text-align: center;
+        }
+
+        .store-info h2 {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 0;
+            padding: 0;
+            color: #000;
+        }
+
+        .store-info p {
+            font-size: 1em;
+            margin: 0;
+            padding: 0;
+            line-height: 1.4;
+            color: #000;
+        }
+
+        .report-title {
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin: 15px 0;
+            padding: 10px 0;
+            border-bottom: 1px solid #000;
+        }
+
+        .report-info {
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px dashed #000;
+        }
+
+        .report-info h3 {
+            font-size: 1.1em;
+            margin: 0 0 10px 0;
+            font-weight: bold;
+        }
+
+        .report-info p {
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+
+        /* Estilo para registros de caixa individuais */
+        .cash-item {
+            border-bottom: 1px dashed #ccc;
+            padding: 10px 0;
+            margin-bottom: 10px;
+        }
+
+        .cash-item:last-child {
+            border-bottom: 1px solid #000;
+        }
+
+        .cash-header {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .cash-details {
+            font-size: 0.9em;
+            line-height: 1.3;
+        }
+
+        .cash-details div {
+            margin: 2px 0;
+        }
+
+        .summary-section {
+            margin-top: 15px;
+            padding: 10px 0;
+            border-top: 1px solid #000;
+        }
+
+        .summary-section h3 {
+            font-size: 1.1em;
+            margin: 0 0 10px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            font-size: 0.9em;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 0;
+        }
+
+        .signature {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .signature-line {
+            border-top: 1px solid #000;
+            width: 200px;
+            margin: 20px auto 10px auto;
+        }
+
+        .signature p {
+            font-size: 0.9em;
+            margin: 0;
+        }
+
+        .receipt-footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.8em;
+            border-top: 1px dashed #000;
+            padding-top: 10px;
+        }
+
+        /* Estilos para impressão */
+        @media print {
+            body {
+                background-color: white;
+            }
+            
+            .page-container {
+                width: 80mm;
+                box-shadow: none;
+                margin: 0;
+            }
+            
+            .download-btn {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container" id="report-container">
+        <div class="cash-flow-report">
+            <header class="receipt-header">
+                <div class="logo-container">
+                    <img src="" alt="Logo da Loja" class="logo" id="print-logo" style="display: none;">
+                </div>
+                <div class="store-info" id="store-info">
+                    <h2 id="store-name">Assistência Técnica Especializada</h2>
+                    <p id="store-address">R. 38, N 518 - Sala 02 - Lot. Paraíso do Sul, Santa Maria, Aracaju - SE, 49044-451</p>
+                    <p id="store-phones">(79) 9.8160-6441 / (79) 3011-2293</p>
+                </div>
+            </header>
+
+            <h1 class="report-title" id="report-title">Relatório de Fluxo de Caixa</h1>
+            
+            <div class="report-info" id="report-info">
+                <!-- Informações do relatório serão preenchidas aqui -->
+            </div>
+
+            <div id="cash-list">
+                <!-- Lista de registros de caixa será preenchida aqui -->
+            </div>
+
+            <div class="summary-section" id="summary-section">
+                <!-- Resumo será preenchido aqui -->
+            </div>
+
+            <div class="signature">
+                <div class="signature-line"></div>
+                <p>Responsável pelo Relatório</p>
+            </div>
+
+            <footer class="receipt-footer">
+                <div class="timestamp">
+                    Relatório gerado em: <span id="print-timestamp"></span>
+                </div>
+            </footer>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const reportData = JSON.parse(localStorage.getItem('cash_flow_report_data'));
+            console.log("Dados do relatório de fluxo de caixa recebidos:", reportData);
+
+            if (!reportData) {
+                document.body.innerHTML = '<h1>Erro: Não foi possível carregar os dados do relatório.</h1>';
+                return;
+            }
+
+            // Atualiza as informações da loja
+            if (reportData.storeInfo) {
+                if (reportData.storeInfo.name) {
+                    document.getElementById('store-name').textContent = reportData.storeInfo.name;
+                }
+                document.getElementById('store-address').textContent = reportData.storeInfo.address || 'Endereço não disponível';
+                document.getElementById('store-phones').textContent = reportData.storeInfo.phones || 'Telefone não disponível';
+            }
+
+            // Atualiza o logo se disponível
+            if (reportData.logoUrl) {
+                const logoElement = document.getElementById('print-logo');
+                logoElement.src = reportData.logoUrl;
+                logoElement.style.display = 'block';
+            }
+
+            // Atualiza o título do relatório
+            if (reportData.title) {
+                document.getElementById('report-title').textContent = reportData.title;
+            }
+
+            // Atualiza informações do relatório
+            const reportInfoElement = document.getElementById('report-info');
+            if (reportData.info) {
+                reportInfoElement.innerHTML = `
+                    <h3>Informações do Relatório</h3>
+                    <p><strong>Período:</strong> ${reportData.info.dateRange}</p>
+                    <p><strong>Total de Registros:</strong> ${reportData.info.totalRegisters}</p>
+                `;
+            }
+
+            // Preenche a lista de registros de caixa
+            const cashListElement = document.getElementById('cash-list');
+            if (reportData.cashRegisters && reportData.cashRegisters.length > 0) {
+                let cashListHTML = '';
+                
+                reportData.cashRegisters.forEach((cash, index) => {
+                    cashListHTML += `
+                        <div class="cash-item">
+                            <div class="cash-header">Caixa ${index + 1} - ${cash.date}</div>
+                            <div class="cash-details">
+                                <div><strong>Abertura:</strong> ${cash.opening}</div>
+                                <div><strong>Fechamento:</strong> ${cash.closing}</div>
+                                <div><strong>Vendas:</strong> ${cash.sales}</div>
+                                <div><strong>Entradas:</strong> ${cash.entries}</div>
+                                <div><strong>Saídas:</strong> ${cash.withdrawals}</div>
+                                <div><strong>Lucro:</strong> ${cash.profit}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                cashListElement.innerHTML = cashListHTML;
+            } else {
+                cashListElement.innerHTML = '<p>Nenhum registro de caixa encontrado no período.</p>';
+            }
+
+            // Preenche o resumo
+            const summaryElement = document.getElementById('summary-section');
+            if (reportData.summary) {
+                let summaryHTML = '<h3>Resumo Geral</h3><div class="summary-grid">';
+                
+                Object.entries(reportData.summary).forEach(([key, value]) => {
+                    summaryHTML += `
+                        <div class="summary-item">
+                            <span><strong>${key}:</strong></span>
+                            <span>${value}</span>
+                        </div>
+                    `;
+                });
+                
+                summaryHTML += '</div>';
+                summaryElement.innerHTML = summaryHTML;
+            }
+
+            // Atualiza o timestamp
+            if (reportData.generatedAt) {
+                document.getElementById('print-timestamp').textContent = reportData.generatedAt;
+            }
+
+            // Imprime automaticamente após carregar
+            setTimeout(() => {
+                window.print();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

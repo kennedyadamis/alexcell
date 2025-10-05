@@ -4023,6 +4023,93 @@ input[type="password"] {
    MODAL DE PERMISSÕES (NOVO ESTILO)
    ======================================== */
 
+/* Estilo específico para o modal de gerenciar categorias */
+#manage-categories-modal .modal-content {
+    max-width: 900px;
+    width: 95%;
+    max-height: 90vh;
+}
+
+#manage-categories-modal .categories-table-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+#manage-categories-modal .categories-management {
+    padding: 10px 0;
+}
+
+#manage-categories-modal .categories-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+#manage-categories-modal .categories-header p {
+    flex: 1;
+    margin: 0;
+    color: var(--medium-gray);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+#manage-categories-modal .os-table {
+    width: 100%;
+    margin: 0;
+}
+
+#manage-categories-modal .os-table th,
+#manage-categories-modal .os-table td {
+    padding: 12px 15px;
+    text-align: left;
+}
+
+#manage-categories-modal .os-table th:nth-child(3),
+#manage-categories-modal .os-table td:nth-child(3) {
+    text-align: center;
+    width: 100px;
+}
+
+#manage-categories-modal .os-table th:last-child,
+#manage-categories-modal .os-table td:last-child {
+    text-align: center;
+    width: 120px;
+}
+
+#manage-categories-modal .os-table th:nth-child(2),
+#manage-categories-modal .os-table td:nth-child(2) {
+    text-align: center;
+    width: 150px;
+}
+
+@media (max-width: 768px) {
+    #manage-categories-modal .modal-content {
+        width: 98%;
+        max-width: 98%;
+        margin: 10px auto;
+    }
+    
+    #manage-categories-modal .categories-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+    
+    #manage-categories-modal .categories-table-container {
+        overflow-x: auto;
+    }
+    
+    #manage-categories-modal .os-table {
+        min-width: 500px;
+    }
+}
+
 .modal-content.large-modal {
     max-width: 800px; /* Modal mais largo para comportar as permissões */
 }

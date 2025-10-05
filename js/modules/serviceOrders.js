@@ -22,7 +22,6 @@ let isLoadingOSTable = false;
 export async function loadOSTable(page = 1, selectedStoreId = null, printWithToastCallback = null) {
     // Verificação para evitar carregamento duplicado
     if (isLoadingOSTable) {
-        console.log('loadOSTable já está em execução, ignorando chamada duplicada');
         return;
     }
     
@@ -638,8 +637,11 @@ function addOSProduct(product) {
 
 // Função para confirmar adição do produto
 export function confirmAddProduct() {
-    const product = window.selectedProductForOS;
-    if (!product) return;
+        const product = window.selectedProductForOS;
+        if (!product) {
+        console.error('❌ Nenhum produto selecionado!');
+        return;
+    }
     
     const confirmButton = document.getElementById('btn-confirm-add-product');
     if (confirmButton) {
@@ -685,9 +687,22 @@ export function confirmAddProduct() {
     const total = price * quantity;
     
     // Adicionar produto à lista da OS
-    const productsList = document.getElementById('os-products-list');
+    // Detectar se estamos no contexto de edição verificando se o modal de edição está ativo
+    const editModal = document.getElementById('edit-os-modal');
+    const isEditMode = editModal && editModal.classList.contains('active');
+    
+    const productsList = isEditMode 
+        ? document.getElementById('edit-os-products-list')
+        : document.getElementById('os-products-list');
+    
+            if (!productsList) {
+        console.error('❌ Lista de produtos não encontrada!');
+        showToast('Erro: Lista de produtos não encontrada', 'error');
+        return;
+    }
+    
     const productDiv = document.createElement('div');
-    productDiv.className = 'product-item';
+    productDiv.className = isEditMode ? 'product-item-edit' : 'product-item';
     productDiv.dataset.productId = product.id;
     
     // Formatar preços corretamente
@@ -712,16 +727,17 @@ export function confirmAddProduct() {
     productDiv.dataset.costPrice = product.cost_price;
     
     productsList.appendChild(productDiv);
-    
-    // Atualizar total da OS
-    updateOSTotal();
+        // Atualizar total da OS - usar função apropriada dependendo do contexto
+    if (isEditMode) {
+                updateEditOSTotal();
+    } else {
+                updateOSTotal();
+    }
     
     // Fechar modal
     closeAddProductModal();
-    
-    showToast(`Produto "${product.name}" adicionado à OS!`, 'success');
-
-    // Reabilitar o botão após o sucesso
+        showToast(`Produto "${product.name}" adicionado à OS!`, 'success');
+        // Reabilitar o botão após o sucesso
     if (confirmButton) {
         confirmButton.disabled = false;
         confirmButton.textContent = '✅ Adicionar à OS';
@@ -765,6 +781,57 @@ export function adjustQuantity(change) {
     }
 }
 
+// Função específica para formatar campos de pagamento
+export function formatPaymentInput(input) {
+    // Se o valor está vazio, não faz nada
+    if (!input.value || input.value.trim() === '') {
+        return;
+    }
+    
+    // Se o valor já está no formato correto, não reformata
+    if (/^\d{1,3}(\.\d{3})*,\d{2}$/.test(input.value)) {
+        return;
+    }
+    
+    // Remove todos os caracteres não numéricos exceto vírgula e ponto
+    let value = input.value.replace(/[^\d,\.]/g, '');
+    
+    // Se contém vírgula, trata como valor já com decimais
+    if (value.includes(',')) {
+        const parts = value.split(',');
+        let integerPart = parts[0].replace(/\D/g, '');
+        let decimalPart = parts[1] ? parts[1].replace(/\D/g, '').substring(0, 2) : '';
+        
+        // Formatar parte inteira com separadores de milhares
+        if (integerPart.length > 3) {
+            integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+        
+        // Garantir 2 casas decimais
+        decimalPart = decimalPart.padEnd(2, '0');
+        
+        input.value = integerPart + ',' + decimalPart;
+    } else {
+        // Se não contém vírgula, trata como valor em reais
+        value = value.replace(/\D/g, '');
+        
+        if (value === '' || value === '0') {
+            input.value = '';
+            return;
+        }
+        
+        // Converter para número e formatar como reais com 2 casas decimais
+        const numValue = parseInt(value);
+        const formatted = numValue.toFixed(2);
+        const [intPart, decPart] = formatted.split('.');
+        
+        // Adiciona separadores de milhares
+        const formattedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        
+        input.value = formattedInt + ',' + decPart;
+    }
+}
+
 // Função para formatar entrada de moeda
 export function formatCurrencyInput(input) {
     let value = input.value.replace(/\D/g, '');
@@ -778,28 +845,24 @@ export function formatCurrencyInput(input) {
     value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     input.value = value;
     
-    updateProductTotal();
+    // Só chama updateProductTotal se não for um campo de pagamento
+    if (input.id !== 'os-amount-paid' && input.id !== 'edit-os-amount-paid') {
+        updateProductTotal();
+    }
 }
 
 // Função para abrir o modal de adicionar produto
 export function openAddProductModal(product = null) {
-
-    
-    const modal = document.getElementById('add-product-modal');
-
-    
-    if (modal) {
+        const modal = document.getElementById('add-product-modal');
+        if (modal) {
         // Resetar modal primeiro
         resetAddProductModal();
         
         // Se um produto foi fornecido, preencher os campos
         if (product) {
-
-            
-            // Armazenar produto selecionado
+                        // Armazenar produto selecionado
             window.selectedProductForOS = product;
-            
-            // Preencher informações do produto
+                        // Preencher informações do produto
             const productName = document.getElementById('selected-product-name');
             const productPrice = document.getElementById('product-custom-price');
             const quantityInput = document.getElementById('product-quantity');
@@ -823,23 +886,17 @@ export function openAddProductModal(product = null) {
         
 
         modal.classList.add('active');
-        
-        // Verificar estilo computado do modal
+                // Verificar estilo computado do modal
         const computedStyle = window.getComputedStyle(modal);
-
-        
-
-        trapFocus(modal); // Garante que o foco fique dentro do modal
+                        trapFocus(modal); // Garante que o foco fique dentro do modal
         
         // Aguardar um pouco para garantir que os campos foram preenchidos
         setTimeout(() => {
-
-            updateProductTotal();
+                        updateProductTotal();
         }, 100);
         
-
     } else {
-        console.error('Modal add-product-modal não encontrado!');
+        console.error('❌ Modal add-product-modal não encontrado!');
     }
 }
 
@@ -862,16 +919,43 @@ export function closeViewOSModal() {
 
 // Função para editar o preço de um produto na lista da OS
 export function editOSProductPrice(productId) {
-    const productItem = document.querySelector(`.product-item[data-product-id="${productId}"]`);
-    if (!productItem) return;
+    // Procurar tanto na criação (.product-item) quanto na edição (.product-item-edit)
+    let productItem = document.querySelector(`.product-item[data-product-id="${productId}"]`);
+    if (!productItem) {
+        productItem = document.querySelector(`.product-item-edit[data-product-id="${productId}"]`);
+    }
+    
+    if (!productItem) {
+        console.error('Produto não encontrado:', productId);
+        return;
+    }
 
-    const currentQuantity = parseInt(productItem.dataset.quantity);
-    const currentPrice = parseFloat(productItem.dataset.price);
+    // Extrair dados do produto dependendo da estrutura
+    let currentQuantity, currentPrice, productName;
+    
+    if (productItem.classList.contains('product-item-edit')) {
+        // Estrutura da edição - extrair do HTML
+        const quantityMatch = productItem.textContent.match(/Qtd: (\d+)/);
+        const priceMatch = productItem.textContent.match(/x R\$ ([\d.,]+)/);
+        
+        currentQuantity = quantityMatch ? parseInt(quantityMatch[1]) : 1;
+        currentPrice = priceMatch ? parseFloat(priceMatch[1].replace(/\./g, '').replace(',', '.')) : 0;
+        
+        const productNameElement = productItem.querySelector('.product-name');
+        productName = productNameElement ? productNameElement.textContent : 'Produto';
+    } else {
+        // Estrutura da criação - usar data attributes
+        currentQuantity = parseInt(productItem.dataset.quantity) || 1;
+        currentPrice = parseFloat(productItem.dataset.price) || 0;
+        
+        const strongElement = productItem.querySelector('strong');
+        productName = strongElement ? strongElement.textContent : 'Produto';
+    }
 
     // Salvar o produto selecionado no window para acesso do modal
     window.selectedProductForOS = {
         id: productId,
-        name: productItem.querySelector('strong').textContent,
+        name: productName,
         quantity: currentQuantity,
         price: currentPrice
     };
@@ -881,7 +965,7 @@ export function editOSProductPrice(productId) {
     const productQuantity = document.getElementById('product-quantity');
     const productCustomPrice = document.getElementById('product-custom-price');
     
-    if (productNameDisplay) productNameDisplay.textContent = productItem.querySelector('strong').textContent;
+    if (productNameDisplay) productNameDisplay.textContent = productName;
     if (productQuantity) productQuantity.value = currentQuantity;
     if (productCustomPrice) productCustomPrice.value = formatPriceForDisplay(currentPrice);
 
@@ -902,8 +986,16 @@ export function editOSProductPrice(productId) {
 
 // Função para salvar o produto editado
 export function saveEditedOSProduct(productId) {
-    const productItem = document.querySelector(`.product-item[data-product-id="${productId}"]`);
-    if (!productItem) return;
+    // Procurar tanto na criação (.product-item) quanto na edição (.product-item-edit)
+    let productItem = document.querySelector(`.product-item[data-product-id="${productId}"]`);
+    if (!productItem) {
+        productItem = document.querySelector(`.product-item-edit[data-product-id="${productId}"]`);
+    }
+    
+    if (!productItem) {
+        console.error('Produto não encontrado para salvar:', productId);
+        return;
+    }
 
     const quantityElement = document.getElementById('product-quantity');
     const priceElement = document.getElementById('product-custom-price');
@@ -919,16 +1011,37 @@ export function saveEditedOSProduct(productId) {
     
     // Permitir preço zero
 
-    // Atualizar os data attributes do elemento
-    productItem.dataset.quantity = newQuantity;
-    productItem.dataset.price = newPrice;
+    // Atualizar dependendo da estrutura do produto
+    if (productItem.classList.contains('product-item-edit')) {
+        // Estrutura da edição - atualizar o HTML diretamente
+        const formattedPrice = formatPriceForDisplay(newPrice);
+        const formattedTotal = formatPriceForDisplay(newQuantity * newPrice);
+        
+        const smallElement = productItem.querySelector('small');
+        if (smallElement) {
+            smallElement.innerHTML = `Qtd: ${newQuantity} x R$ ${formattedPrice} = R$ ${formattedTotal}`;
+        }
+        
+        // Atualizar data attributes se existirem
+        productItem.dataset.quantity = newQuantity;
+        productItem.dataset.price = newPrice;
+        
+        // Atualizar total da edição
+        updateEditOSTotal();
+    } else {
+        // Estrutura da criação - usar data attributes
+        productItem.dataset.quantity = newQuantity;
+        productItem.dataset.price = newPrice;
 
-    // Atualizar o HTML visível
-    const formattedPrice = formatPriceForDisplay(newPrice);
-    const formattedTotal = formatPriceForDisplay(newQuantity * newPrice);
-    productItem.querySelector('small').innerHTML = `Qtd: ${newQuantity} x R$ ${formattedPrice} = R$ ${formattedTotal}`;
+        // Atualizar o HTML visível
+        const formattedPrice = formatPriceForDisplay(newPrice);
+        const formattedTotal = formatPriceForDisplay(newQuantity * newPrice);
+        productItem.querySelector('small').innerHTML = `Qtd: ${newQuantity} x R$ ${formattedPrice} = R$ ${formattedTotal}`;
 
-    updateOSTotal();
+        // Atualizar total da criação
+        updateOSTotal();
+    }
+
     closeAddProductModal();
     showToast('Produto atualizado com sucesso!', 'success');
 
@@ -944,11 +1057,25 @@ export function saveEditedOSProduct(productId) {
 // Função para remover produto da lista da OS
 export function removeOSProduct(productId) {
     if (confirm('Tem certeza que deseja remover este produto da OS?')) {
-        const productItem = document.querySelector(`.product-item[data-product-id="${productId}"]`);
+        // Procurar tanto na criação (.product-item) quanto na edição (.product-item-edit)
+        let productItem = document.querySelector(`.product-item[data-product-id="${productId}"]`);
+        if (!productItem) {
+            productItem = document.querySelector(`.product-item-edit[data-product-id="${productId}"]`);
+        }
+        
         if (productItem) {
             productItem.remove();
-            updateOSTotal();
+            
+            // Atualizar total dependendo do contexto
+            if (document.getElementById('edit-os-products-list')) {
+                updateEditOSTotal();
+            } else {
+                updateOSTotal();
+            }
+            
             showToast('Produto removido da OS.', 'info');
+        } else {
+            console.error('Produto não encontrado para remover:', productId);
         }
     }
 }
@@ -1127,6 +1254,39 @@ export function setupOrderForm(currentUser, selectedStoreId) {
                 }
             }
             
+            // Validação específica para payment_status = Parcial
+            const paymentStatus = document.getElementById('os-payment-status')?.value;
+            const amountPaid = document.getElementById('os-amount-paid')?.value;
+            
+            if (paymentStatus === 'Parcial') {
+                if (!amountPaid || !amountPaid.trim()) {
+                    showToast('Quando o status de pagamento for "Parcial", o campo "Valor Pago" é obrigatório!', 'error');
+                    document.getElementById('os-amount-paid')?.focus();
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '💾 Salvar OS';
+                    return;
+                }
+                
+                const amountPaidValue = parseFloat(amountPaid.replace(/\./g, '').replace(',', '.'));
+                const quoteValue = parseFloat((document.getElementById('os-quote-value')?.value || '0').replace(/\./g, '').replace(',', '.'));
+                
+                if (amountPaidValue <= 0) {
+                    showToast('O valor pago deve ser maior que zero!', 'error');
+                    document.getElementById('os-amount-paid')?.focus();
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '💾 Salvar OS';
+                    return;
+                }
+                
+                if (amountPaidValue >= quoteValue) {
+                    showToast('Para pagamento parcial, o valor pago deve ser menor que o valor total!', 'error');
+                    document.getElementById('os-amount-paid')?.focus();
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '💾 Salvar OS';
+                    return;
+                }
+            }
+            
             try {
                 let customerId = newSelectedCustomerIdInput.value ? Number(newSelectedCustomerIdInput.value) : null;
                 if (!customerId && newCustomerFormContainer && newCustomerFormContainer.style.display !== 'none') {
@@ -1163,9 +1323,12 @@ export function setupOrderForm(currentUser, selectedStoreId) {
                 if (productsList) {
                     const productItems = productsList.querySelectorAll('.product-item');
                     productItems.forEach(item => {
+                        const strongElement = item.querySelector('strong');
+                        const productName = strongElement ? strongElement.textContent : 'Produto sem nome';
+                        
                         osProducts.push({
                             id: item.dataset.productId,
-                            name: item.querySelector('strong').textContent,
+                            name: productName,
                             quantity: parseInt(item.dataset.quantity),
                             price: parseFloat(item.dataset.price),
                             cost_price: parseFloat(item.dataset.costPrice)
@@ -1191,6 +1354,7 @@ export function setupOrderForm(currentUser, selectedStoreId) {
                     solution: document.getElementById('os-solution')?.value || '',
                     quote_value: parseFloat((document.getElementById('os-quote-value')?.value || '0').replace(/\./g, '').replace(',', '.')),
                     amount_paid: parseFloat((document.getElementById('os-amount-paid')?.value || '0').replace(/\./g, '').replace(',', '.')),
+                    payment_status: document.getElementById('os-payment-status')?.value || 'Pendente',
                     payment_method: document.getElementById('os-payment-method')?.value || '',
                     estimated_delivery_date: (() => {
                         const deliveryDateElement = document.getElementById('os-delivery-date');
@@ -1238,14 +1402,7 @@ export function setupOrderForm(currentUser, selectedStoreId) {
                 if (error) throw error;
                 
                 // Log dos dados salvos no banco
-                console.log('✅ OS salva no banco:', {
-                    dadosEnviados: osData,
-                    dadosRetornados: data,
-                    dataEntregaEnviada: osData.estimated_delivery_date,
-                    dataEntregaSalva: data?.[0]?.estimated_delivery_date
-                });
-                
-                showToast('Ordem de Serviço criada com sucesso!', 'success');
+                                showToast('Ordem de Serviço criada com sucesso!', 'success');
                 closeNewOSModal();
                 refreshOSList(selectedStoreId);
                 document.getElementById('new-os-form').reset();
@@ -1919,12 +2076,6 @@ export async function viewOS(osId, printWithToastCallback = null) {
             amountPaidElement.textContent = formattedAmountPaid;
         }
         
-        const paymentMethodElement = document.getElementById('view-os-payment-method');
-        if (paymentMethodElement) {
-            const paymentMethod = osData.payment_method || 'N/A';
-            paymentMethodElement.textContent = paymentMethod;
-        }
-        
         const deliveryDateElement = document.getElementById('view-os-delivery-date');
         if (deliveryDateElement) {
             const deliveryDate = osData.estimated_delivery_date ? formatDateForDisplay(osData.estimated_delivery_date, true) : 'N/A';
@@ -2043,37 +2194,38 @@ export async function editOS(osId, currentUser, selectedStoreId) {
             throw error || new Error('OS não encontrada');
         }
 
-        console.log('🔍 Dados da OS carregada para edição:', {
-            id: os.id,
-            client_name: os.client_name,
-            customer_id: os.customer_id,
-            hasClientName: !!os.client_name,
-            hasCustomerId: !!os.customer_id
-        });
-
-        // Carregar dados do cliente separadamente
+                // Carregar dados do cliente separadamente
         let customerData = null;
         if (os.customer_id) {
-            console.log('🔍 Buscando dados do cliente com ID:', os.customer_id);
-            const { data: customer, error: customerError } = await dbSelect('customers', {
+                        const { data: customer, error: customerError } = await dbSelect('customers', {
                 select: 'id, full_name, phone, birth_date, address',
                 eq: { id: os.customer_id },
                 single: true
             });
             if (!customerError && customer) {
                 customerData = customer;
-                console.log('✅ Dados do cliente encontrados:', customerData);
-            } else {
+                            } else {
                 console.error('❌ Erro ao buscar cliente ou cliente não encontrado:', customerError);
             }
         } else {
             console.log('⚠️ OS não possui customer_id, tentando usar client_name:', os.client_name);
         }
 
-        // Buscar produtos diretamente da coluna products da OS
+        // Buscar produtos da coluna products da OS (método único disponível)
         let serviceOrderProducts = [];
+        
         if (os.products && Array.isArray(os.products)) {
             serviceOrderProducts = os.products;
+                    } else if (os.products && typeof os.products === 'string') {
+            try {
+                serviceOrderProducts = JSON.parse(os.products);
+                            } catch (error) {
+                console.error('❌ Erro ao fazer parse do JSON dos produtos:', error);
+                serviceOrderProducts = [];
+            }
+        } else {
+            console.log('⚠️ Nenhum produto encontrado para esta OS');
+            serviceOrderProducts = [];
         }
 
         // Adicionar os dados relacionados ao objeto OS
@@ -2149,21 +2301,16 @@ export async function populateEditOSForm(os, customerData) {
     }
     
     // Preencher dados do cliente - CORREÇÃO PARA EVITAR NOME DESAPARECENDO
-    console.log('🔧 Preenchendo dados do cliente na edição:', { customerData, osClientName: os.client_name });
-    
-    // Determinar o nome do cliente (priorizar customerData, depois os.client_name)
+        // Determinar o nome do cliente (priorizar customerData, depois os.client_name)
     const clientName = customerData?.full_name || os.client_name || 'N/A';
     const clientPhone = customerData?.phone || 'N/A';
     const clientId = customerData?.id || os.customer_id || '';
     
-    console.log('📝 Dados do cliente determinados:', { clientName, clientPhone, clientId });
-    
-    // Preencher nome do cliente no display
+        // Preencher nome do cliente no display
     const customerNameElement = document.getElementById('edit-os-customer-name-display');
     if (customerNameElement) {
         customerNameElement.textContent = clientName;
-        console.log('✅ Nome do cliente preenchido no display:', clientName);
-    } else {
+            } else {
         console.error('❌ Elemento edit-os-customer-name-display não encontrado');
     }
     
@@ -2171,8 +2318,7 @@ export async function populateEditOSForm(os, customerData) {
     const customerPhoneElement = document.getElementById('edit-os-customer-phone-display');
     if (customerPhoneElement) {
         customerPhoneElement.textContent = clientPhone !== 'N/A' ? formatPhone(clientPhone) : 'N/A';
-        console.log('✅ Telefone do cliente preenchido:', clientPhone);
-    } else {
+            } else {
         console.error('❌ Elemento edit-os-customer-phone-display não encontrado');
     }
     
@@ -2180,8 +2326,7 @@ export async function populateEditOSForm(os, customerData) {
     const customerIdElement = document.getElementById('edit-os-customer-id-input');
     if (customerIdElement) {
         customerIdElement.value = clientId;
-        console.log('✅ ID do cliente preenchido:', clientId);
-    } else {
+            } else {
         console.error('❌ Elemento edit-os-customer-id-input não encontrado');
     }
     
@@ -2189,8 +2334,7 @@ export async function populateEditOSForm(os, customerData) {
     const customerSearchInput = document.getElementById('edit-os-customer-search');
     if (customerSearchInput) {
         customerSearchInput.value = clientName !== 'N/A' ? clientName : '';
-        console.log('✅ Campo de busca preenchido:', clientName);
-    }
+            }
     
     // Preencher campo de nome do novo cliente (fallback) - só se estiver vazio
     const newCustomerNameInput = document.getElementById('edit-os-new-customer-name');
@@ -2199,10 +2343,8 @@ export async function populateEditOSForm(os, customerData) {
         const currentValue = newCustomerNameInput.value.trim();
         if (!currentValue || currentValue === 'N/A') {
             newCustomerNameInput.value = clientName !== 'N/A' ? clientName : '';
-            console.log('✅ Campo de novo cliente preenchido:', clientName);
-        } else {
-            console.log('✅ Campo de novo cliente mantido (já tinha valor):', currentValue);
-        }
+                    } else {
+                    }
     }
     
     // Preencher campo de ID do cliente selecionado - só se estiver vazio
@@ -2212,18 +2354,15 @@ export async function populateEditOSForm(os, customerData) {
         const currentIdValue = selectedCustomerIdInput.value.trim();
         if (!currentIdValue) {
             selectedCustomerIdInput.value = clientId;
-            console.log('✅ ID do cliente selecionado preenchido:', clientId);
-        } else {
-            console.log('✅ ID do cliente selecionado mantido (já tinha valor):', currentIdValue);
-        }
+                    } else {
+                    }
     }
     
     // Mostrar informações do cliente selecionado
     const customerDisplay = document.getElementById('edit-os-customer-display');
     if (customerDisplay && (customerData || os.client_name)) {
         customerDisplay.style.display = 'block';
-        console.log('✅ Display do cliente mostrado');
-    }
+            }
 
     document.getElementById('edit-os-brand').value = os.equipment_brand || '';
     document.getElementById('edit-os-model').value = os.equipment_model || '';
@@ -2291,6 +2430,20 @@ export async function populateEditOSForm(os, customerData) {
         // Valor formatado para o campo
         
         quoteValueElement.value = formattedValue;
+        
+        // Definir o valor base para cálculos futuros (valor sem produtos)
+        // Se há produtos, o valor base é o valor total menos o valor dos produtos
+        let baseValue = editQuoteValue;
+        if (os.products && Array.isArray(os.products) && os.products.length > 0) {
+            const productsTotal = os.products.reduce((total, product) => {
+                const quantity = parseInt(product.quantity) || 0;
+                const price = parseFloat(product.price) || 0;
+                return total + (quantity * price);
+            }, 0);
+            baseValue = editQuoteValue - productsTotal;
+        }
+        
+        quoteValueElement.dataset.baseValue = baseValue;
         // Valor do orçamento preenchido
     } else {
         console.error('❌ Elemento edit-os-quote-value não encontrado');
@@ -2300,19 +2453,15 @@ export async function populateEditOSForm(os, customerData) {
         parseFloat(String(os.amount_paid).replace(',', '.')) || 0 : 0;
     const amountPaidElement = document.getElementById('edit-os-amount-paid');
     if (amountPaidElement) {
-        amountPaidElement.value = formatPriceForDisplay(editAmountPaid);
+        // Só preenche o campo se há um valor pago maior que 0
+        if (editAmountPaid > 0) {
+            amountPaidElement.value = formatPriceForDisplay(editAmountPaid);
+        } else {
+            amountPaidElement.value = ''; // Deixa vazio para permitir digitação
+        }
         // Valor pago preenchido
     } else {
         console.error('❌ Elemento edit-os-amount-paid não encontrado');
-    }
-    
-    // Preencher método de pagamento
-    const paymentMethodElement = document.getElementById('edit-os-payment-method');
-    if (paymentMethodElement) {
-        paymentMethodElement.value = os.payment_method || '';
-        // Método de pagamento preenchido
-    } else {
-        console.error('❌ Elemento edit-os-payment-method não encontrado');
     }
     
     // Preencher data de entrega
@@ -2469,8 +2618,18 @@ export async function populateEditOSForm(os, customerData) {
     const checkFoneEdit = document.querySelector('input[name="edit-check-fone"][value="' + (checklist.fone || 'nao') + '"]');
     if (checkFoneEdit) checkFoneEdit.checked = true;
     
-    const checkArranhadoEdit = document.querySelector('input[name="edit-check-arranhado"][value="' + (checklist.aranhado || 'nao') + '"]');
+    const checkArranhadoEdit = document.querySelector('input[name="edit-check-aranhado"][value="' + (checklist.aranhado || 'nao') + '"]');
     if (checkArranhadoEdit) checkArranhadoEdit.checked = true;
+
+    // Preencher status de pagamento
+    const paymentStatusElement = document.getElementById('edit-os-payment-status');
+    if (paymentStatusElement) {
+        const paymentStatusValue = os.payment_status || 'Pendente';
+        paymentStatusElement.value = paymentStatusValue;
+        // Status de pagamento preenchido
+    } else {
+        console.error('❌ Elemento edit-os-payment-status não encontrado');
+    }
 
     // Atualizar total da OS na edição
     updateEditOSTotal();
@@ -2575,10 +2734,7 @@ export async function setupEditPatternLock() {
 // Função para configurar formatação de valores para campos de edição
 export function setupEditValueFormatting() {
     const valueFields = [
-        'edit-os-quote-value',
-        'edit-os-amount-paid',
-        'edit-os-quote-value', 
-        'edit-os-amount-paid'
+        'edit-os-quote-value'
     ];
     
     valueFields.forEach(fieldId => {
@@ -2661,9 +2817,6 @@ export function setupEditCustomerAutocomplete() {
     
     // Configurar formatação de valores
     setupValueFormatting(['edit-os-quote-value', 'edit-os-amount-paid']);
-    
-    // Configurar autocomplete de produtos
-    setupEditProductAutocomplete();
 
     // Toggle para mostrar/ocultar formulário de novo cliente
     if (toggleNewCustomerBtn && newCustomerFormContainer) {
@@ -2687,9 +2840,6 @@ export function setupEditCustomerAutocomplete() {
         
         // Reconfigurar formatação de valores após clonagem
         setupValueFormatting(['edit-os-quote-value', 'edit-os-amount-paid']);
-        
-        // Reconfigurar autocomplete de produtos após clonagem
-        setupEditProductAutocomplete();
         
         newForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -2733,6 +2883,39 @@ export function setupEditCustomerAutocomplete() {
                         submitBtn.textContent = '💾 Salvar OS';
                         return;
                     }
+                }
+            }
+            
+            // Validação específica para payment_status = Parcial na edição
+            const paymentStatus = document.getElementById('edit-os-payment-status')?.value;
+            const amountPaid = document.getElementById('edit-os-amount-paid')?.value;
+            
+            if (paymentStatus === 'Parcial') {
+                if (!amountPaid || !amountPaid.trim()) {
+                    showToast('Quando o status de pagamento for "Parcial", o campo "Valor Pago" é obrigatório!', 'error');
+                    document.getElementById('edit-os-amount-paid')?.focus();
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '💾 Salvar OS';
+                    return;
+                }
+                
+                const amountPaidValue = parseFloat(amountPaid.replace(/\./g, '').replace(',', '.'));
+                const quoteValue = parseFloat((document.getElementById('edit-os-quote-value')?.value || '0').replace(/\./g, '').replace(',', '.'));
+                
+                if (amountPaidValue <= 0) {
+                    showToast('O valor pago deve ser maior que zero!', 'error');
+                    document.getElementById('edit-os-amount-paid')?.focus();
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '💾 Salvar OS';
+                    return;
+                }
+                
+                if (amountPaidValue >= quoteValue) {
+                    showToast('Para pagamento parcial, o valor pago deve ser menor que o valor total!', 'error');
+                    document.getElementById('edit-os-amount-paid')?.focus();
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '💾 Salvar OS';
+                    return;
                 }
             }
             
@@ -2829,24 +3012,7 @@ export function setupEditCustomerAutocomplete() {
                     clientName = clientNameField?.value || '';
                 }
                 
-                console.log('🔍 Debug salvamento - Campos do cliente:', {
-                    clientNameField: clientNameField,
-                    clientNameValue: clientNameField?.value,
-                    selectedCustomerIdField: selectedCustomerIdField,
-                    selectedCustomerIdValue: selectedCustomerIdField?.value,
-                    newSelectedCustomerIdInput: newSelectedCustomerIdInput,
-                    newSelectedCustomerIdInputValue: newSelectedCustomerIdInput?.value,
-                    customerId: customerId,
-                    customerIdBeforeConversion: newSelectedCustomerIdInput?.value,
-                    clientNameFinal: clientName
-                });
-                
-                console.log('🔍 Debug salvamento - osData que será enviado:', {
-                    customer_id: customerId,
-                    client_name: clientName
-                });
-
-                const osData = {
+                                                const osData = {
                     customer_id: customerId,
                     client_name: clientName,
                     equipment_brand: document.getElementById('edit-os-brand')?.value || '',
@@ -2856,7 +3022,6 @@ export function setupEditCustomerAutocomplete() {
                     solution: document.getElementById('edit-os-solution')?.value || '',
                     quote_value: parseFloat((document.getElementById('edit-os-quote-value')?.value || '0').replace(/\./g, '').replace(',', '.')),
                     amount_paid: parseFloat((document.getElementById('edit-os-amount-paid')?.value || '0').replace(/\./g, '').replace(',', '.')),
-                    payment_method: document.getElementById('edit-os-payment-method')?.value || '',
                     estimated_delivery_date: (() => {
                 const deliveryDateElement = document.getElementById('edit-os-delivery-date');
                 const deliveryDateValue = deliveryDateElement?.value || '';
@@ -2939,7 +3104,8 @@ export function setupEditProductAutocomplete() {
                 track_stock: resultDiv.dataset.trackStock === 'true'
             };
             
-            addEditOSProduct(product);
+            // Abrir modal de adicionar produto ao invés de adicionar diretamente
+            openAddProductModal(product);
             searchInput.value = '';
             resultsDiv.style.display = 'none';
         }
@@ -3004,38 +3170,38 @@ export function updateEditOSTotal() {
     let productsTotal = 0;
     
     productItems.forEach(item => {
-        // Buscar quantidade e preço unitário na estrutura HTML correta
-        const quantityMatch = item.innerHTML.match(/Qtd: (\d+)/);
-        const unitPriceMatch = item.innerHTML.match(/x R\$ ([\d.,]+)/);
+        // Buscar quantidade e preço unitário nos data attributes primeiro
+        let quantity = parseInt(item.dataset.quantity) || 0;
+        let unitPrice = parseFloat(item.dataset.price) || 0;
         
-        const quantity = quantityMatch ? parseInt(quantityMatch[1]) : 0;
-        const unitPrice = unitPriceMatch ? parseFloat(unitPriceMatch[1].replace(/\./g, '').replace(',', '.')) : 0;
+        // Se não encontrar nos data attributes, tentar extrair do HTML
+        if (quantity === 0 || unitPrice === 0) {
+            const quantityMatch = item.innerHTML.match(/Qtd: (\d+)/);
+            const unitPriceMatch = item.innerHTML.match(/x R\$ ([\d.,]+)/);
+            
+            quantity = quantityMatch ? parseInt(quantityMatch[1]) : quantity;
+            unitPrice = unitPriceMatch ? parseFloat(unitPriceMatch[1].replace(/\./g, '').replace(',', '.')) : unitPrice;
+        }
         
         // Calcular o total do item (quantidade * preço unitário)
         const itemTotal = quantity * unitPrice;
         productsTotal += itemTotal;
     });
     
-    // Obter valor base da OS (serviço)
+    // Obter valor base da OS (serviço) - valor inicial sem produtos
     const quoteValueInput = document.getElementById('edit-os-quote-value');
     if (quoteValueInput) {
-        // Se não há valor base, usar apenas o total dos produtos
-        let baseValue = 0;
+        // Inicializar valor base se não existir
         if (!quoteValueInput.dataset.baseValue) {
+            // Na primeira execução, o valor atual é o valor base (sem produtos)
             const currentValue = parseFloat(quoteValueInput.value.replace(/\./g, '').replace(',', '.')) || 0;
-            // Se o valor atual é diferente do total de produtos, assumir que é o valor base
-            if (currentValue !== productsTotal) {
-                baseValue = currentValue - (parseFloat(quoteValueInput.dataset.lastProductsTotal) || 0);
-                quoteValueInput.dataset.baseValue = baseValue;
-            }
-        } else {
-            baseValue = parseFloat(quoteValueInput.dataset.baseValue) || 0;
+            quoteValueInput.dataset.baseValue = currentValue;
         }
         
+        const baseValue = parseFloat(quoteValueInput.dataset.baseValue) || 0;
         const newTotal = baseValue + productsTotal;
         const formattedTotal = formatPriceForDisplay(newTotal);
         quoteValueInput.value = formattedTotal;
-        quoteValueInput.dataset.lastProductsTotal = productsTotal;
     }
 }
 
@@ -3056,6 +3222,97 @@ export function setupEditOSEvents(osId) {
         editOSModal.addEventListener('close', () => {
             closeEditOSModal();
         });
+    }
+    
+    // ADICIONADO: Event listener para o submit do formulário de edição
+    const editOSForm = document.getElementById('edit-os-form');
+    if (editOSForm) {
+        // Remove event listeners anteriores para evitar duplicação
+        editOSForm.removeEventListener('submit', handleEditOSSubmit);
+        
+        // Adiciona o event listener para o submit
+        editOSForm.addEventListener('submit', handleEditOSSubmit);
+        
+        // Função para lidar com o submit do formulário
+        async function handleEditOSSubmit(e) {
+            e.preventDefault();
+            
+            const currentUser = getCurrentUser();
+            const selectedStoreId = getSelectedStoreId();
+            
+            if (!currentUser || !selectedStoreId) {
+                showToast('Erro: usuário ou loja não identificados', 'error');
+                return;
+            }
+            
+            await saveEditedOS(osId, currentUser, selectedStoreId);
+        }
+    }
+    
+    // Configurar listener para o status de pagamento na edição
+    const editPaymentStatus = document.getElementById('edit-os-payment-status');
+    if (editPaymentStatus) {
+        // Variável para armazenar o valor parcial anterior
+        let previousPartialValue = '';
+        
+        editPaymentStatus.addEventListener('change', (e) => {
+            const amountPaidGroup = document.getElementById('edit-os-amount-paid-group');
+            const amountPaidInput = document.getElementById('edit-os-amount-paid');
+            
+            if (e.target.value === 'Parcial') {
+                // Mostrar campo de valor pago
+                if (amountPaidGroup) amountPaidGroup.style.display = 'block';
+                
+                // Restaurar valor anterior se existir
+                if (amountPaidInput && previousPartialValue) {
+                    amountPaidInput.value = previousPartialValue;
+                }
+            } else {
+                // Salvar valor atual antes de esconder
+                if (amountPaidInput && amountPaidInput.value.trim() !== '') {
+                    previousPartialValue = amountPaidInput.value;
+                }
+                
+                // Esconder campo de valor pago
+                if (amountPaidGroup) amountPaidGroup.style.display = 'none';
+            }
+        });
+        
+        // Adicionar event listener para formatação do campo de valor parcial na edição
+        const editAmountPaidInput = document.getElementById('edit-os-amount-paid');
+        if (editAmountPaidInput && !window.editAmountPaidListenerAdded) {
+            window.editAmountPaidListenerAdded = true;
+            
+            // Usar blur em vez de input para permitir digitação completa
+            editAmountPaidInput.addEventListener('blur', function() {
+                formatPaymentInput(this);
+            });
+            
+            // Permitir apenas números, vírgula e ponto durante a digitação
+            editAmountPaidInput.addEventListener('input', function(e) {
+                // Remove caracteres não permitidos durante a digitação
+                let value = this.value.replace(/[^\d,\.]/g, '');
+                
+                // Permite apenas uma vírgula ou ponto
+                const commaCount = (value.match(/,/g) || []).length;
+                const dotCount = (value.match(/\./g) || []).length;
+                
+                if (commaCount > 1) {
+                    value = value.replace(/,(?=.*,)/, '');
+                }
+                if (dotCount > 1) {
+                    value = value.replace(/\.(?=.*\.)/, '');
+                }
+                
+                this.value = value;
+            });
+        }
+        
+        // Verificar estado inicial e mostrar campo se necessário
+        if (editPaymentStatus.value === 'Parcial') {
+            const amountPaidGroup = document.getElementById('edit-os-amount-paid-group');
+            if (amountPaidGroup) amountPaidGroup.style.display = 'block';
+        }
     }
 }
 
@@ -3262,45 +3519,78 @@ export async function saveEditedOS(osId, currentUser, selectedStoreId) {
     submitBtn.disabled = true;
     submitBtn.textContent = 'Salvando Edição...';
 
-    // Validação de campos obrigatórios (a mesma lógica do setupOrderForm pode ser reusada ou adaptada)
-    const requiredFields = [
-        { id: 'edit-os-brand', name: 'Marca' },
-        { id: 'edit-os-model', name: 'Modelo' },
-        { id: 'edit-os-color', name: 'Cor' },
-        { id: 'edit-os-quote-value', name: 'Valor' },
-        { id: 'edit-os-problem', name: 'Defeito' },
-        { id: 'edit-os-delivery-date', name: 'Data de Entrega' }
-    ];
-
-    for (const field of requiredFields) {
-        const element = document.getElementById(field.id);
-        if (!element) {
-            showToast(`Campo "${field.name}" não encontrado!`, 'error');
-            submitBtn.disabled = false;
-            submitBtn.textContent = '💾 Salvar OS';
-            return;
-        }
-
-        if (element.tagName === 'SELECT') {
-            if (!element.value || element.value === '') {
-                showToast(`Campo "${field.name}" é obrigatório!`, 'error');
-                element.focus();
-                submitBtn.disabled = false;
-                submitBtn.textContent = '💾 Salvar OS';
-                return;
-            }
-        } else {
-            if (!element.value || !element.value.trim()) {
-                showToast(`Campo "${field.name}" é obrigatório!`, 'error');
-                element.focus();
-                submitBtn.disabled = false;
-                submitBtn.textContent = '💾 Salvar OS';
-                return;
-            }
-        }
-    }
-
     try {
+        // Validação de campos obrigatórios (a mesma lógica do setupOrderForm pode ser reusada ou adaptada)
+        const requiredFields = [
+            { id: 'edit-os-brand', name: 'Marca' },
+            { id: 'edit-os-model', name: 'Modelo' },
+            { id: 'edit-os-color', name: 'Cor' },
+            { id: 'edit-os-quote-value', name: 'Valor' },
+            { id: 'edit-os-problem', name: 'Defeito' },
+            { id: 'edit-os-delivery-date', name: 'Data de Entrega' }
+        ];
+
+        for (const field of requiredFields) {
+            const element = document.getElementById(field.id);
+            if (!element) {
+                showToast(`Campo "${field.name}" não encontrado!`, 'error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = '💾 Salvar OS';
+                return;
+            }
+
+            if (element.tagName === 'SELECT') {
+                if (!element.value || element.value === '') {
+                    showToast(`Campo "${field.name}" é obrigatório!`, 'error');
+                    element.focus();
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '💾 Salvar OS';
+                    return;
+                }
+            } else {
+                if (!element.value || !element.value.trim()) {
+                    showToast(`Campo "${field.name}" é obrigatório!`, 'error');
+                    element.focus();
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '💾 Salvar OS';
+                    return;
+                }
+            }
+        }
+
+        // Validação específica para payment_status = Parcial na edição
+        const paymentStatus = document.getElementById('edit-os-payment-status')?.value;
+        const amountPaid = document.getElementById('edit-os-amount-paid')?.value;
+        
+        if (paymentStatus === 'Parcial') {
+            if (!amountPaid || !amountPaid.trim()) {
+                showToast('Quando o status de pagamento for "Parcial", o campo "Valor Pago" é obrigatório!', 'error');
+                document.getElementById('edit-os-amount-paid')?.focus();
+                submitBtn.disabled = false;
+                submitBtn.textContent = '💾 Salvar OS';
+                return;
+            }
+            
+            const amountPaidValue = parseFloat(amountPaid.replace(/\./g, '').replace(',', '.'));
+            const quoteValue = parseFloat((document.getElementById('edit-os-quote-value')?.value || '0').replace(/\./g, '').replace(',', '.'));
+            
+            if (amountPaidValue <= 0) {
+                showToast('O valor pago deve ser maior que zero!', 'error');
+                document.getElementById('edit-os-amount-paid')?.focus();
+                submitBtn.disabled = false;
+                submitBtn.textContent = '💾 Salvar OS';
+                return;
+            }
+            
+            if (amountPaidValue >= quoteValue) {
+                showToast('Para pagamento parcial, o valor pago deve ser menor que o valor total!', 'error');
+                document.getElementById('edit-os-amount-paid')?.focus();
+                submitBtn.disabled = false;
+                submitBtn.textContent = '💾 Salvar OS';
+                return;
+            }
+        }
+
         // Coletar produtos editados da OS
         const productsList = document.getElementById('edit-os-products-list');
         const osProducts = [];
@@ -3308,13 +3598,43 @@ export async function saveEditedOS(osId, currentUser, selectedStoreId) {
             const productItems = productsList.querySelectorAll('.product-item-edit');
             productItems.forEach(item => {
                 const productNameElement = item.querySelector('.product-name');
-                const productName = productNameElement ? productNameElement.textContent : '';
+                let productName = '';
                 
-                const quantityMatch = item.textContent.match(/Qtd: (\d+)/);
-                const priceMatch = item.textContent.match(/R\$ ([\d.,]+)/);
+                // Tentar obter o nome do produto de várias formas
+                if (productNameElement) {
+                    productName = productNameElement.textContent.trim();
+                }
                 
-                const quantity = quantityMatch ? parseInt(quantityMatch[1]) : 0;
-                const price = priceMatch ? parseFloat(priceMatch[1].replace(/\./g, '').replace(',', '.')) : 0;
+                // Se ainda não temos nome, tentar extrair do HTML completo
+                if (!productName) {
+                    const strongElement = item.querySelector('strong');
+                    if (strongElement) {
+                        productName = strongElement.textContent.trim();
+                    }
+                }
+                
+                // Se ainda não temos nome, usar fallback baseado no ID do produto
+                if (!productName && item.dataset.productId) {
+                    productName = `Produto ID: ${item.dataset.productId}`;
+                }
+                
+                // Último fallback
+                if (!productName) {
+                    productName = 'Produto sem nome';
+                }
+                
+                // Buscar valores nos data attributes primeiro (mais confiável)
+                let quantity = parseInt(item.dataset.quantity) || 0;
+                let price = parseFloat(item.dataset.price) || 0;
+                
+                // Se não encontrar nos data attributes, tentar extrair do HTML como fallback
+                if (quantity === 0 || price === 0) {
+                    const quantityMatch = item.textContent.match(/Qtd: (\d+)/);
+                    const priceMatch = item.textContent.match(/x R\$ ([\d.,]+)/);
+                    
+                    quantity = quantityMatch ? parseInt(quantityMatch[1]) : quantity;
+                    price = priceMatch ? parseFloat(priceMatch[1].replace(/\./g, '').replace(',', '.')) : price;
+                }
                 
                 osProducts.push({
                     id: item.dataset.productId || null,
@@ -3326,20 +3646,12 @@ export async function saveEditedOS(osId, currentUser, selectedStoreId) {
             });
         }
         
-        // Coletar dados do formulário com logs detalhados
+        // Coletar dados do formulário
         const deliveryDateValue = document.getElementById('edit-os-delivery-date')?.value || '';
-        console.log('📅 Data de entrega coletada do formulário:', deliveryDateValue);
         
         // Logs de depuração para campos do cliente
         const customerIdField = document.getElementById('edit-os-selected-customer-id');
         const customerNameField = document.getElementById('edit-os-new-customer-name');
-        
-        console.log('🔍 DEBUG - Campos do cliente no salvamento:', {
-            customerIdField: customerIdField ? 'encontrado' : 'NÃO ENCONTRADO',
-            customerIdValue: customerIdField?.value || 'VAZIO',
-            customerNameField: customerNameField ? 'encontrado' : 'NÃO ENCONTRADO', 
-            customerNameValue: customerNameField?.value || 'VAZIO'
-        });
         
         const osData = {
             customer_id: customerIdField?.value || null,
@@ -3351,7 +3663,7 @@ export async function saveEditedOS(osId, currentUser, selectedStoreId) {
             solution: document.getElementById('edit-os-solution')?.value || '',
             quote_value: parseFloat((document.getElementById('edit-os-quote-value')?.value || '0').replace(/\./g, '').replace(',', '.')),
             amount_paid: parseFloat((document.getElementById('edit-os-amount-paid')?.value || '0').replace(/\./g, '').replace(',', '.')),
-            payment_method: document.getElementById('edit-os-payment-method')?.value || '',
+            payment_status: document.getElementById('edit-os-payment-status')?.value || 'Pendente',
             estimated_delivery_date: deliveryDateValue,
             pattern_lock_value: document.getElementById('edit-os-pattern-lock-value')?.value || '',
             status: document.getElementById('edit-os-status-select')?.value || 'pending',
@@ -3359,31 +3671,22 @@ export async function saveEditedOS(osId, currentUser, selectedStoreId) {
             user_id: getCurrentUser()?.id,
             store_id: getSelectedStoreId()
         };
-        
-        console.log('💾 Dados da OS para salvar:', osData);
-        console.log('📅 Data de entrega que será salva:', osData.estimated_delivery_date);
 
         // Adicionar produtos ao osData
         osData.products = osProducts;
         
         // Atualizar dados da OS incluindo produtos
-        console.log('🔄 Atualizando OS no banco de dados com produtos...');
-        console.log('📦 Produtos que serão salvos:', osProducts);
-        
         const { error: osError } = await dbUpdate('service_orders', osData, { eq: { id: osId } });
         if (osError) {
             console.error('❌ Erro ao atualizar OS:', osError);
             throw osError;
         }
-        console.log('✅ OS atualizada com sucesso no banco, incluindo produtos');
         
-        console.log('🎉 OS editada com sucesso! Fechando modal e atualizando lista...');
         showToast('Ordem de Serviço atualizada com sucesso!', 'success');
         closeEditOSModal();
         
-        console.log('🔄 Atualizando lista de OS...');
         refreshOSList(selectedStoreId); // Passa selectedStoreId para a atualização da lista
-        console.log('✅ Lista de OS atualizada');
+        
     } catch (error) {
         console.error('Erro ao salvar OS editada:', error);
         showToast(`Erro ao salvar OS editada: ${error.message}`, 'error');

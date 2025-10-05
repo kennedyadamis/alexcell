@@ -33,13 +33,15 @@ export function formatValueForDisplay(value) {
 
 export function formatDateForDisplay(dateValue, includeTime = false) {
     if (!dateValue) return 'Não definida';
+    
+    // Se for uma string no formato YYYY-MM-DD (input date), formatar diretamente
+    if (typeof dateValue === 'string' && dateValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const [year, month, day] = dateValue.split('-');
+        return `${day}/${month}/${year}`;
+    }
+    
     const date = new Date(dateValue);
     if (isNaN(date.getTime())) {
-        // Se for um formato que Date não parseia diretamente, tenta uma abordagem manual para YYYY-MM-DD
-        if (typeof dateValue === 'string' && dateValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
-            const [year, month, day] = dateValue.split('-');
-            return `${day}/${month}/${year}`;
-        }
         return dateValue; // Retorna a string original se não for uma data válida
     }
     
