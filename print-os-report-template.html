@@ -412,6 +412,9 @@
             // Preenche a tabela de OS
             const tableContainer = document.getElementById('os-table');
             if (tableContainer && reportData.serviceOrders) {
+                // Verificar se alguma OS tem paidValue para determinar se deve mostrar a coluna
+                const showPaidColumn = reportData.serviceOrders.some(os => os.hasOwnProperty('paidValue'));
+                
                 let tableHTML = `
                     <thead>
                         <tr>
@@ -420,7 +423,7 @@
                             <th>Equipamento</th>
                             <th>Produtos</th>
                             <th>Valor OS</th>
-                            <th>Valor Pago</th>
+                            ${showPaidColumn ? '<th>Valor Pago</th>' : ''}
                             <th>Data</th>
                         </tr>
                     </thead>
@@ -435,7 +438,7 @@
                             <td>${os.equipment}</td>
                             <td>${os.products}</td>
                             <td>${os.value}</td>
-                            <td>${os.paidValue}</td>
+                            ${showPaidColumn ? `<td>${os.paidValue || 'N/A'}</td>` : ''}
                             <td>${os.date}</td>
                         </tr>
                     `;

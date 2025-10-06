@@ -162,6 +162,7 @@
                     <h4 style="font-weight: 900 !important; color: #000 !important;">7. Prazo de Entrega</h4>
                     <p style="font-weight: 900 !important; color: #000 !important;"><strong style="font-weight: 900 !important; color: #000 !important;">Previsão de Entrega:</strong> ${osData.estimated_delivery_date ? formatDateTimeForPrint(osData.estimated_delivery_date) : 'Não definida'}</p>
                     <p style="font-weight: 900 !important; color: #000 !important;"><strong style="font-weight: 900 !important; color: #000 !important;">Valor do Orçamento:</strong> R$ ${formatValueForPrint(osData.quote_value)}</p>
+                    <p style="font-weight: 900 !important; color: #000 !important;"><strong style="font-weight: 900 !important; color: #000 !important;">Valor Pago:</strong> R$ ${formatValueForPrint(osData.amount_paid)}</p>
                     <p style="font-weight: 900 !important; color: #000 !important;"><strong style="font-weight: 900 !important; color: #000 !important;">Status do Pagamento:</strong> ${osData.payment_status || 'Pendente'}</p>
                 </div>
             `;

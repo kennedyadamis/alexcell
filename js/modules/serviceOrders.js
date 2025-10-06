@@ -353,15 +353,7 @@ export function initializePatternLock() {
     const canvas = document.getElementById('pattern-lock-canvas');
     const container = document.getElementById('pattern-lock-container');
     
-    console.log('🔒 Inicializando PatternLock...', {
-        canvas: !!canvas,
-        container: !!container,
-        PatternLock: !!window.PatternLock,
-        canvasVisible: canvas ? canvas.offsetParent !== null : false,
-        canvasSize: canvas ? `${canvas.clientWidth}x${canvas.clientHeight}` : 'N/A',
-        containerRect: container ? container.getBoundingClientRect() : null,
-        canvasRect: canvas ? canvas.getBoundingClientRect() : null
-    });
+
     
     if (!canvas || !container) {
         console.error('❌ Canvas ou container não encontrado');
@@ -1192,11 +1184,7 @@ export function setupOrderForm(currentUser, selectedStoreId) {
 
     // Salvamento da OS
     if (osForm) {
-        // Remove event listeners existentes para evitar duplicação
-        const newForm = osForm.cloneNode(true);
-        osForm.parentNode.replaceChild(newForm, osForm);
-        
-        // Atualizar referências após clonagem
+        // Atualizar referências
         const newSelectedCustomerIdInput = document.getElementById('os-selected-customer-id');
         const newCustomerFormContainer = document.getElementById('new-customer-os-form');
         
@@ -1209,9 +1197,9 @@ export function setupOrderForm(currentUser, selectedStoreId) {
         // Reconfigurar autocomplete de produtos após clonagem
         setupOSProductAutocomplete();
         
-        newForm.addEventListener('submit', async (e) => {
+        osForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const submitBtn = newForm.querySelector('button[type="submit"]');
+            const submitBtn = osForm.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
             submitBtn.textContent = 'Salvando...';
             
@@ -2825,260 +2813,7 @@ export function setupEditCustomerAutocomplete() {
         };
     }
 
-    // Salvamento da OS
-    if (osForm) {
-        // Remove event listeners existentes para evitar duplicação
-        const newForm = osForm.cloneNode(true);
-        osForm.parentNode.replaceChild(newForm, osForm);
-        
-        // Atualizar referências após clonagem
-        const newSelectedCustomerIdInput = document.getElementById('edit-os-selected-customer-id');
-        const newCustomerFormContainer = document.getElementById('new-customer-os-form');
-        
-        // Reconfigurar busca de clientes após clonagem
-        setupCustomerSearch('edit-os-customer-search', 'edit-os-customer-results', 'edit-os-selected-customer-id');
-        
-        // Reconfigurar formatação de valores após clonagem
-        setupValueFormatting(['edit-os-quote-value', 'edit-os-amount-paid']);
-        
-        newForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const submitBtn = newForm.querySelector('button[type="submit"]');
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Salvando...';
-            
-            // Validação de campos obrigatórios
-            const requiredFields = [
-                { id: 'edit-os-brand', name: 'Marca' },
-                { id: 'edit-os-model', name: 'Modelo' },
-                { id: 'edit-os-color', name: 'Cor' },
-                { id: 'edit-os-quote-value', name: 'Valor' },
-                { id: 'edit-os-problem', name: 'Defeito' },
-                { id: 'edit-os-delivery-date', name: 'Data de Entrega' }
-            ];
-            
-            for (const field of requiredFields) {
-                const element = document.getElementById(field.id);
-                if (!element) {
-                    showToast(`Campo "${field.name}" não encontrado!`, 'error');
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = '💾 Salvar OS';
-                    return;
-                }
-                
-                // Validação especial para select
-                if (element.tagName === 'SELECT') {
-                    if (!element.value || element.value === '') {
-                        showToast(`Campo "${field.name}" é obrigatório!`, 'error');
-                        element.focus();
-                        submitBtn.disabled = false;
-                        submitBtn.textContent = '💾 Salvar OS';
-                        return;
-                    }
-                } else {
-                    if (!element.value || !element.value.trim()) {
-                        showToast(`Campo "${field.name}" é obrigatório!`, 'error');
-                        element.focus();
-                        submitBtn.disabled = false;
-                        submitBtn.textContent = '💾 Salvar OS';
-                        return;
-                    }
-                }
-            }
-            
-            // Validação específica para payment_status = Parcial na edição
-            const paymentStatus = document.getElementById('edit-os-payment-status')?.value;
-            const amountPaid = document.getElementById('edit-os-amount-paid')?.value;
-            
-            if (paymentStatus === 'Parcial') {
-                if (!amountPaid || !amountPaid.trim()) {
-                    showToast('Quando o status de pagamento for "Parcial", o campo "Valor Pago" é obrigatório!', 'error');
-                    document.getElementById('edit-os-amount-paid')?.focus();
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = '💾 Salvar OS';
-                    return;
-                }
-                
-                const amountPaidValue = parseFloat(amountPaid.replace(/\./g, '').replace(',', '.'));
-                const quoteValue = parseFloat((document.getElementById('edit-os-quote-value')?.value || '0').replace(/\./g, '').replace(',', '.'));
-                
-                if (amountPaidValue <= 0) {
-                    showToast('O valor pago deve ser maior que zero!', 'error');
-                    document.getElementById('edit-os-amount-paid')?.focus();
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = '💾 Salvar OS';
-                    return;
-                }
-                
-                if (amountPaidValue >= quoteValue) {
-                    showToast('Para pagamento parcial, o valor pago deve ser menor que o valor total!', 'error');
-                    document.getElementById('edit-os-amount-paid')?.focus();
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = '💾 Salvar OS';
-                    return;
-                }
-            }
-            
-            try {
-                let customerId = newSelectedCustomerIdInput.value ? Number(newSelectedCustomerIdInput.value) : null;
-                if (!customerId && newCustomerFormContainer && newCustomerFormContainer.style.display !== 'none') {
-                    const customerData = {
-                        full_name: document.getElementById('edit-os-new-customer-name')?.value || '',
-                        phone: document.getElementById('edit-os-new-customer-phone')?.value || '',
-                        birth_date: document.getElementById('edit-os-new-customer-birth-date')?.value || null,
-                        address: {
-                            street: document.getElementById('edit-os-new-customer-street')?.value || '',
-                            number: document.getElementById('edit-os-new-customer-number')?.value || '',
-                            neighborhood: document.getElementById('edit-os-new-customer-neighborhood')?.value || '',
-                            city: document.getElementById('edit-os-new-customer-city')?.value || '',
-                            state: document.getElementById('edit-os-new-customer-state')?.value || '',
-                            zip: document.getElementById('edit-os-new-customer-zip')?.value || ''
-                        },
-                        user_id: getCurrentUser()?.id || null
-                    };
 
-                    // Usando dbInsert para manter consistência e evitar duplicação
-                    const { data: newCustomer, error: customerError } = await dbInsert('customers', [customerData], '*');
-
-                    if (customerError) {
-                        console.error('Erro ao cadastrar novo cliente para OS:', customerError);
-                        showToast(`Erro ao cadastrar cliente: ${customerError.message}`, 'error');
-                        submitBtn.disabled = false;
-                        submitBtn.textContent = '💾 Salvar OS';
-                        return;
-                    }
-                    customerId = newCustomer[0].id;
-                }
-
-                // Coletar produtos adicionados à OS
-                const productsList = document.getElementById('edit-os-products-list');
-                const osProducts = [];
-                if (productsList) {
-                    const productItems = productsList.querySelectorAll('.product-item-edit');
-                    productItems.forEach(item => {
-                        // Extrair dados dos data-attributes primeiro, depois do HTML como fallback
-                        const productId = item.dataset.productId;
-                        const costPrice = parseFloat(item.dataset.costPrice) || 0;
-                        const productName = item.querySelector('.product-name').textContent;
-                        
-                        // Extrair quantidade e preço unitário do HTML
-                        const quantityMatch = item.innerHTML.match(/Qtd: (\d+)/);
-                        const priceMatch = item.innerHTML.match(/x R\$ ([\d.,]+)/);
-                        
-                        const quantity = quantityMatch ? parseInt(quantityMatch[1]) : 0;
-                        const price = priceMatch ? parseFloat(priceMatch[1].replace(/\./g, '').replace(',', '.')) : 0;
-                        
-                        // Criar objeto do produto com todos os dados necessários
-                        osProducts.push({
-                            id: productId,
-                            name: productName,
-                            quantity: quantity,
-                            price: price,
-                            cost_price: costPrice
-                        });
-                    });
-                }
-
-                // Captura os dados do checklist na edição
-                const editCheckBateria = document.querySelector('input[name="edit-check-bateria"]:checked')?.value || 'nao';
-                const editCheckChip = document.querySelector('input[name="edit-check-chip"]:checked')?.value || 'nao';
-                const editCheckCarregador = document.querySelector('input[name="edit-check-carregador"]:checked')?.value || 'nao';
-                const editCheckFone = document.querySelector('input[name="edit-check-fone"]:checked')?.value || 'nao';
-                const editCheckAranhado = document.querySelector('input[name="edit-check-aranhado"]:checked')?.value || 'nao';
-
-                // Debug: verificar valores dos campos antes de salvar
-                const clientNameField = document.getElementById('edit-os-new-customer-name');
-                const selectedCustomerIdField = document.getElementById('edit-os-selected-customer-id');
-                
-                // Determinar o nome do cliente correto
-                let clientName = '';
-                if (customerId && customerId !== null) {
-                    // Se há um customer_id, buscar o nome do cliente no banco
-                    try {
-                        const { data: customerData, error: customerError } = await supabase
-                            .from('customers')
-                            .select('full_name')
-                            .eq('id', customerId)
-                            .single();
-                        
-                        if (!customerError && customerData) {
-                            clientName = customerData.full_name;
-                        }
-                    } catch (error) {
-                        console.error('Erro ao buscar nome do cliente:', error);
-                    }
-                } else {
-                    // Se não há customer_id, usar o valor do campo de novo cliente
-                    clientName = clientNameField?.value || '';
-                }
-                
-                                                const osData = {
-                    customer_id: customerId,
-                    client_name: clientName,
-                    equipment_brand: document.getElementById('edit-os-brand')?.value || '',
-                    equipment_model: document.getElementById('edit-os-model')?.value || '',
-                    color: document.getElementById('edit-os-color')?.value || '',
-                    problem_description: document.getElementById('edit-os-problem')?.value || '',
-                    solution: document.getElementById('edit-os-solution')?.value || '',
-                    quote_value: parseFloat((document.getElementById('edit-os-quote-value')?.value || '0').replace(/\./g, '').replace(',', '.')),
-                    amount_paid: parseFloat((document.getElementById('edit-os-amount-paid')?.value || '0').replace(/\./g, '').replace(',', '.')),
-                    estimated_delivery_date: (() => {
-                const deliveryDateElement = document.getElementById('edit-os-delivery-date');
-                const deliveryDateValue = deliveryDateElement?.value || '';
-                
-                // Se há valor, converter para timestamp UTC sem alterar o horário
-                let finalValue = '';
-                if (deliveryDateValue) {
-                    // Adicionar segundos e timezone UTC para manter o horário exato
-                    finalValue = deliveryDateValue + ':00+00:00';
-                }
-                
-                console.log('🕐 Data de entrega na edição:', {
-                    elemento: deliveryDateElement,
-                    valorOriginal: deliveryDateValue,
-                    valorFinal: finalValue
-                });
-                
-                return finalValue;
-            })(),
-                    equipment_password: document.getElementById('edit-os-password')?.value || '',
-                    pattern_lock_value: document.getElementById('edit-os-pattern-lock-value')?.value || '',
-                    status: document.getElementById('edit-os-status-select')?.value || 'pending',
-                    notes: document.getElementById('edit-os-notes')?.value || '',
-                    user_id: getCurrentUser()?.id,
-                    store_id: getSelectedStoreId(),
-                    // Dados do checklist como JSON na edição
-                    accessories_checklist: {
-                        bateria: editCheckBateria,
-                        chip: editCheckChip,
-                        carregador: editCheckCarregador,
-                        fone: editCheckFone,
-                        aranhado: editCheckAranhado
-                    },
-                    products: osProducts // Adiciona os produtos
-                };
-
-                const { data, error } = await supabase
-                    .from('service_orders')
-                    .update(osData)
-                    .eq('id', osId);
-
-                if (error) throw error;
-                
-                showToast('Ordem de Serviço atualizada com sucesso!', 'success');
-                closeEditOSModal();
-                refreshOSList(selectedStoreId);
-                document.getElementById('edit-os-form').reset();
-                document.getElementById('edit-os-products-list').innerHTML = ''; // Limpar lista de produtos
-            } catch (error) {
-                console.error('Erro ao salvar OS:', error);
-                showToast(`Erro ao salvar OS: ${error.message}`, 'error');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = '💾 Salvar OS';
-            }
-        });
-    }
 }
 
 // Função para configurar autocomplete de produtos para edição

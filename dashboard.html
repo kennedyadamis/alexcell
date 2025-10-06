@@ -1564,12 +1564,10 @@
                         <div class="form-row">
                              <div class="form-group"><label>Valor (R$) *</label><input type="text" id="os-quote-value" placeholder="Ex: 1.500,00" required></div>
                              <div class="form-group"><label>Status Pagamento</label><select id="os-payment-status"><option value="Pendente">Pendente</option><option value="Parcial">Parcial</option><option value="Pago">Pago</option></select></div>
-                            <div class="form-group" id="os-amount-paid-group" style="display:none;">
-                                <label>Valor Pago (R$)</label>
-                                <input type="text" id="os-amount-paid" placeholder="Ex: 750,00" style="background: yellow !important; z-index: 9999 !important; position: relative !important;">
-                                <!-- Campo de teste para debug -->
-                                <input type="text" id="test-input" placeholder="Teste de digitação" style="margin-top: 5px; border: 2px solid red;">
-                            </div>
+                        </div>
+                        <div class="form-group" id="os-amount-paid-group" style="display:none;">
+                            <label>Valor Pago (R$)</label>
+                            <input type="text" id="os-amount-paid" placeholder="Ex: 750,00">
                         </div>
                     </fieldset>
 
@@ -2322,7 +2320,10 @@
                         <div class="form-row">
                              <div class="form-group"><label>Valor (R$)</label><input type="text" id="edit-os-quote-value" placeholder="Ex: 1.500,00"></div>
                              <div class="form-group"><label>Status Pagamento</label><select id="edit-os-payment-status"><option value="Pendente">Pendente</option><option value="Parcial">Parcial</option><option value="Pago">Pago</option></select></div>
-                            <div class="form-group" id="edit-os-amount-paid-group" style="display:none;"><label>Valor Pago (R$)</label><input type="text" id="edit-os-amount-paid" placeholder="Ex: 750,00"></div>
+                            <div class="form-group" id="edit-os-amount-paid-group" style="display:none;">
+                            <label>Valor Pago (R$)</label>
+                            <input type="text" id="edit-os-amount-paid" placeholder="Ex: 750,00">
+                        </div>
                         </div>
 
                     </fieldset>

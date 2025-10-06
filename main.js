@@ -503,32 +503,42 @@ function initializeDashboardEventListeners() {
     const osCustomerSearch = document.getElementById('os-customer-search');
     if(osCustomerSearch) osCustomerSearch.addEventListener('keyup', (e) => { /* ... debounce ... */ });
 
+    // --- Eventos do Status de Pagamento ---
     const osPaymentStatus = document.getElementById('os-payment-status');
-    if(osPaymentStatus) {
-        // Variável para armazenar o valor parcial anterior
-        let previousPartialValue = '';
-        
-        osPaymentStatus.addEventListener('change', (e) => {
+    if (osPaymentStatus) {
+        // Função para controlar o campo de valor pago
+        function toggleAmountPaidField(status) {
             const amountPaidGroup = document.getElementById('os-amount-paid-group');
             const amountPaidInput = document.getElementById('os-amount-paid');
             
-            if (e.target.value === 'Parcial') {
-                // Mostrar campo de valor pago
+            if (status === 'Parcial') {
                 if (amountPaidGroup) amountPaidGroup.style.display = 'block';
-                
-                // Restaurar valor anterior se existir
-                if (amountPaidInput && previousPartialValue) {
-                    amountPaidInput.value = previousPartialValue;
-                }
+                if (amountPaidInput) amountPaidInput.required = true;
             } else {
-                // Salvar valor atual antes de esconder
-                if (amountPaidInput && amountPaidInput.value.trim() !== '') {
-                    previousPartialValue = amountPaidInput.value;
-                }
-                
-                // Esconder campo de valor pago
                 if (amountPaidGroup) amountPaidGroup.style.display = 'none';
+                if (amountPaidInput) {
+                    amountPaidInput.required = false;
+                    amountPaidInput.value = '';
+                }
             }
+        }
+        
+        // Remover listeners existentes para evitar duplicação
+        const newSelect = osPaymentStatus.cloneNode(true);
+        osPaymentStatus.parentNode.replaceChild(newSelect, osPaymentStatus);
+        const freshSelect = document.getElementById('os-payment-status');
+        
+        // Listener único e simples
+        freshSelect.addEventListener('change', function() {
+            toggleAmountPaidField(this.value);
+        });
+        
+        // Listener adicional para capturar cliques
+        freshSelect.addEventListener('click', function() {
+            // Aguardar um pouco para o valor ser atualizado
+            setTimeout(() => {
+                toggleAmountPaidField(this.value);
+            }, 50);
         });
     }
     

@@ -302,7 +302,7 @@
                                 <div><strong>Equipamento:</strong> ${os.equipment}</div>
                                 <div><strong>Produtos:</strong> ${os.products}</div>
                                 <div><strong>Valor OS:</strong> ${os.value}</div>
-                                <div><strong>Valor Pago:</strong> ${os.paidValue}</div>
+                                ${os.hasOwnProperty('paidValue') ? `<div><strong>Valor Pago:</strong> ${os.paidValue}</div>` : ''}
                                 <div><strong>Data:</strong> ${os.date}</div>
                             </div>
                         </div>

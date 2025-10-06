@@ -246,15 +246,21 @@ export async function printOSStatusReport() {
                 }
             }
             
-            return {
+            const orderData = {
                 id: os.id,
                 customer: customerName,
                 equipment: equipment,
                 products: productsUsed,
                 value: formatCurrencyBR(osValue),
-                paidValue: formatCurrencyBR(paidValue),
                 date: formatDateForDisplay(os.created_at)
             };
+            
+            // Adicionar paidValue apenas se não for status 'delivered'
+            if (selectedStatus !== 'delivered') {
+                orderData.paidValue = formatCurrencyBR(paidValue);
+            }
+            
+            return orderData;
         });
 
         // Obter configurações da loja
@@ -272,12 +278,7 @@ export async function printOSStatusReport() {
                 totalOS: serviceOrders.length
             },
             serviceOrders: formattedOrders,
-            summary: {
-                'Total de OS': serviceOrders.length,
-                'Valor Total': formatCurrencyBR(totalValue),
-                'Total Pago': formatCurrencyBR(totalPaid),
-                'Saldo Pendente': formatCurrencyBR(totalValue - totalPaid)
-            },
+            summary: {},
             storeInfo: {
                 name: storeSettings?.store_name || 'Assistência Técnica Especializada',
                 address: storeSettings?.store_address || 'R. 38, N 518 - Sala 02 - Lot. Paraíso do Sul, Santa Maria, Aracaju - SE, 49044-451',
@@ -286,6 +287,21 @@ export async function printOSStatusReport() {
             logoUrl: storeSettings?.logo_url || null,
             generatedAt: new Date().toLocaleString('pt-BR')
         };
+
+        // Para OS entregues, não incluir Total Pago e Saldo Pendente no summary
+        if (selectedStatus === 'delivered') {
+            reportData.summary = {
+                'Total de OS': serviceOrders.length,
+                'Valor Total': formatCurrencyBR(totalValue)
+            };
+        } else {
+            reportData.summary = {
+                'Total de OS': serviceOrders.length,
+                'Valor Total': formatCurrencyBR(totalValue),
+                'Total Pago': formatCurrencyBR(totalPaid),
+                'Saldo Pendente': formatCurrencyBR(totalValue - totalPaid)
+            };
+        }
 
         // Salvar dados no localStorage para o template acessar
         localStorage.setItem('os_status_report_data', JSON.stringify(reportData));
@@ -941,7 +957,7 @@ export async function generateOSStatusReport() {
                         <th>Equipamento</th>
                         <th>Produtos Utilizados</th>
                         <th>Valor da OS</th>
-                        <th>Valor Pago</th>
+                        ${selectedStatus !== 'delivered' ? '<th>Valor Pago</th>' : ''}
                         <th>Data de Criação</th>
                     </tr>
                 </thead>
@@ -1010,7 +1026,7 @@ export async function generateOSStatusReport() {
                     <td>${equipment}</td>
                     <td>${productsUsed}</td>
                     <td>${formatCurrencyBR(osValue)}</td>
-                    <td>${formatCurrencyBR(paidValue)}</td>
+                    ${selectedStatus !== 'delivered' ? `<td>${formatCurrencyBR(paidValue)}</td>` : ''}
                     <td>${formatDateForDisplay(os.created_at)}</td>
                 </tr>
             `;
@@ -1027,7 +1043,11 @@ export async function generateOSStatusReport() {
                 <div class="summary-item">
                     <span class="summary-label">Valor Total:</span>
                     <span class="summary-value">${formatCurrencyBR(totalValue)}</span>
-                </div>
+                </div>`;
+        
+        // Para OS entregues, não mostrar Total Pago e Saldo Pendente
+        if (selectedStatus !== 'delivered') {
+            html += `
                 <div class="summary-item">
                     <span class="summary-label">Total Pago:</span>
                     <span class="summary-value">${formatCurrencyBR(totalPaid)}</span>
@@ -1035,7 +1055,10 @@ export async function generateOSStatusReport() {
                 <div class="summary-item">
                     <span class="summary-label">Saldo Pendente:</span>
                     <span class="summary-value">${formatCurrencyBR(totalValue - totalPaid)}</span>
-                </div>
+                </div>`;
+        }
+        
+        html += `
             </div>
             <div class="report-actions">
                 <button class="btn btn-secondary" onclick="printOSStatusReport()">Imprimir Relatório</button>
@@ -1234,15 +1257,21 @@ async function generateOSStatusPDF() {
                 }
             }
             
-            return {
+            const orderData = {
                 id: os.id,
                 customer: customerName,
                 equipment: equipment,
                 products: productsUsed,
                 value: formatCurrencyBR(osValue),
-                paidValue: formatCurrencyBR(paidValue),
                 date: formatDateForDisplay(os.created_at)
             };
+            
+            // Só incluir paidValue se o status não for 'delivered'
+            if (selectedStatus !== 'delivered') {
+                orderData.paidValue = formatCurrencyBR(paidValue);
+            }
+            
+            return orderData;
         });
         
         // Obter configurações da loja
@@ -1260,12 +1289,7 @@ async function generateOSStatusPDF() {
                 totalOS: serviceOrders.length
             },
             serviceOrders: formattedOrders,
-            summary: {
-                'Total de OS': serviceOrders.length,
-                'Valor Total': formatCurrencyBR(totalValue),
-                'Total Pago': formatCurrencyBR(totalPaid),
-                'Saldo Pendente': formatCurrencyBR(totalValue - totalPaid)
-            },
+            summary: {},
             storeInfo: {
                 name: storeSettings?.store_name || 'Assistência Técnica Especializada',
                 address: storeSettings?.store_address || 'R. 38, N 518 - Sala 02 - Lot. Paraíso do Sul, Santa Maria, Aracaju - SE, 49044-451',
@@ -1273,6 +1297,21 @@ async function generateOSStatusPDF() {
             },
             logoUrl: storeSettings?.logo_url || null
         };
+        
+        // Para OS entregues, não incluir Total Pago e Saldo Pendente no summary
+        if (selectedStatus === 'delivered') {
+            reportData.summary = {
+                'Total de OS': serviceOrders.length,
+                'Valor Total': formatCurrencyBR(totalValue)
+            };
+        } else {
+            reportData.summary = {
+                'Total de OS': serviceOrders.length,
+                'Valor Total': formatCurrencyBR(totalValue),
+                'Total Pago': formatCurrencyBR(totalPaid),
+                'Saldo Pendente': formatCurrencyBR(totalValue - totalPaid)
+            };
+        }
         
         // Salvar dados no localStorage
         localStorage.setItem('os_status_report_data', JSON.stringify(reportData));
