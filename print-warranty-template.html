@@ -86,10 +86,9 @@
             
             const detailsContainer = document.getElementById('warranty-details');
             
-            // Calcula data de validade da garantia
+            // Calcula data de validade da garantia (pulando dias 31 para padronização)
             const repairDate = new Date(warrantyData.repair_date);
-            const validUntil = new Date(repairDate);
-            validUntil.setDate(repairDate.getDate() + (warrantyData.warranty_period_days || 90));
+            const validUntil = calculateWarrantyEndDate(repairDate, warrantyData.warranty_period_days || 90);
 
             detailsContainer.innerHTML = `
                 <h2 style="font-weight: 900 !important; color: #000 !important;">Garantia de Serviços #${warrantyData.id}</h2>
@@ -129,6 +128,23 @@
             localStorage.removeItem('currentWarranty_for_print');
             setTimeout(() => window.print(), 500);
         });
+
+        // Função para calcular data de fim da garantia pulando dias 31
+        function calculateWarrantyEndDate(startDate, warrantyDays) {
+            const endDate = new Date(startDate);
+            let daysAdded = 0;
+            
+            while (daysAdded < warrantyDays) {
+                endDate.setDate(endDate.getDate() + 1);
+                
+                // Pula o dia 31 para manter consistência no período de garantia
+                if (endDate.getDate() !== 31) {
+                    daysAdded++;
+                }
+            }
+            
+            return endDate;
+        }
 
         // Função para formatar datas para impressão
         function formatDateForPrint(dateString) {

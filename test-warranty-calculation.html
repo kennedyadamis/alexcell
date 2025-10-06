@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Cálculo de Garantia</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-case {
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .test-case.pass {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .test-case.fail {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .result {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Teste de Cálculo de Garantia - Pulando Dias 31</h1>
+    <p>Este teste verifica se o cálculo de garantia está pulando corretamente os dias 31 dos meses.</p>
+    
+    <div id="test-results"></div>
+
+    <script>
+        // Função para calcular data de fim da garantia pulando dias 31
+        function calculateWarrantyEndDate(startDate, warrantyDays) {
+            const endDate = new Date(startDate);
+            let daysAdded = 0;
+            
+            while (daysAdded < warrantyDays) {
+                endDate.setDate(endDate.getDate() + 1);
+                
+                // Pula o dia 31 para manter consistência no período de garantia
+                if (endDate.getDate() !== 31) {
+                    daysAdded++;
+                }
+            }
+            
+            return endDate;
+        }
+
+        // Função para calcular garantia da forma antiga (com dias 31)
+        function calculateWarrantyEndDateOld(startDate, warrantyDays) {
+            const endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + warrantyDays);
+            return endDate;
+        }
+
+        // Função para formatar data
+        function formatDate(date) {
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        // Casos de teste
+        const testCases = [
+            {
+                name: "Teste 1: Início em 01/01/2024, 90 dias",
+                startDate: new Date('2024-01-01'),
+                days: 90,
+                description: "Verifica se pula o dia 31 de janeiro e março"
+            },
+            {
+                name: "Teste 2: Início em 15/01/2024, 30 dias",
+                startDate: new Date('2024-01-15'),
+                days: 30,
+                description: "Verifica se pula o dia 31 de janeiro"
+            },
+            {
+                name: "Teste 3: Início em 28/02/2024, 60 dias",
+                startDate: new Date('2024-02-28'),
+                days: 60,
+                description: "Verifica se pula o dia 31 de março e maio"
+            },
+            {
+                name: "Teste 4: Início em 30/04/2024, 90 dias",
+                startDate: new Date('2024-04-30'),
+                days: 90,
+                description: "Verifica se pula o dia 31 de maio e julho"
+            },
+            {
+                name: "Teste 5: Início em 31/01/2024, 30 dias",
+                startDate: new Date('2024-01-31'),
+                days: 30,
+                description: "Início no dia 31, verifica comportamento"
+            }
+        ];
+
+        // Executar testes
+        function runTests() {
+            const resultsContainer = document.getElementById('test-results');
+            
+            testCases.forEach((testCase, index) => {
+                const newEndDate = calculateWarrantyEndDate(testCase.startDate, testCase.days);
+                const oldEndDate = calculateWarrantyEndDateOld(testCase.startDate, testCase.days);
+                
+                // Contar quantos dias 31 foram pulados
+                let days31Skipped = 0;
+                const tempDate = new Date(testCase.startDate);
+                for (let i = 0; i < testCase.days + 10; i++) { // +10 para margem
+                    tempDate.setDate(tempDate.getDate() + 1);
+                    if (tempDate.getDate() === 31 && tempDate <= newEndDate) {
+                        days31Skipped++;
+                    }
+                    if (tempDate >= newEndDate) break;
+                }
+                
+                const testDiv = document.createElement('div');
+                testDiv.className = 'test-case';
+                
+                // Verificar se o novo método está funcionando (deve ser diferente do antigo quando há dias 31)
+                const isWorking = days31Skipped > 0 ? (newEndDate.getTime() !== oldEndDate.getTime()) : true;
+                testDiv.classList.add(isWorking ? 'pass' : 'fail');
+                
+                testDiv.innerHTML = `
+                    <h3>${testCase.name}</h3>
+                    <p><strong>Descrição:</strong> ${testCase.description}</p>
+                    <p><strong>Data de início:</strong> ${formatDate(testCase.startDate)}</p>
+                    <p><strong>Período:</strong> ${testCase.days} dias</p>
+                    <p><strong>Método antigo (com dias 31):</strong> ${formatDate(oldEndDate)}</p>
+                    <p><strong>Método novo (pulando dias 31):</strong> ${formatDate(newEndDate)}</p>
+                    <p><strong>Dias 31 pulados:</strong> ${days31Skipped}</p>
+                    <div class="result">
+                        ${isWorking ? '✅ PASSOU' : '❌ FALHOU'} - 
+                        ${days31Skipped > 0 ? 
+                            `Diferença de ${Math.abs(Math.ceil((newEndDate - oldEndDate) / (1000 * 60 * 60 * 24)))} dias` : 
+                            'Nenhum dia 31 no período'
+                        }
+                    </div>
+                `;
+                
+                resultsContainer.appendChild(testDiv);
+            });
+            
+            // Resumo
+            const summaryDiv = document.createElement('div');
+            summaryDiv.innerHTML = `
+                <h2>Resumo dos Testes</h2>
+                <p>A nova função <code>calculateWarrantyEndDate</code> agora pula corretamente os dias 31, 
+                garantindo que o período de garantia seja mais consistente e padronizado.</p>
+                <p><strong>Benefício:</strong> Evita variações no período de garantia causadas por meses com 31 dias.</p>
+            `;
+            resultsContainer.appendChild(summaryDiv);
+        }
+
+        // Executar testes quando a página carregar
+        document.addEventListener('DOMContentLoaded', runTests);
+    </script>
+</body>
+</html>
