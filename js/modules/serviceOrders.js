@@ -1167,13 +1167,6 @@ export function setupOrderForm(currentUser, selectedStoreId) {
         
         // Event listener do formulário será configurado pelo main.js para evitar duplicação
         
-        // Fechar modal ao clicar fora
-        newCustomerModal.addEventListener('click', function(e) {
-            if (e.target === newCustomerModal) {
-                closeNewCustomerModal();
-            }
-        });
-        
         // Fechar modal com ESC
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape' && newCustomerModal.style.display === 'flex') {

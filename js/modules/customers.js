@@ -277,17 +277,6 @@ export async function viewCustomer(customerId) {
             editBtn.removeEventListener('click', handleEdit); // Remove listener anterior
             editBtn.addEventListener('click', handleEdit);
         }
-        
-        // Fechar modal ao clicar fora
-        const handleOutsideClick = (e) => {
-            if (e.target === modal) {
-                closeModal();
-                modal.removeEventListener('click', handleOutsideClick);
-            }
-        };
-        
-        modal.removeEventListener('click', handleOutsideClick); // Remove listener anterior
-        modal.addEventListener('click', handleOutsideClick);
 
     } catch (error) {
         console.error('Erro ao visualizar cliente:', error);
@@ -383,13 +372,6 @@ export async function deleteCustomer(customerId) {
     if (confirmBtn) confirmBtn.addEventListener('click', handleConfirm);
     if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
     if (closeBtn) closeBtn.addEventListener('click', closeModal);
-    
-    // Fechar modal ao clicar fora
-    deleteModal.addEventListener('click', (e) => {
-        if (e.target === deleteModal) {
-            closeModal();
-        }
-    });
 }
 
 // Função auxiliar para realizar a exclusão
@@ -434,15 +416,6 @@ function initEditCustomerModal() {
     if (cancelBtn) {
         cancelBtn.addEventListener('click', () => {
             modal.style.display = 'none';
-        });
-    }
-
-    // Fechar modal ao clicar fora
-    if (modal) {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.style.display = 'none';
-            }
         });
     }
 

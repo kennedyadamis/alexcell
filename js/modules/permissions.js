@@ -127,12 +127,6 @@ function initializeModalEventListeners() {
         btn.addEventListener('click', handleCloseModalClick);
     });
 
-    // Event listener para fechar modal clicando fora dele
-    document.querySelectorAll('.modal-overlay').forEach(overlay => {
-        overlay.removeEventListener('click', handleOverlayClick);
-        overlay.addEventListener('click', handleOverlayClick);
-    });
-
     // Event listener para o formulário de criação de usuário
     const createUserForm = document.getElementById('create-user-form');
     if (createUserForm) {

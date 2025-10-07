@@ -1544,11 +1544,7 @@ function setupStockEvents() {
     }
 
     if (manageCategoriesModal) {
-        manageCategoriesModal.addEventListener('click', (e) => {
-            if (e.target === manageCategoriesModal) {
-                manageCategoriesModal.style.display = 'none';
-            }
-        });
+        // Removido event listener para fechar modal ao clicar fora
     }
 
     if (btnAddNewCategory) {
@@ -2468,7 +2464,14 @@ function showSaleSuccessModal(total, pagamentos) {
 
 function setupSaleSuccessModalButtons() {
     const btnNewSale = document.getElementById('btn-new-sale');
-    const btnPrintReceipt = document.getElementById('btn-print-receipt');
+    const btnOkClose = document.getElementById('btn-ok-close');
+    
+    // Botão OK - apenas fecha o modal
+    if (btnOkClose) {
+        btnOkClose.onclick = () => {
+            closeSaleSuccessModal();
+        };
+    }
     
     // Botão Nova Venda
     if (btnNewSale) {
@@ -2481,24 +2484,7 @@ function setupSaleSuccessModalButtons() {
         };
     }
     
-    // Botão Imprimir Recibo
-    if (btnPrintReceipt) {
-        btnPrintReceipt.onclick = () => {
-            // Implementar impressão do recibo se necessário
-            console.log('Imprimir recibo - funcionalidade a ser implementada');
-            closeSaleSuccessModal();
-        };
-    }
-    
-    // Fechar modal clicando fora
-    const modal = document.getElementById('sale-success-modal');
-    if (modal) {
-        modal.onclick = (e) => {
-            if (e.target === modal) {
-                closeSaleSuccessModal();
-            }
-        };
-    }
+    // Removido event listener para fechar modal ao clicar fora
 }
 
 function closeSaleSuccessModal() {
