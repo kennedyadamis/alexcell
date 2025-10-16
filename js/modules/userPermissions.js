@@ -8,7 +8,7 @@ export async function fillUserPermissionsList(userId) {
     container.innerHTML = '<p>Carregando permissões...</p>';
     try {
         const { data: userPermissions, error } = await dbSelect('user_store_permissions', {
-            select: 'id, can_manage_os, can_manage_pdv, can_manage_cash, can_manage_stock, can_view_reports, can_manage_users, can_manage_cost_prices, can_manage_os_expiration, store_id',
+            select: 'id, can_manage_os, can_manage_pdv, can_manage_cash, can_manage_stock, can_view_reports, can_manage_users, can_manage_cost_prices, can_manage_os_expiration, can_manage_products, can_manage_sales, can_manage_service_orders, can_manage_cash_register, can_manage_customers, store_id',
             eq: { user_id: userId }
         });
 
@@ -31,9 +31,14 @@ export async function fillUserPermissionsList(userId) {
                 <div class="permission-store-title">${loja}</div>
                 <div class="permission-grid">
                     <div class="permission-item"><input type="checkbox" id="perm-os-${p.id}" ${p.can_manage_os ? 'checked' : ''}><label for="perm-os-${p.id}">Gerenciar OS</label></div>
+                    <div class="permission-item"><input type="checkbox" id="perm-service-orders-${p.id}" ${p.can_manage_service_orders ? 'checked' : ''}><label for="perm-service-orders-${p.id}">Ordens de Serviço</label></div>
                     <div class="permission-item"><input type="checkbox" id="perm-pdv-${p.id}" ${p.can_manage_pdv ? 'checked' : ''}><label for="perm-pdv-${p.id}">PDV</label></div>
+                    <div class="permission-item"><input type="checkbox" id="perm-sales-${p.id}" ${p.can_manage_sales ? 'checked' : ''}><label for="perm-sales-${p.id}">Vendas</label></div>
                     <div class="permission-item"><input type="checkbox" id="perm-caixa-${p.id}" ${p.can_manage_cash ? 'checked' : ''}><label for="perm-caixa-${p.id}">Caixa</label></div>
+                    <div class="permission-item"><input type="checkbox" id="perm-cash-register-${p.id}" ${p.can_manage_cash_register ? 'checked' : ''}><label for="perm-cash-register-${p.id}">Caixa Registradora</label></div>
                     <div class="permission-item"><input type="checkbox" id="perm-estoque-${p.id}" ${p.can_manage_stock ? 'checked' : ''}><label for="perm-estoque-${p.id}">Estoque</label></div>
+                    <div class="permission-item"><input type="checkbox" id="perm-products-${p.id}" ${p.can_manage_products ? 'checked' : ''}><label for="perm-products-${p.id}">Produtos</label></div>
+                    <div class="permission-item"><input type="checkbox" id="perm-customers-${p.id}" ${p.can_manage_customers ? 'checked' : ''}><label for="perm-customers-${p.id}">Clientes</label></div>
                     <div class="permission-item"><input type="checkbox" id="perm-relatorios-${p.id}" ${p.can_view_reports ? 'checked' : ''}><label for="perm-relatorios-${p.id}">Relatórios</label></div>
                     <div class="permission-item"><input type="checkbox" id="perm-garantia-${p.id}" ${p.can_manage_users ? 'checked' : ''}><label for="perm-garantia-${p.id}">Garantia</label></div>
                     <div class="permission-item"><input type="checkbox" id="perm-custo-${p.id}" ${p.can_manage_cost_prices ? 'checked' : ''}><label for="perm-custo-${p.id}">Preços de Custo</label></div>
@@ -86,9 +91,14 @@ if (editPermissionsForm) {
             // O id da permissão está no id dos checkboxes, ex: perm-os-9
             const permId = group.querySelector('input[type="checkbox"]').id.split('-').pop();
             const can_manage_os = group.querySelector(`#perm-os-${permId}`)?.checked || false;
+            const can_manage_service_orders = group.querySelector(`#perm-service-orders-${permId}`)?.checked || false;
             const can_manage_pdv = group.querySelector(`#perm-pdv-${permId}`)?.checked || false;
+            const can_manage_sales = group.querySelector(`#perm-sales-${permId}`)?.checked || false;
             const can_manage_cash = group.querySelector(`#perm-caixa-${permId}`)?.checked || false;
+            const can_manage_cash_register = group.querySelector(`#perm-cash-register-${permId}`)?.checked || false;
             const can_manage_stock = group.querySelector(`#perm-estoque-${permId}`)?.checked || false;
+            const can_manage_products = group.querySelector(`#perm-products-${permId}`)?.checked || false;
+            const can_manage_customers = group.querySelector(`#perm-customers-${permId}`)?.checked || false;
             const can_view_reports = group.querySelector(`#perm-relatorios-${permId}`)?.checked || false;
             const can_manage_users = group.querySelector(`#perm-garantia-${permId}`)?.checked || false;
             const can_manage_cost_prices = group.querySelector(`#perm-custo-${permId}`)?.checked || false;
@@ -97,9 +107,14 @@ if (editPermissionsForm) {
             // Atualizar permissões no Supabase
             const { error } = await dbUpdate('user_store_permissions', {
                 can_manage_os,
+                can_manage_service_orders,
                 can_manage_pdv,
+                can_manage_sales,
                 can_manage_cash,
+                can_manage_cash_register,
                 can_manage_stock,
+                can_manage_products,
+                can_manage_customers,
                 can_view_reports,
                 can_manage_users,
                 can_manage_cost_prices,
