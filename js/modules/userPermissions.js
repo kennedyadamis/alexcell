@@ -30,19 +30,21 @@ export async function fillUserPermissionsList(userId) {
             group.innerHTML = `
                 <div class="permission-store-title">${loja}</div>
                 <div class="permission-grid">
-                    <div class="permission-item"><input type="checkbox" id="perm-os-${p.id}" ${p.can_manage_os ? 'checked' : ''}><label for="perm-os-${p.id}">Gerenciar OS</label></div>
-                    <div class="permission-item"><input type="checkbox" id="perm-service-orders-${p.id}" ${p.can_manage_service_orders ? 'checked' : ''}><label for="perm-service-orders-${p.id}">Ordens de Serviço</label></div>
-                    <div class="permission-item"><input type="checkbox" id="perm-pdv-${p.id}" ${p.can_manage_pdv ? 'checked' : ''}><label for="perm-pdv-${p.id}">PDV</label></div>
-                    <div class="permission-item"><input type="checkbox" id="perm-sales-${p.id}" ${p.can_manage_sales ? 'checked' : ''}><label for="perm-sales-${p.id}">Vendas</label></div>
-                    <div class="permission-item"><input type="checkbox" id="perm-caixa-${p.id}" ${p.can_manage_cash ? 'checked' : ''}><label for="perm-caixa-${p.id}">Caixa</label></div>
-                    <div class="permission-item"><input type="checkbox" id="perm-cash-register-${p.id}" ${p.can_manage_cash_register ? 'checked' : ''}><label for="perm-cash-register-${p.id}">Caixa Registradora</label></div>
-                    <div class="permission-item"><input type="checkbox" id="perm-estoque-${p.id}" ${p.can_manage_stock ? 'checked' : ''}><label for="perm-estoque-${p.id}">Estoque</label></div>
-                    <div class="permission-item"><input type="checkbox" id="perm-products-${p.id}" ${p.can_manage_products ? 'checked' : ''}><label for="perm-products-${p.id}">Produtos</label></div>
-                    <div class="permission-item"><input type="checkbox" id="perm-customers-${p.id}" ${p.can_manage_customers ? 'checked' : ''}><label for="perm-customers-${p.id}">Clientes</label></div>
-                    <div class="permission-item"><input type="checkbox" id="perm-relatorios-${p.id}" ${p.can_view_reports ? 'checked' : ''}><label for="perm-relatorios-${p.id}">Relatórios</label></div>
-                    <div class="permission-item"><input type="checkbox" id="perm-garantia-${p.id}" ${p.can_manage_users ? 'checked' : ''}><label for="perm-garantia-${p.id}">Garantia</label></div>
-                    <div class="permission-item"><input type="checkbox" id="perm-custo-${p.id}" ${p.can_manage_cost_prices ? 'checked' : ''}><label for="perm-custo-${p.id}">Preços de Custo</label></div>
-                    <div class="permission-item"><input type="checkbox" id="perm-expiracao-${p.id}" ${p.can_manage_os_expiration ? 'checked' : ''}><label for="perm-expiracao-${p.id}">Expiração de OS</label></div>
+                    <div class="permission-item"><input type="checkbox" id="perm-os-${p.id}" ${p.can_manage_os ? 'checked' : ''}><label for="perm-os-${p.id}">Gerenciar Ordens de Serviço</label></div>
+                    <div class="permission-item"><input type="checkbox" id="perm-service-orders-${p.id}" ${p.can_manage_service_orders ? 'checked' : ''}><label for="perm-service-orders-${p.id}">Criar e Editar OS</label></div>
+                    <div class="permission-item"><input type="checkbox" id="perm-pdv-${p.id}" ${p.can_manage_pdv ? 'checked' : ''}><label for="perm-pdv-${p.id}">Acessar Ponto de Venda</label></div>
+                    <div class="permission-item"><input type="checkbox" id="perm-sales-${p.id}" ${p.can_manage_sales ? 'checked' : ''}><label for="perm-sales-${p.id}">Gerenciar Vendas</label></div>
+                    <div class="permission-item"><input type="checkbox" id="perm-caixa-${p.id}" ${p.can_manage_cash ? 'checked' : ''}><label for="perm-caixa-${p.id}">Controlar Fluxo de Caixa</label></div>
+                    <div class="permission-item"><input type="checkbox" id="perm-cash-register-${p.id}" ${p.can_manage_cash_register ? 'checked' : ''}><label for="perm-cash-register-${p.id}">Abrir/Fechar Caixa</label></div>
+                    <div class="permission-item"><input type="checkbox" id="perm-reopen-cash-${p.id}" ${p.can_reopen_cash_register ? 'checked' : ''}><label for="perm-reopen-cash-${p.id}">Reabrir Caixa Fechado</label></div>
+                    <div class="permission-item"><input type="checkbox" id="perm-delete-cash-${p.id}" ${p.can_delete_cash_transactions ? 'checked' : ''}><label for="perm-delete-cash-${p.id}">Excluir Transações do Caixa</label></div>
+                    <div class="permission-item"><input type="checkbox" id="perm-estoque-${p.id}" ${p.can_manage_stock ? 'checked' : ''}><label for="perm-estoque-${p.id}">Gerenciar Estoque</label></div>
+                    <div class="permission-item"><input type="checkbox" id="perm-products-${p.id}" ${p.can_manage_products ? 'checked' : ''}><label for="perm-products-${p.id}">Cadastrar/Editar Produtos</label></div>
+                    <div class="permission-item"><input type="checkbox" id="perm-customers-${p.id}" ${p.can_manage_customers ? 'checked' : ''}><label for="perm-customers-${p.id}">Cadastrar/Editar Clientes</label></div>
+                    <div class="permission-item"><input type="checkbox" id="perm-relatorios-${p.id}" ${p.can_view_reports ? 'checked' : ''}><label for="perm-relatorios-${p.id}">Visualizar Relatórios</label></div>
+                    <div class="permission-item"><input type="checkbox" id="perm-garantia-${p.id}" ${p.can_manage_users ? 'checked' : ''}><label for="perm-garantia-${p.id}">Gerenciar Usuários</label></div>
+                    <div class="permission-item"><input type="checkbox" id="perm-custo-${p.id}" ${p.can_manage_cost_prices ? 'checked' : ''}><label for="perm-custo-${p.id}">Ver Preços de Custo</label></div>
+                    <div class="permission-item"><input type="checkbox" id="perm-expiracao-${p.id}" ${p.can_manage_os_expiration ? 'checked' : ''}><label for="perm-expiracao-${p.id}">Definir Prazo de Garantia</label></div>
 
                 </div>
             `;
@@ -96,6 +98,8 @@ if (editPermissionsForm) {
             const can_manage_sales = group.querySelector(`#perm-sales-${permId}`)?.checked || false;
             const can_manage_cash = group.querySelector(`#perm-caixa-${permId}`)?.checked || false;
             const can_manage_cash_register = group.querySelector(`#perm-cash-register-${permId}`)?.checked || false;
+            const can_reopen_cash_register = group.querySelector(`#perm-reopen-cash-${permId}`)?.checked || false;
+            const can_delete_cash_transactions = group.querySelector(`#perm-delete-cash-${permId}`)?.checked || false;
             const can_manage_stock = group.querySelector(`#perm-estoque-${permId}`)?.checked || false;
             const can_manage_products = group.querySelector(`#perm-products-${permId}`)?.checked || false;
             const can_manage_customers = group.querySelector(`#perm-customers-${permId}`)?.checked || false;
@@ -112,6 +116,8 @@ if (editPermissionsForm) {
                 can_manage_sales,
                 can_manage_cash,
                 can_manage_cash_register,
+                can_reopen_cash_register,
+                can_delete_cash_transactions,
                 can_manage_stock,
                 can_manage_products,
                 can_manage_customers,

@@ -9,6 +9,7 @@ import { initializeCustomerFormEvents, loadCustomersTable, performCustomerSearch
 import { formatPhoneMask, formatCurrencyBR, formatValueForDisplay, formatDateForDisplay } from './js/utils/formatters.js';
 import { canViewCostPrices, formatCostPrice } from './js/utils/costPermissions.js';
 import { canManageCash } from './js/utils/cashPermissions.js';
+import { canManageCashRegister, canReopenCashRegister, canDeleteCashTransactions } from './js/utils/cashRegisterPermissions.js';
 import { loadOSTable, refreshOSList, openNewOSModal, closeNewOSModal, fetchAddressByCEP, initializePatternLock, confirmAddProduct, updateOSTotal, setupOrderForm, updateOSStatus, markAsAwaitingPickup, markAsDelivered, openOSPaymentModal, setupOSPaymentEvents, updateOSSplitSummary, deleteOS, viewOS, editOS, populateEditOSForm, setupEditPatternLock, setupEditValueFormatting, addEditOSProduct, setupEditCustomerAutocomplete, setupEditProductAutocomplete, updateEditOSTotal as updateEditOSTotalServiceOrders, closeEditOSModal, setupEditOSEvents, initializeOSConsultation, showConsultationMessage, displayOSResults, adjustQuantity, updateProductTotal, formatCurrencyInput, formatPaymentInput, openAddProductModal, closeAddProductModal, closeViewOSModal, saveEditedOSProduct, saveEditedOS, searchOSByCustomer, clearOSSearch } from './js/modules/serviceOrders.js';
 import { resetAddProductModal } from './js/utils/resetAddProductModal.js';
 import { loadDynamicBanner, createDefaultBanners } from './js/modules/banners.js';
@@ -1318,8 +1319,8 @@ async function handleDeleteCashEntryClick(event) {
     const isSale = button.getAttribute('data-is-sale') === 'true';
     if (!entryIdsJson) return;
     
-    // Verificar permissão para gerenciar caixa
-    const hasPermission = await canManageCash();
+    // Verificar permissão para excluir transações do caixa
+    const hasPermission = await canDeleteCashTransactions();
     if (!hasPermission) {
         showToast('Você não tem permissão para excluir itens do caixa.', 'error');
         return;
@@ -4743,8 +4744,8 @@ window.reopenCashRegister = async function(cashRegisterId) {
         return;
     }
 
-    // Verificar permissão para gerenciar caixa
-    const hasPermission = await canManageCash();
+    // Verificar permissão para reabrir caixa registradora
+    const hasPermission = await canReopenCashRegister();
     if (!hasPermission) {
         showToast('Você não tem permissão para reabrir o caixa.', 'error');
         return;
