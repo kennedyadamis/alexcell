@@ -3392,6 +3392,13 @@ export async function saveEditedOS(osId, currentUser, selectedStoreId) {
         const customerIdField = document.getElementById('edit-os-selected-customer-id');
         const customerNameField = document.getElementById('edit-os-new-customer-name');
         
+        // Capturar dados do checklist
+        const checkBateria = document.querySelector('input[name="edit-check-bateria"]:checked')?.value || 'nao';
+        const checkChip = document.querySelector('input[name="edit-check-chip"]:checked')?.value || 'nao';
+        const checkCarregador = document.querySelector('input[name="edit-check-carregador"]:checked')?.value || 'nao';
+        const checkFone = document.querySelector('input[name="edit-check-fone"]:checked')?.value || 'nao';
+        const checkAranhado = document.querySelector('input[name="edit-check-aranhado"]:checked')?.value || 'nao';
+        
         const osData = {
             customer_id: customerIdField?.value || null,
             client_name: customerNameField?.value || '',
@@ -3408,7 +3415,15 @@ export async function saveEditedOS(osId, currentUser, selectedStoreId) {
             status: document.getElementById('edit-os-status-select')?.value || 'pending',
             notes: document.getElementById('edit-os-notes')?.value || '',
             user_id: getCurrentUser()?.id,
-            store_id: getSelectedStoreId()
+            store_id: getSelectedStoreId(),
+            // Dados do checklist como JSON
+            accessories_checklist: {
+                bateria: checkBateria,
+                chip: checkChip,
+                carregador: checkCarregador,
+                fone: checkFone,
+                aranhado: checkAranhado
+            }
         };
 
         // Adicionar produtos ao osData

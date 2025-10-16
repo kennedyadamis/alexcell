@@ -8,6 +8,7 @@ import { initializePermissionsModule } from './js/modules/permissions.js';
 import { initializeCustomerFormEvents, loadCustomersTable, performCustomerSearch, clearCustomerSearch, saveCustomer, viewCustomer, editCustomer, deleteCustomer } from './js/modules/customers.js';
 import { formatPhoneMask, formatCurrencyBR, formatValueForDisplay, formatDateForDisplay } from './js/utils/formatters.js';
 import { canViewCostPrices, formatCostPrice } from './js/utils/costPermissions.js';
+import { canManageCash } from './js/utils/cashPermissions.js';
 import { loadOSTable, refreshOSList, openNewOSModal, closeNewOSModal, fetchAddressByCEP, initializePatternLock, confirmAddProduct, updateOSTotal, setupOrderForm, updateOSStatus, markAsAwaitingPickup, markAsDelivered, openOSPaymentModal, setupOSPaymentEvents, updateOSSplitSummary, deleteOS, viewOS, editOS, populateEditOSForm, setupEditPatternLock, setupEditValueFormatting, addEditOSProduct, setupEditCustomerAutocomplete, setupEditProductAutocomplete, updateEditOSTotal as updateEditOSTotalServiceOrders, closeEditOSModal, setupEditOSEvents, initializeOSConsultation, showConsultationMessage, displayOSResults, adjustQuantity, updateProductTotal, formatCurrencyInput, formatPaymentInput, openAddProductModal, closeAddProductModal, closeViewOSModal, saveEditedOSProduct, saveEditedOS, searchOSByCustomer, clearOSSearch } from './js/modules/serviceOrders.js';
 import { resetAddProductModal } from './js/utils/resetAddProductModal.js';
 import { loadDynamicBanner, createDefaultBanners } from './js/modules/banners.js';
@@ -1316,6 +1317,14 @@ async function handleDeleteCashEntryClick(event) {
     const entryIdsJson = button.getAttribute('data-entry-ids');
     const isSale = button.getAttribute('data-is-sale') === 'true';
     if (!entryIdsJson) return;
+    
+    // Verificar permissão para gerenciar caixa
+    const hasPermission = await canManageCash();
+    if (!hasPermission) {
+        showToast('Você não tem permissão para excluir itens do caixa.', 'error');
+        return;
+    }
+    
     const entryIds = JSON.parse(entryIdsJson);
     const confirmationText = isSale 
         ? 'Você tem certeza que deseja excluir esta venda do caixa? A venda em si não será apagada, apenas os lançamentos financeiros.'
@@ -1382,11 +1391,8 @@ function renderCashMovementsHtml(groupedEntries, title = 'Todas as Movimentaçõ
 
 // Definição única e correta:
 async function initializeCashRegisterModule() {
-    // Flag para garantir que o módulo seja inicializado apenas uma vez
-    if (initializeCashRegisterModule.hasBeenInitialized) {
-        return;
-    }
-    initializeCashRegisterModule.hasBeenInitialized = true;
+    // Permitir reinicialização para atualizar a interface após mudanças no caixa
+    console.log('Inicializando/Atualizando módulo do caixa...');
 
     // Exibe a tela correta conforme o status do caixa
     const closedView = document.getElementById('cash-closed-view');
@@ -4734,6 +4740,13 @@ window.reopenCashRegister = async function(cashRegisterId) {
     
     if (!cashRegisterId) {
         showToast('ID do caixa inválido.', 'error');
+        return;
+    }
+
+    // Verificar permissão para gerenciar caixa
+    const hasPermission = await canManageCash();
+    if (!hasPermission) {
+        showToast('Você não tem permissão para reabrir o caixa.', 'error');
         return;
     }
 
