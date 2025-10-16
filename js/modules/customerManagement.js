@@ -118,7 +118,10 @@ export function setupCustomerSearch(searchInputId, resultsContainerId, selectedC
 export function setupValueFormatting(fieldIds) {
     fieldIds.forEach(fieldId => {
         const field = document.getElementById(fieldId);
-        if (field) {
+        if (field && !field.dataset.formattingSetup) {
+            // Marcar que a formatação já foi configurada
+            field.dataset.formattingSetup = 'true';
+            
             // Formatação durante a digitação
             field.addEventListener('input', function(e) {
                 let value = e.target.value.replace(/[^\d,]/g, ''); // Remove tudo exceto números e vírgula

@@ -8,9 +8,17 @@ import { setupOSProductAutocomplete } from './serviceOrders.js';
 // ========================================
 
 export function initializeOrderForm() {
+    // Verificar se já foi inicializado para evitar duplicação
+    if (window.orderFormEventListenerAdded) {
+        return;
+    }
+    
     const osForm = document.getElementById('new-os-form');
     
     if (!osForm) return; // Só executa se estiver na página os.html
+
+    // Marcar como inicializado
+    window.orderFormEventListenerAdded = true;
 
     osForm.addEventListener('submit', function(event) {
         event.preventDefault(); // Previne o envio padrão do formulário

@@ -484,7 +484,13 @@ export function closeNewOSModal() {
 
 // Função para configurar autocomplete de produtos na OS
 export function setupOSProductAutocomplete() {
-
+    // Verificar se já foi inicializado para evitar duplicação
+    if (window.osProductAutocompleteInitialized) {
+        return;
+    }
+    
+    // Marcar como inicializado
+    window.osProductAutocompleteInitialized = true;
     
     const searchInput = document.getElementById('os-product-search');
     const resultsDiv = document.getElementById('os-product-results');
@@ -1107,6 +1113,14 @@ export function updateOSTotal() {
 }
 
 export function setupOrderForm(currentUser, selectedStoreId) {
+    // Verificar se já foi inicializado para evitar duplicação
+    if (window.orderFormInitialized) {
+        return;
+    }
+    
+    // Marcar como inicializado
+    window.orderFormInitialized = true;
+    
     const searchInput = document.getElementById('os-customer-search');
     const resultsContainer = document.getElementById('os-customer-results');
     const selectedCustomerIdInput = document.getElementById('os-selected-customer-id');
@@ -1124,19 +1138,16 @@ export function setupOrderForm(currentUser, selectedStoreId) {
     // Inicializar o formulário de ordem de serviço (com validação e envio)
     initializeOrderForm();
 
-    // Configurar botão para abrir modal de novo cliente com timeout para garantir que o DOM esteja carregado
-    setTimeout(() => {
-        const btnOpenNewCustomerModal = document.getElementById('btn-open-new-customer-modal');
+    // Configurar botão para abrir modal de novo cliente
+    const btnOpenNewCustomerModal = document.getElementById('btn-open-new-customer-modal');
+    
+    if (btnOpenNewCustomerModal && !btnOpenNewCustomerModal.dataset.listenerAdded) {
+        // Marcar que o listener foi adicionado para evitar duplicação
+        btnOpenNewCustomerModal.dataset.listenerAdded = 'true';
         
-        if (btnOpenNewCustomerModal) {
-            
-            // Remover event listeners existentes para evitar duplicação
-            btnOpenNewCustomerModal.removeEventListener('click', handleNewCustomerClick);
-            
-            // Adicionar novo event listener
-            btnOpenNewCustomerModal.addEventListener('click', handleNewCustomerClick);
-        }
-    }, 200);
+        // Adicionar event listener
+        btnOpenNewCustomerModal.addEventListener('click', handleNewCustomerClick);
+    }
     
     // Função para lidar com o clique no botão de novo cliente
     function handleNewCustomerClick(e) {
@@ -1385,7 +1396,7 @@ export function setupOrderForm(currentUser, selectedStoreId) {
                 // Log dos dados salvos no banco
                                 showToast('Ordem de Serviço criada com sucesso!', 'success');
                 closeNewOSModal();
-                refreshOSList(selectedStoreId);
+                refreshOSList(selectedStoreId, window.printWithToast);
                 document.getElementById('new-os-form').reset();
                 document.getElementById('os-products-list').innerHTML = ''; // Limpar lista de produtos
             } catch (error) {
@@ -1410,7 +1421,7 @@ export async function updateOSStatus(osId, newStatus) {
 
         showToast(`Status da OS ${osId} atualizado para: ${newStatus}`, 'success');
         const selectedStoreId = getSelectedStoreId();
-        refreshOSList(selectedStoreId);
+        refreshOSList(selectedStoreId, window.printWithToast);
     } catch (error) {
         console.error('Erro ao atualizar status da OS:', error);
         showToast(`Erro ao atualizar status: ${error.message}`, 'error');
@@ -1518,14 +1529,14 @@ async function processDelivery(osId) {
             if (cashError && cashError.details !== 'No rows found') {
                 console.error('Erro ao buscar caixa aberto:', cashError);
                 showToast('Nenhum caixa aberto para esta loja. Abra um caixa primeiro.', 'error');
-                refreshOSList(selectedStoreId);
+                refreshOSList(selectedStoreId, window.printWithToast);
                 return;
             }
 
             if (!openCash) {
     
                 showToast('Nenhum caixa aberto para esta loja. Abra um caixa primeiro.', 'error');
-                refreshOSList(selectedStoreId);
+                refreshOSList(selectedStoreId, window.printWithToast);
                 return;
             }
             
@@ -1537,7 +1548,7 @@ async function processDelivery(osId) {
             openOSPaymentModal(osId, products, totalAmount, cashRegisterId, window.printWithToast);
         } else {
 
-            refreshOSList(selectedStoreId);
+            refreshOSList(selectedStoreId, window.printWithToast);
         }
         
     } catch (error) {
@@ -1731,7 +1742,7 @@ export function setupOSPaymentEvents(totalAmount) {
                 showToast('Pagamento da OS finalizado e estoque atualizado!', 'success');
                 closeOSPaymentModal();
                 const selectedStoreId = getSelectedStoreId();
-                refreshOSList(selectedStoreId);
+                refreshOSList(selectedStoreId, window.printWithToast);
                 // Opcional: imprimir a OS após o pagamento
                 if (printWithToastCallback) printWithToastCallback(osId);
 
@@ -3413,7 +3424,7 @@ export async function saveEditedOS(osId, currentUser, selectedStoreId) {
         showToast('Ordem de Serviço atualizada com sucesso!', 'success');
         closeEditOSModal();
         
-        refreshOSList(selectedStoreId); // Passa selectedStoreId para a atualização da lista
+        refreshOSList(selectedStoreId, window.printWithToast); // Passa selectedStoreId para a atualização da lista
         
     } catch (error) {
         console.error('Erro ao salvar OS editada:', error);
