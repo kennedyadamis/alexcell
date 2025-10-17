@@ -27,7 +27,7 @@ export async function canManageCash() {
         }
 
         const { data: permissions, error } = await dbSelect('user_store_permissions', {
-            select: 'can_manage_cash',
+            select: 'can_manage_cash_register',
             eq: { user_id: user.id }
         });
 
@@ -37,7 +37,7 @@ export async function canManageCash() {
         }
 
         // Verificar se tem permissão em pelo menos uma loja
-        userCashPermissions = permissions.some(p => p.can_manage_cash);
+        userCashPermissions = permissions.some(p => p.can_manage_cash_register);
         return userCashPermissions;
     } catch (error) {
         console.error('Erro ao verificar permissões de caixa:', error);

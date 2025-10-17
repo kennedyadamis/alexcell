@@ -698,8 +698,9 @@ function applyPermissions() {
     // Esconde/mostra módulos inteiros com base nas permissões da loja atual
     document.querySelector('.nav-item[data-module="os"]').style.display = currentUserPermissions.can_manage_os ? 'list-item' : 'none';
     document.querySelector('.nav-item[data-module="pdv"]').style.display = currentUserPermissions.can_manage_pdv ? 'list-item' : 'none';
-    document.querySelector('.nav-item[data-module="caixa"]').style.display = currentUserPermissions.can_manage_cash ? 'list-item' : 'none';
+    document.querySelector('.nav-item[data-module="caixa"]').style.display = currentUserPermissions.can_manage_cash_register ? 'list-item' : 'none';
     document.querySelector('.nav-item[data-module="estoque"]').style.display = currentUserPermissions.can_manage_stock ? 'list-item' : 'none';
+    document.querySelector('.nav-item[data-module="clientes"]').style.display = currentUserPermissions.can_manage_customers ? 'list-item' : 'none';
     document.querySelector('.nav-item[data-module="relatorios"]').style.display = currentUserPermissions.can_view_reports ? 'list-item' : 'none';
     document.querySelector('.nav-item[data-module="garantia"]').style.display = currentUserPermissions.can_manage_os ? 'list-item' : 'none';
 
