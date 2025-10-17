@@ -8,7 +8,7 @@ export async function fillUserPermissionsList(userId) {
     container.innerHTML = '<p>Carregando permissões...</p>';
     try {
         const { data: userPermissions, error } = await dbSelect('user_store_permissions', {
-            select: 'id, can_manage_os, can_manage_pdv, can_manage_cash, can_manage_stock, can_view_reports, can_manage_users, can_manage_cost_prices, can_manage_os_expiration, can_manage_products, can_manage_sales, can_manage_service_orders, can_manage_cash_register, can_manage_customers, store_id',
+            select: 'id, can_manage_os, can_manage_pdv, can_manage_cash, can_manage_stock, can_view_reports, can_manage_users, can_manage_cost_prices, can_manage_os_expiration, can_manage_products, can_manage_sales, can_manage_service_orders, can_manage_cash_register, can_manage_customers, can_manage_warranty, can_delete_cash_transactions, can_reopen_cash_register, store_id',
             eq: { user_id: userId }
         });
 
