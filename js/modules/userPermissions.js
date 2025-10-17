@@ -39,9 +39,9 @@ export async function fillUserPermissionsList(userId) {
                     <div class="permission-item"><input type="checkbox" id="perm-stock-${p.id}" ${p.can_manage_stock ? 'checked' : ''}><label for="perm-stock-${p.id}">Gerenciar Estoque e Produtos</label></div>
                     <div class="permission-item"><input type="checkbox" id="perm-customers-${p.id}" ${p.can_manage_customers ? 'checked' : ''}><label for="perm-customers-${p.id}">Cadastrar/Editar Clientes</label></div>
                     <div class="permission-item"><input type="checkbox" id="perm-relatorios-${p.id}" ${p.can_view_reports ? 'checked' : ''}><label for="perm-relatorios-${p.id}">Visualizar Relatórios</label></div>
-                    <div class="permission-item"><input type="checkbox" id="perm-garantia-${p.id}" ${p.can_manage_users ? 'checked' : ''}><label for="perm-garantia-${p.id}">Gerenciar Usuários</label></div>
+                    <div class="permission-item"><input type="checkbox" id="perm-garantia-${p.id}" ${p.can_manage_warranty ? 'checked' : ''}><label for="perm-garantia-${p.id}">Garantia</label></div>
                     <div class="permission-item"><input type="checkbox" id="perm-custo-${p.id}" ${p.can_manage_cost_prices ? 'checked' : ''}><label for="perm-custo-${p.id}">Ver Preços de Custo</label></div>
-                    <div class="permission-item"><input type="checkbox" id="perm-expiracao-${p.id}" ${p.can_manage_os_expiration ? 'checked' : ''}><label for="perm-expiracao-${p.id}">Definir Prazo de Garantia</label></div>
+                    <div class="permission-item"><input type="checkbox" id="perm-expiracao-${p.id}" ${p.can_manage_os_expiration ? 'checked' : ''}><label for="perm-expiracao-${p.id}">Expiração</label></div>
 
                 </div>
             `;
@@ -84,23 +84,29 @@ if (editPermissionsForm) {
         event.preventDefault();
         const userId = document.getElementById('edit-permissions-user-id')?.value || '';
         const role = document.getElementById('edit-user-role')?.value || '';
+        
+        // Se o usuário for dono, ativar todas as permissões automaticamente
+        const isOwner = role === 'owner';
+        
         // Coletar permissões por loja
         const permissionGroups = document.querySelectorAll('.permission-store-group');
         for (const group of permissionGroups) {
             // O id da permissão está no id dos checkboxes, ex: perm-os-9
             const permId = group.querySelector('input[type="checkbox"]').id.split('-').pop();
-            const can_manage_os = group.querySelector(`#perm-os-${permId}`)?.checked || false;
-            const can_manage_pdv = group.querySelector(`#perm-pdv-${permId}`)?.checked || false;
-            const can_manage_sales = group.querySelector(`#perm-sales-${permId}`)?.checked || false;
-            const can_manage_cash_register = group.querySelector(`#perm-cash-register-${permId}`)?.checked || false;
-            const can_reopen_cash_register = group.querySelector(`#perm-reopen-cash-${permId}`)?.checked || false;
-            const can_delete_cash_transactions = group.querySelector(`#perm-delete-cash-${permId}`)?.checked || false;
-            const can_manage_stock = group.querySelector(`#perm-stock-${permId}`)?.checked || false;
-            const can_manage_customers = group.querySelector(`#perm-customers-${permId}`)?.checked || false;
-            const can_view_reports = group.querySelector(`#perm-relatorios-${permId}`)?.checked || false;
-            const can_manage_users = group.querySelector(`#perm-garantia-${permId}`)?.checked || false;
-            const can_manage_cost_prices = group.querySelector(`#perm-custo-${permId}`)?.checked || false;
-            const can_manage_os_expiration = group.querySelector(`#perm-expiracao-${permId}`)?.checked || false;
+            
+            // Se for dono, todas as permissões são true, senão pega do checkbox
+            const can_manage_os = isOwner || group.querySelector(`#perm-os-${permId}`)?.checked || false;
+            const can_manage_pdv = isOwner || group.querySelector(`#perm-pdv-${permId}`)?.checked || false;
+            const can_manage_sales = isOwner || group.querySelector(`#perm-sales-${permId}`)?.checked || false;
+            const can_manage_cash_register = isOwner || group.querySelector(`#perm-cash-register-${permId}`)?.checked || false;
+            const can_reopen_cash_register = isOwner || group.querySelector(`#perm-reopen-cash-${permId}`)?.checked || false;
+            const can_delete_cash_transactions = isOwner || group.querySelector(`#perm-delete-cash-${permId}`)?.checked || false;
+            const can_manage_stock = isOwner || group.querySelector(`#perm-stock-${permId}`)?.checked || false;
+            const can_manage_customers = isOwner || group.querySelector(`#perm-customers-${permId}`)?.checked || false;
+            const can_view_reports = isOwner || group.querySelector(`#perm-relatorios-${permId}`)?.checked || false;
+            const can_manage_warranty = isOwner || group.querySelector(`#perm-garantia-${permId}`)?.checked || false;
+            const can_manage_cost_prices = isOwner || group.querySelector(`#perm-custo-${permId}`)?.checked || false;
+            const can_manage_os_expiration = isOwner || group.querySelector(`#perm-expiracao-${permId}`)?.checked || false;
             
             // Atualizar permissões no Supabase
             const { error } = await dbUpdate('user_store_permissions', {
@@ -115,7 +121,7 @@ if (editPermissionsForm) {
                 can_manage_products: can_manage_stock, // Unificar: usar can_manage_stock para ambos
                 can_manage_customers,
                 can_view_reports,
-                can_manage_users,
+                can_manage_warranty,
                 can_manage_cost_prices,
                 can_manage_os_expiration,
                 can_manage_service_orders: can_manage_os // Unificar: usar can_manage_os para ambos
